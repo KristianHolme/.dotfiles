@@ -30,6 +30,16 @@ separator_block_width=15
 markup=none
 
 
+# Generic media player support
+#
+# This displays "ARTIST - SONG" if a music is playing.
+# Supported players are: spotify, vlc, audacious, xmms2, mplayer, and others.
+# Set to %any to automatically pick (Requires playerctl >=2.1.1)
+[mediaplayer]
+# This picks any player, with vlc as first, and spotify as last choice
+instance=vlc,%any,spotify
+interval=5
+signal=10
 ##Backlight
 [backlight]
 label=☀
@@ -75,11 +85,11 @@ label=MEM
 separator=false
 interval=30
 
-[memory]
-label=SWAP
-instance=swap
-separator=false
-interval=30
+#[memory]
+#label=SWAP
+#instance=swap
+#separator=false
+#interval=30
 
 # Disk usage
 #
@@ -87,7 +97,7 @@ interval=30
 # The script may be called with a optional argument to set the alert
 # (defaults to 10 for 10%).
 [disk]
-label=HOME
+#label=HOME
 #DIR=/mnt/data
 interval=30
 
@@ -130,7 +140,7 @@ interval=10
 # The battery instance defaults to 0.
 [battery2]
 #label=BAT
-label=⚡
+##label=⚡
 markup=pango
 interval=30
 
@@ -140,16 +150,6 @@ interval=30
 command=date '+%Y-%m-%d %H:%M:%S'
 interval=5
 
-# Generic media player support
-#
-# This displays "ARTIST - SONG" if a music is playing.
-# Supported players are: spotify, vlc, audacious, xmms2, mplayer, and others.
-# Set to %any to automatically pick (Requires playerctl >=2.1.1)
-[mediaplayer]
-# This picks any player, with vlc as first, and spotify as last choice
-instance=vlc,%any,spotify
-interval=5
-signal=10
 
 # OpenVPN support
 #
@@ -163,7 +163,7 @@ signal=10
 # The script may be called with -w and -c switches to specify thresholds,
 # see the script for details.
 [temperature]
-label=TEMP
+#label=TEMP
 interval=10
 
 # Key indicators
