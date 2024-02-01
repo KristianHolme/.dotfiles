@@ -13,10 +13,11 @@ alias zshsetup='my_zsh_setup'
 #moving to dirs
 alias nvimcfg='cd ~/.config/nvim/'
 alias zshcfg='cd ~/.oh-my-zsh/custom/'
+alias i3cfg='cd ~/.config/i3'
 alias proj='cd ~/Code/prosjekt-master/src'
 alias rapp='cd ~/Code/prosjekt-master/rapport'
 alias matdir='cd ~/matlab'
-alias i3cfg='cd ~/.config/i3'
+alias dot='cd ~/.dotfiles'
 
 #SSH
 alias markov='ssh kholme@markov.math.ntnu.no'
