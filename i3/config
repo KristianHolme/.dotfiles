@@ -216,8 +216,6 @@ exec --no-startup-id /usr/bin/setxkbmap -option "ctrl:nocaps"
 #exec /usr/bin/pasystray
 #dark theme?
 exec --no-startup-id /usr/libexec/gsd-xsettings
-#wallpaper
-exec_always feh --bg-scale /home/kristian/Pictures/Wallpapers/wallpaper.jpg
 
 ##Auto float
 for_window [class="Pavucontrol"] floating enable
@@ -242,4 +240,9 @@ bindsym Ctrl+Shift+Print exec --no-startup-id maim --select | xclip -selection c
 
 ## Display config
 exec_always --no-startup-id ~/.config/i3/display_checker.sh
+exec --no-startup-id xrandr --output eDP1 --scale 0.7x0.7
+#wallpaper
+exec_always feh --bg-scale /home/kristian/Pictures/Wallpapers/wallpaper.jpg
 
+## Start audio
+exec --no-startup-id pulseaudio --start
