@@ -1,0 +1,9 @@
+@theme "Arc-Dark"
+
+
+element {
+  orientation: horizontal;
+  children: [ element-icon, element-text ];
+  spacing: 5px;
+}
+
