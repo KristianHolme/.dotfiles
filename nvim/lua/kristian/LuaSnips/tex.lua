@@ -40,6 +40,11 @@ return {
     --highlight
     s({trig="hl", dscr="highlight"},
     fmta("\\hl{<>}", {d(1, get_visual)})
+    ),
+
+    --ttt
+    s({trig="ttt", dscr="typewriter text"},
+    fmta("\\texttt{<>}", {d(1, get_visual)})
     )
 
 }
