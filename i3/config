@@ -46,7 +46,7 @@ floating_modifier $mod
 
 # move tiling windows via drag & drop by left-clicking into the title bar,
 # or left-clicking anywhere into the window while holding the floating modifier.
-tiling_drag modifier titlebar
+#tiling_drag modifier titlebar
 
 # start a terminal
 bindsym $mod+Return exec i3-sensible-terminal
@@ -218,6 +218,7 @@ exec --no-startup-id /usr/bin/setxkbmap -option "ctrl:nocaps"
 #exec /usr/bin/pasystray
 #dark theme?
 exec --no-startup-id /usr/libexec/gsd-xsettings
+set $menu exec "wofi --show=drun,run"
 
 ##Auto float
 for_window [class="Pavucontrol"] floating enable
@@ -241,9 +242,9 @@ bindsym Ctrl+$mod+Print exec --no-startup-id maim --window $(xdotool getactivewi
 bindsym Ctrl+Shift+Print exec --no-startup-id maim --select | xclip -selection clipboard -t image/png
 
 ## Display config
-exec --no-startup-id xrandr --output eDP1 --scale 1x1
-exec_always --no-startup-id ~/.config/i3/display_checker.sh
-exec --no-startup-id xrandr --output eDP1 --scale 0.7x0.7
+#exec --no-startup-id xrandr --output eDP1 --scale 1x1
+#exec_always --no-startup-id ~/.config/i3/display_checker.sh
+#exec --no-startup-id xrandr --output eDP1 --scale 0.7x0.7
 #wallpaper
 exec_always feh --bg-scale /home/kristian/Pictures/Wallpapers/wallpaper.jpg
 
