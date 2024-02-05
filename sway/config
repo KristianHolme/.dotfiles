@@ -234,6 +234,13 @@ bindsym XF86AudioRaiseVolume exec pamixer -i 5 && pamixer --get-volume > /tmp/wo
 bindsym XF86AudioLowerVolume exec pamixer -d 5 && pamixer --get-volume > /tmp/wobpipe
 bindsym XF86AudioMute exec pamixer --toggle-mute # no graphical output here
 
+# Media controls
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym XF86AudioStop exec playerctl stop
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+
 #dark theme?
 exec --no-startup-id /usr/libexec/gsd-xsettings
 
