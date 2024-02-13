@@ -14,7 +14,7 @@ set $down j
 set $up k
 set $right l
 # Your preferred terminal emulator
-set $term i3-sensible-terminal
+set $term gnome-terminal
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
@@ -48,7 +48,10 @@ set $swaylock exec 'swaylock -f -c 000000'
 bindsym $mod+shift+x $swaylock
 
 ### Input configuration
-input type:keyboard xkb_layout no
+input type:keyboard {
+    xkb_layout no,no(nodeadkeys)
+    xkb_options grp:win_space_toggle,ctrl:nocaps
+}
 input type:touchpad {
     natural_scroll enabled
     tap enabled
@@ -224,10 +227,10 @@ bindsym Ctrl+Shift+Print exec --no-startup-id slurp | grim -g - | wl-copy
 bindsym $mod+c exec google-chrome
 
 #Start wob
-exec ./dotfiles/sway/wobpipe.sh
+#exec ./dotfiles/sway/wobpipe.sh
 #Controls
-bindsym XF86MonBrightnessUp exec brightnessctl set +10% && echo $(($(brightnessctl get)*100/$(brightnessctl max))) > /tmp/wobpipe
-bindsym XF86MonBrightnessDown exec brightnessctl set 10%- && echo $(($(brightnessctl get)*100/$(brightnessctl max))) > /tmp/wobpipe
+#bindsym XF86MonBrightnessUp exec brightnessctl set +10% && echo $(($(brightnessctl get)*100/$(brightnessctl max))) > /tmp/wobpipe
+#bindsym XF86MonBrightnessDown exec brightnessctl set 10%- && echo $(($(brightnessctl get)*100/$(brightnessctl max))) > /tmp/wobpipe
 
 
 bindsym XF86AudioRaiseVolume exec pamixer -i 5 && pamixer --get-volume > /tmp/wobpipe
@@ -252,6 +255,8 @@ exec_always export GTK_THEME=$GTK_THEME
 exec_always export QT_QPA_PLATFORMTHEME=$QT_QPA_PLATFORMTHEME
 
 exec waybar
+exec pasystray
+exec_always wlsunset -t 6000 -T 7000 -S 08:00 -s 20:30
 #make matlab not blank
 exec export _JAVA_AWT_WM_NONREPARENTING=1 
 
