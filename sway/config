@@ -210,9 +210,6 @@ bindsym $mod+r mode "resize"
 
 
 
-##Custom Bindings
-input * xkb_options ctrl:nocaps
-
 ## Screenshots
 #Full screenshot
 bindsym Print exec --no-startup-id grim "/home/$USER/Pictures/Screenshots/$(date '+%Y-%m-%d_%H-%M-%S').png"
@@ -259,6 +256,9 @@ exec pasystray
 exec_always wlsunset -t 6000 -T 7000 -S 08:00 -s 20:30
 #make matlab not blank
 exec export _JAVA_AWT_WM_NONREPARENTING=1 
+
+## Floating
+for_window [title="^Figure [0-9]+"] floating enable
 
 
 include /etc/sway/config.d/*

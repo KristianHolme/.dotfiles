@@ -25,3 +25,5 @@ alias work='cd work/kholme'
 
 #Running programs
 alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/prosjekt-master/src/; mrstModule add prosjektOppgave"'
+# Jutul Daemon
+julia --project="~/Code/prosjekt-master/jutul" --startup-file=no --color=no -e 'using Revise; using DaemonMode; serve()'
