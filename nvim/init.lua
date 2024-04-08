@@ -37,8 +37,8 @@ require("lazy").setup(
     {"mbbill/undotree"},
     {"ThePrimeagen/vim-be-good"},
     {"tpope/vim-fugitive"},
-    --- Uncomment the two plugins below if you want to manage the language servers from neovim
-    --- and read this: https://github.com/VonHeikemen/lsp-zero.nvim/blob/v3.x/doc/md/guides/integrate-with-mason-nvim.md
+    -- Uncomment the two plugins below if you want to manage the language servers from neovim
+    -- and read this: https://github.com/VonHeikemen/lsp-zero.nvim/blob/v3.x/doc/md/guides/integrate-with-mason-nvim.md
     {'williamboman/mason.nvim'},
     {'williamboman/mason-lspconfig.nvim'},
     {'VonHeikemen/lsp-zero.nvim', branch = 'v3.x'},
@@ -67,8 +67,8 @@ require("lazy").setup(
     {'nvim-tree/nvim-tree.lua'},
     {'nvim-tree/nvim-web-devicons'},
     {
-        'nvim-lualine/lualine.nvim',
-        dependencies = { 'nvim-tree/nvim-web-devicons' }
+     'nvim-lualine/lualine.nvim',
+     dependencies = { 'nvim-tree/nvim-web-devicons' }
     }
 }
 )
