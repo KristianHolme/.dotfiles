@@ -16,4 +16,5 @@ font:
   italic:
     family: "Hack Nerd Font"
     style: Italic
-
+import:
+  - ~/.dotfiles/alacritty/rose-pine.yml
