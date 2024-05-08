@@ -27,4 +27,17 @@ alias work='cd work/kholme'
 #Running programs
 alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/prosjekt-master/src/; mrstModule add prosjektOppgave"'
 # Jutul Daemon
-alias jutulDaemon='julia --project="~/Code/prosjekt-master/jutul" --startup-file=no --color=no -e "using Revise; using DaemonMode; using HYPRE; serve()"'
+alias jutulDaemon='julia --project="~/Code/prosjekt-master/jutul" --startup-file=no --color=no -e "using Revise; using DaemonMode; using HYPRE; serve(async=true)"'
+
+alias mp4towmv='convert_mp4_to_wmv'
+convert_mp4_to_wmv() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: mp4towmv <filename.mp4>"
+        return 1
+    fi
+    local input_file="$1"
+    local output_file="${input_file%.mp4}.wmv"
+    ffmpeg -i "$input_file" -c:v wmv2 -b:v 2M -c:a wmav2 -b:a 192k "$output_file"
+    echo "Conversion completed: $output_file"
+}
+
