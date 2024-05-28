@@ -41,3 +41,5 @@ convert_mp4_to_wmv() {
     echo "Conversion completed: $output_file"
 }
 
+#Scripts
+alias monsw='~/Code/scripts/workspace/secondary_screen_switch.sh'
