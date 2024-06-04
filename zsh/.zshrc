@@ -110,6 +110,7 @@ path=('/home/kristian/.juliaup/bin' $path)
 export PATH
 
 # <<< juliaup initialize <<<
+export JULIA_NUM_THREADS=auto
 
 export EDITOR='nvim'
 export QT_QPA_PLATFORMTHEME=qt5ct
