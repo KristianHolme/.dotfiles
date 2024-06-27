@@ -19,7 +19,7 @@ alias rapp='cd ~/Code/prosjekt-master/rapport'
 alias matdir='cd ~/matlab'
 alias dot='cd ~/.dotfiles'
 alias projout='cd /media/kristian/HDD/matlab/output/'
-alias ss='cd ~/Code/Sommer2024-SINTEF/src/'
+alias sosi='cd ~/Code/Sommer2024-SINTEF/src/'
 
 #SSH
 alias markov='ssh kholme@markov.math.ntnu.no'
