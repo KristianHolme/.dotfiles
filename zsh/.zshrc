@@ -122,6 +122,3 @@ source /usr/share/doc/fzf/examples/completion.zsh
 if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
     tmux new-session
 fi
-
- 
-
