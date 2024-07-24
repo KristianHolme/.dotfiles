@@ -26,7 +26,7 @@ alias markov='ssh kholme@markov.math.ntnu.no'
 alias work='cd work/kholme'
 
 #Running programs
-alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/prosjekt-master/src/; mrstModule add prosjektOppgave"'
+alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/SPE11/project_root/;setup'
 # Jutul Daemon
 alias jutulDaemon='julia --project="~/Code/prosjekt-master/jutul" --startup-file=no --color=no -e "using Revise; using DaemonMode; using HYPRE; serve(async=true)"'
 
