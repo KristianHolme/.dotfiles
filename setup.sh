@@ -25,6 +25,7 @@ ln -s ~/.dotfiles/zsh/.zshrc ~/.zshrc
 chsh -s $(which zsh)
 
 curl -fsSL https://install.julialang.org | sh
+ln -s ~/.dotfiles/julia_config ~/.julia/config
 
 sudo apt install guake alacritty fzf ripgrep zathura xdotool
 sudo snap install code --classic
