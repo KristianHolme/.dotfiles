@@ -1,3 +1,4 @@
+using Pkg: Pkg
 atreplinit() do repl
     try
         @eval using OhMyREPL
