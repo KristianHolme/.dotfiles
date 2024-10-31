@@ -122,3 +122,6 @@ source /usr/share/doc/fzf/examples/completion.zsh
 if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
     tmux new-session
 fi
+
+export PATH="/usr/local/cuda-12.6/bin:$PATH"
+ export LD_LIBRARY_PATH="/usr/local/cuda-12.6.0/lib64:$LD_LIBRARY_PATH"

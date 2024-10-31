@@ -20,10 +20,9 @@ alias matdir='cd ~/matlab'
 alias dot='cd ~/.dotfiles'
 alias projout='cd /media/kristian/HDD/matlab/output/'
 alias sosi='cd ~/Code/Sommer2024-SINTEF'
+alias dev='cd ~/.julia/dev'
 
 #SSH
-alias markov='ssh kholme@markov.math.ntnu.no'
-alias work='cd work/kholme'
 
 #Running programs
 alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/SPE11/project_root/;setup"'
