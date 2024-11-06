@@ -12,7 +12,6 @@ atreplinit() do repl
         @warn "error while importing OhMyREPL" e
     end
 end
-
 if isinteractive()
     import BasicAutoloads
     BasicAutoloads.register_autoloads([
@@ -28,3 +27,7 @@ end
 ENV["PYCALL_JL_RUNTIME_PYTHON"] = Sys.which("python3")
 ENV["PYTHON"] = Sys.which("python3")
 
+local_file = ".~/.dotfiles/julia_config/local_startup.jl"
+if isfile(local_file)
+    include(".~/.dotfiles/julia_config/local_startup.jl")
+end
