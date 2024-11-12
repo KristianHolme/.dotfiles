@@ -24,8 +24,6 @@ if isinteractive()
     ])
 end
 
-ENV["PYCALL_JL_RUNTIME_PYTHON"] = Sys.which("python3")
-ENV["PYTHON"] = Sys.which("python3")
 
 local_file = ".~/.dotfiles/julia_config/local_startup.jl"
 if isfile(local_file)
