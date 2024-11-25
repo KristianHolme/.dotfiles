@@ -29,4 +29,3 @@ local_file = ".~/.dotfiles/julia_config/local_startup.jl"
 if isfile(local_file)
     include(".~/.dotfiles/julia_config/local_startup.jl")
 end
-ENV["JUTUL_OUTPUT_PATH"] = "/media/kristian/HDD/Jutul/output/"
