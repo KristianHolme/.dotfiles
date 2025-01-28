@@ -25,7 +25,8 @@ if isinteractive()
 end
 
 
-local_file = "/home/kristian/.dotfiles/julia_config/local_startup.jl"
+local_file = joinpath(homedir(), ".dotfiles", "julia_config", "local_startup.jl")
 if isfile(local_file)
     include(local_file)
 end
+

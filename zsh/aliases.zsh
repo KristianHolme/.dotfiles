@@ -25,6 +25,7 @@ alias drl='cd ~/Code/DRL_RDE/'
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
+=======
 
 
 #Running programs
