@@ -35,3 +35,6 @@ sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emula
 echo "configuring alacritty..."
 sudo update-alternatives --config x-terminal-emulator
 
+#ghostty
+ln -s ~/.dotfiles/ghostty/config ~/.config/ghostty/config
+

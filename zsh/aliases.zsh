@@ -21,8 +21,11 @@ alias dot='cd ~/.dotfiles'
 alias projout='cd /media/kristian/HDD/matlab/output/'
 alias sosi='cd ~/Code/Sommer2024-SINTEF'
 alias dev='cd ~/.julia/dev'
+alias drl='cd ~/Code/DRL_RDE/'
 
-#SSH
+#Operations
+alias glall='find . -type d -name ".git" -execdir git pull \;'
+
 
 #Running programs
 alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/SPE11/project_root/;setup"'
