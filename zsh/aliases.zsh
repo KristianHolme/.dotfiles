@@ -22,6 +22,7 @@ alias projout='cd /media/kristian/HDD/matlab/output/'
 alias sosi='cd ~/Code/Sommer2024-SINTEF'
 alias dev='cd ~/.julia/dev'
 alias drl='cd ~/Code/DRL_RDE/'
+alias julia='julia --project=.'
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
