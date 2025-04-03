@@ -26,7 +26,6 @@ alias julia='julia --project=.'
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
-=======
 
 
 #Running programs

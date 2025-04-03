@@ -27,5 +27,5 @@ palette = 13=#db61a2
 palette = 14=#2b7489
 palette = 15=#ffffff
 mouse-hide-while-typing = true
-gtk-titlebar = false
+gtk-titlebar = true
 gtk-wide-tabs = false
