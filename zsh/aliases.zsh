@@ -22,6 +22,9 @@ alias projout='cd /media/kristian/HDD/matlab/output/'
 alias sosi='cd ~/Code/Sommer2024-SINTEF'
 alias dev='cd ~/.julia/dev'
 alias drl='cd ~/Code/DRL_RDE/'
+alias cfd='cd ~/Code/MEK9470/'
+
+#julia
 alias julia='julia --project=.'
 
 #Operations
