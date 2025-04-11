@@ -15,7 +15,6 @@ end
 if isinteractive()
     import BasicAutoloads
     BasicAutoloads.register_autoloads([
-        ["@b", "@be"]            => :(using Chairmarks),
         ["@benchmark", "@btime"] => :(using BenchmarkTools),
         ["@test", "@testset", "@test_broken", "@test_deprecated", "@test_logs",
         "@test_nowarn", "@test_skip", "@test_throws", "@test_warn", "@inferred"] =>
@@ -29,4 +28,3 @@ local_file = joinpath(homedir(), ".dotfiles", "julia_config", "local_startup.jl"
 if isfile(local_file)
     include(local_file)
 end
-
