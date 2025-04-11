@@ -1,3 +1,5 @@
+echo "TEST IN ZSHRC"
+export TEST_THREE="ZSHRC"
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -106,13 +108,14 @@ source $ZSH/oh-my-zsh.sh
 
 # !! Contents within this block are managed by juliaup !!
 
-path=('/home/kristian/.juliaup/bin' $path)
+path=('/mn/sarpanitu/ansatte-u6/kholme/.juliaup/bin' $path)
 export PATH
 
 # <<< juliaup initialize <<<
 export JULIA_NUM_THREADS=auto
 
 export EDITOR='nvim'
+<<<<<<< Updated upstream
 #export QT_QPA_PLATFORMTHEME=qt5ct
 #export _JAVA_AWT_WM_NONREPARENTING=1 
 source /usr/share/doc/fzf/examples/key-bindings.zsh
@@ -129,3 +132,27 @@ eval $(keychain --eval --agents ssh id_ed25519)
 
 export PATH=/home/kristian/programmer/ParaView-5.13.2-MPI-Linux-Python3.10-x86_64//bin:$PATH
 export PV_PLUGIN_PATH=/home/kristian/programmer/ParaView-5.13.2-MPI-Linux-Python3.10-x86_64/lib/paraview-5.13/plugins
+=======
+export PATH="$HOME/progs/nvim:$PATH"
+export PATH=$PATH:$HOME/.local/kitty.app/bin
+export TERM=xterm-256color
+export PATH=$HOME/.local/bin:$PATH
+
+
+module load Python/3.9.6-GCCcore-11.2.0
+unset MESA_LOADER_DRIVER_OVERRIDE
+
+#export QT_QPA_PLATFORMTHEME=qt5ct
+#export _JAVA_AWT_WM_NONREPARENTING=1 
+#source /usr/share/doc/fzf/examples/key-bindings.zsh
+#source /usr/share/doc/fzf/examples/completion.zsh
+
+# Auto-start tmux if not already in a tmux session
+#if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
+#    tmux new-session
+#fi
+
+#export PATH="/usr/local/cuda-12.6/bin:$PATH"
+#export LD_LIBRARY_PATH="/usr/local/cuda-12.6.0/lib64:$LD_LIBRARY_PATH"
+export PATH="/mn/sarpanitu/ansatte-u6/kholme/progs/quarto-1.6.42/bin:$PATH"
+>>>>>>> Stashed changes
