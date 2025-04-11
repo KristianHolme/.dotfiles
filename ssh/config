@@ -1,0 +1,41 @@
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 1440
+
+Host uio
+    Hostname login.math.uio.no
+    user kholme
+Host atalanta
+    Hostname atalanta
+    ProxyJump kholme@login.math.uio.no
+    user kholme
+    SendEnv TERM
+    SetEnv TERM=xterm-256color
+
+Host nam-shub-01
+    Hostname nam-shub-01
+    ProxyJump kholme@login.math.uio.no
+    user kholme
+    SendEnv TERM
+    SetEnv TERM=xterm-256color
+Host nam-shub-02
+    Hostname nam-shub-02
+    ProxyJump kholme@login.math.uio.no
+    user kholme
+    SendEnv TERM
+    SetEnv TERM=xterm-256color
+Host abacus-as
+    Hostname abacus-as
+    ProxyJump kholme@login.math.uio.no
+    user kholme
+    SendEnv TERM
+    SetEnv TERM=xterm-256color
+
+
+Host freebio* bioint0*
+    HostName %h.hpc.uio.no
+    User kholme
+    ForwardAgent yes
+    ProxyJump kholme@login.math.uio.no
+    SendEnv TERM
+    SetEnv TERM=xterm-256color

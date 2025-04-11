@@ -113,15 +113,19 @@ export PATH
 export JULIA_NUM_THREADS=auto
 
 export EDITOR='nvim'
-export QT_QPA_PLATFORMTHEME=qt5ct
-export _JAVA_AWT_WM_NONREPARENTING=1 
+#export QT_QPA_PLATFORMTHEME=qt5ct
+#export _JAVA_AWT_WM_NONREPARENTING=1 
 source /usr/share/doc/fzf/examples/key-bindings.zsh
 source /usr/share/doc/fzf/examples/completion.zsh
 
-# Auto-start tmux if not already in a tmux session
-if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
-    tmux new-session
-fi
 
+#export PATH="/usr/local/cuda-12.6/bin:$PATH"
+#export LD_LIBRARY_PATH="/usr/local/cuda-12.6.0/lib64:$LD_LIBRARY_PATH"
 export PATH="/usr/local/cuda-12.6/bin:$PATH"
- export LD_LIBRARY_PATH="/usr/local/cuda-12.6.0/lib64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/usr/local/cuda-12.6.0/lib64:$LD_LIBRARY_PATH"
+export PATH="$PATH:/opt/nvim-linux64/bin"
+
+eval $(keychain --eval --agents ssh id_ed25519)
+
+export PATH=/home/kristian/programmer/ParaView-5.13.2-MPI-Linux-Python3.10-x86_64//bin:$PATH
+export PV_PLUGIN_PATH=/home/kristian/programmer/ParaView-5.13.2-MPI-Linux-Python3.10-x86_64/lib/paraview-5.13/plugins

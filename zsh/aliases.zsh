@@ -14,19 +14,22 @@ alias zshsetup='my_zsh_setup'
 alias nvimcfg='cd ~/.config/nvim/'
 alias zshcfg='cd ~/.oh-my-zsh/custom/'
 alias i3cfg='cd ~/.config/i3'
-alias proj='cd ~/Code/SPE11/project_root'
-alias rapp='cd ~/Code/SPE11/rapport'
-alias matdir='cd ~/matlab'
+#alias proj='cd ~/Code/SPE11/project_root'
+#alias rapp='cd ~/Code/SPE11/rapport'
+#alias matdir='cd ~/matlab'
 alias dot='cd ~/.dotfiles'
-alias projout='cd /media/kristian/HDD/matlab/output/'
-alias sosi='cd ~/Code/Sommer2024-SINTEF'
+#alias projout='cd /media/kristian/HDD/matlab/output/'
+#alias sosi='cd ~/Code/Sommer2024-SINTEF'
 alias dev='cd ~/.julia/dev'
 alias drl='cd ~/Code/DRL_RDE/'
+alias cfd='cd ~/Code/MEK9470/'
+
+#julia
 alias julia='julia --project=.'
+
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
-
 
 #Running programs
 alias projmatlab='matlab -nodesktop -nosplash -r "cd ~/Code/SPE11/project_root/;setup"'
