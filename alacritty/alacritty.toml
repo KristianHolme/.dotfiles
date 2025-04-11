@@ -21,3 +21,7 @@ style = "Regular"
 [font.bold_italic]
 family = "Hack Nerd Font"
 style = "Bold Italic"
+
+[window]
+vsync = false
+
