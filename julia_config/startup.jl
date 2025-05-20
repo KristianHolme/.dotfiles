@@ -12,16 +12,16 @@ atreplinit() do repl
         @warn "error while importing OhMyREPL" e
     end
 end
-if isinteractive()
-    import BasicAutoloads
-    BasicAutoloads.register_autoloads([
-        ["@benchmark", "@btime"] => :(using BenchmarkTools),
-        ["@test", "@testset", "@test_broken", "@test_deprecated", "@test_logs",
-        "@test_nowarn", "@test_skip", "@test_throws", "@test_warn", "@inferred"] =>
-                                    :(using Test),
-        ["@about"]               => :(using About; macro about(x) Expr(:call, About.about, x) end),
-    ])
-end
+# if isinteractive()
+#     import BasicAutoloads
+#     BasicAutoloads.register_autoloads([
+#         ["@benchmark", "@btime"] => :(using BenchmarkTools),
+#         ["@test", "@testset", "@test_broken", "@test_deprecated", "@test_logs",
+#         "@test_nowarn", "@test_skip", "@test_throws", "@test_warn", "@inferred"] =>
+#                                     :(using Test),
+#         ["@about"]               => :(using About; macro about(x) Expr(:call, About.about, x) end),
+#     ])
+# end
 
 
 local_file = joinpath(homedir(), ".dotfiles", "julia_config", "local_startup.jl")
