@@ -7,7 +7,7 @@ Simple configuration management for your Omarchy customizations.
 ```
 omarchy-tweaks/
 ├── bin/
-│   ├── apply-tweaks.sh            # Apply config tweaks (rsync only-existing)
+│   ├── apply-tweaks.sh            # Apply config tweaks (GNU Stow symlinks)
 │   └── omarchy-prune-and-install.sh  # Remove defaults + install your packages/webapps
 ├── config/
 │   └── hypr/
@@ -20,6 +20,16 @@ omarchy-tweaks/
 ### Apply your tweaks
 ```bash
 ~/.dotfiles/omarchy-tweaks/bin/apply-tweaks.sh
+```
+
+Symlinks via GNU Stow
+- Package `config` → links into `~/.config`
+- Package `home` → links into `~/` (for files like `.bashrc`)
+
+Preview (no changes):
+```bash
+stow -n -d ~/.dotfiles/omarchy-tweaks -t ~/.config -v config
+stow -n -d ~/.dotfiles/omarchy-tweaks -t ~ -v home
 ```
 
 ### Prune defaults and install your apps
@@ -44,7 +54,9 @@ To restore omarchy defaults:
 
 ## How it works
 
-1. `apply-tweaks.sh` syncs from `config/` → `~/.config/` using rsync with `--existing` (only updates files that already exist)
+1. `apply-tweaks.sh` symlinks from packages using GNU Stow:
+   - `config/` → `~/.config/`
+   - `home/` → `~/`
 2. Reloads Hyprland configuration
 
 Simple and clean! Works with standard Omarchy features.
