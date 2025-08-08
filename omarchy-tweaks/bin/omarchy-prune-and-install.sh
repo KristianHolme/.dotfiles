@@ -73,6 +73,7 @@ main() {
   install_pkg rsync
   install_pkg discord
   install_pkg starship
+  install_pkg stow
 
   #Install julia and add basic packages to base env
   curl -fsSL https://install.julialang.org | sh

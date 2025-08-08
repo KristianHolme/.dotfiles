@@ -1,0 +1,36 @@
+# All the default Omarchy aliases and functions
+# (don't mess with these directly, just overwrite them here!)
+source ~/.local/share/omarchy/default/bash/rc
+
+# >>> juliaup initialize >>>
+
+# !! Contents within this block are managed by juliaup !!
+
+case ":$PATH:" in
+*:/home/kristian/.juliaup/bin:*) ;;
+
+*)
+  export PATH=/home/kristian/.juliaup/bin${PATH:+:${PATH}}
+  ;;
+esac
+
+# <<< juliaup initialize <<<
+
+# Aliases
+alias j='julia'
+alias jp='julia --project=.'
+alias lg='lazygit'
+
+#variables
+export JULIA_NUM_THREADS=auto
+
+#Operations
+alias glall='find . -type d -name ".git" -execdir git pull \;'
+
+# starship prompt
+eval "$(starship init bash)"
+
+# zoxide - must be initialized last
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init bash)"
+fi
