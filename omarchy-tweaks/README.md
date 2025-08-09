@@ -1,30 +1,40 @@
 # Omarchy Tweaks
 
-Simple configuration management for your Omarchy customizations.
+Simple Stow-based configuration overlay for Omarchy setups (Hyprland, Neovim, shell, etc.).
 
 ## Structure
 
 ```
 omarchy-tweaks/
 ├── bin/
-│   ├── apply-tweaks.sh            # Apply config tweaks (GNU Stow symlinks)
-│   └── omarchy-prune-and-install.sh  # Remove defaults + install your packages/webapps
+│   ├── dotfiles-apply-config.sh   # Link `config/` → ~/.config and `home/` → ~ (via GNU Stow)
+│   ├── dotfiles-setup-packages.sh # Remove Omarchy defaults, install preferred packages/tools (Arch/yay)
+│   └── julia-setup.jl             # Install common Julia packages + copy startup.jl
 ├── config/
-│   └── hypr/
-│       └── bindings.conf          # Your custom bindings
+│   ├── hypr/
+│   │   ├── bindings.conf          # Custom keybindings and window rules
+│   │   ├── envs.conf              # Extra env vars (extends PATH with Omarchy bin)
+│   │   ├── input.conf             # Input config (kb, touchpad, scroll)
+│   │   ├── hypridle.conf          # Idle/lock/screen power behavior
+│   │   └── hyprsunset.conf        # Color temperature settings
+│   └── nvim/
+│       └── lua/
+│           └── config/
+│               └── options.lua    # Example Neovim options (optional)
+├── home/                          # Optional home-level files (links into ~)
 └── README.md
 ```
 
 ## Usage
 
-### Apply your tweaks
+### Apply your tweaks (symlink with Stow)
 ```bash
-~/.dotfiles/omarchy-tweaks/bin/apply-tweaks.sh
+~/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh
 ```
 
-Symlinks via GNU Stow
-- Package `config` → links into `~/.config`
-- Package `home` → links into `~/` (for files like `.bashrc`)
+This links the Stow packages:
+- `config/` → `~/.config`
+- `home/` → `~/` (for dotfiles like `.zshrc`, if present)
 
 Preview (no changes):
 ```bash
@@ -32,44 +42,43 @@ stow -n -d ~/.dotfiles/omarchy-tweaks -t ~/.config -v config
 stow -n -d ~/.dotfiles/omarchy-tweaks -t ~ -v home
 ```
 
-### Prune defaults and install your apps
+### Prune defaults and install your apps (Arch/Omarchy)
 ```bash
-~/.dotfiles/omarchy-tweaks/bin/omarchy-prune-and-install.sh
+~/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh
 ```
+- Removes selected Omarchy webapps and packages
+- Installs preferred packages via `yay`
+- Optional installers via `curl` (e.g., Julia `juliaup`, Cursor CLI)
 
 ### Edit your configuration
-Simply edit the files in `config/` and re-run the apply script.
+Edit files under `config/` and re-run the apply script. Hyprland changes will be reloaded automatically if `hyprctl` is available.
 
-### Restore defaults
-To restore omarchy defaults:
+### Restore Omarchy defaults
+Example (Hypr bindings):
 ```bash
 ~/.local/share/omarchy/bin/omarchy-refresh-config hypr/bindings.conf
 ```
 
+## Requirements
+- GNU Stow (for linking configs)
+- Arch with `yay` (for the package setup script)
+- `curl` (for optional installers)
+- Hyprland (only if you want the Hypr configs; the apply script tries to `hyprctl reload` if present)
+
 ## Features
 
-### Custom Keybindings
-- Window resizing with `SUPER + minus/plus`
-- Floating window movement with `SUPER + SHIFT + arrows`
+### Custom Keybindings (Hyprland)
+- Window resizing: `SUPER + minus/plus` (left-right), `SUPER + SHIFT + minus/plus` (up-down)
+- Floating window movement: `SUPER + SHIFT + arrows`
+- Quick app launchers (browser, terminal, Obsidian, Spotify, etc.) via UWSM
+- Workspace rules (e.g., `cursor` → workspace 2, `obsidian` → workspace 9)
 
 ## How it works
-
-1. `apply-tweaks.sh` symlinks from packages using GNU Stow:
+1. `dotfiles-apply-config.sh` backs up conflicting files into a timestamped `_bak/` folder, then symlinks Stow packages:
    - `config/` → `~/.config/`
    - `home/` → `~/`
-2. Reloads Hyprland configuration
+2. If Hyprland is running, it reloads the configuration.
+3. `dotfiles-setup-packages.sh` prunes selected defaults and installs preferred packages/tools via `yay`.
 
-Simple and clean! Works with standard Omarchy features.
-
-## Manual edits
-- Change cursor desktop file to include "--ozone-platform=wayland"
-    - probably in /usr/local/share/applications
-
-
-
-## Workspace habits
-1. Terminal(s)
-2. Cursor
-3. Browser
-
-9. Obsidian
+## Notes
+- Hyprland env vars (`envs.conf`) extend your `PATH` to include Omarchy tools; env changes require a Hyprland relaunch to take effect.
