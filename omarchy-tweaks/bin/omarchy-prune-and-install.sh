@@ -62,7 +62,7 @@ main() {
   remove_webapp "Figma"
 
   # 2) Remove packages
-  remove_pkg 1password || true
+  remove_pkg 1password-beta || true
   remove_pkg 1password-cli || true
   #remove_pkg chromium || true
   #remove_pkg typora || true
