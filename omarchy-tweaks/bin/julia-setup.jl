@@ -22,4 +22,3 @@ dest = joinpath(dest_dir, "startup.jl")
 mkpath(dest_dir)
 cp(src, dest; force=true)
 @info "Copied $src to $dest"
-
