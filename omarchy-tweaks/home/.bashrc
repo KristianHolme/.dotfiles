@@ -20,6 +20,8 @@ esac
 alias j='julia'
 alias jp='julia --project=.'
 alias lg='lazygit'
+alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
+alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
 
 #variables
 export JULIA_NUM_THREADS=auto
