@@ -10,8 +10,8 @@ case ":$PATH:" in
 *:/home/kristian/.juliaup/bin:*) ;;
 
 *)
-  export PATH=/home/kristian/.juliaup/bin${PATH:+:${PATH}}
-  ;;
+    export PATH=/home/kristian/.juliaup/bin${PATH:+:${PATH}}
+    ;;
 esac
 
 # <<< juliaup initialize <<<
@@ -22,6 +22,7 @@ alias jp='julia --project=.'
 alias lg='lazygit'
 alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
 alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
+alias ca='cursor-agent'
 
 #variables
 export JULIA_NUM_THREADS=auto
@@ -34,5 +35,5 @@ eval "$(starship init bash)"
 
 # zoxide - must be initialized last
 if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init bash)"
+    eval "$(zoxide init bash)"
 fi
