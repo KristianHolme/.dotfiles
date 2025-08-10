@@ -22,6 +22,8 @@ alias jp='julia --project=.'
 alias lg='lazygit'
 alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
 alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
+alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
+alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
 alias ca='cursor-agent'
 
 #variables
