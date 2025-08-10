@@ -10,17 +10,7 @@ omarchy-tweaks/
 │   ├── dotfiles-apply-config.sh   # Link `config/` → ~/.config and `home/` → ~ (via GNU Stow)
 │   ├── dotfiles-setup-packages.sh # Remove Omarchy defaults, install preferred packages/tools (Arch/yay)
 │   └── julia-setup.jl             # Install common Julia packages + copy startup.jl
-├── config/
-│   ├── hypr/
-│   │   ├── bindings.conf          # Custom keybindings and window rules
-│   │   ├── envs.conf              # Extra env vars (extends PATH with Omarchy bin)
-│   │   ├── input.conf             # Input config (kb, touchpad, scroll)
-│   │   ├── hypridle.conf          # Idle/lock/screen power behavior
-│   │   └── hyprsunset.conf        # Color temperature settings
-│   └── nvim/
-│       └── lua/
-│           └── config/
-│               └── options.lua    # Example Neovim options (optional)
+├── config/                        # links into ~/.config/
 ├── home/                          # Optional home-level files (links into ~)
 └── README.md
 ```
