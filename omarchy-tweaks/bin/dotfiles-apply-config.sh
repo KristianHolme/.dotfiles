@@ -59,6 +59,22 @@ apply_configs() {
 
     # Packages directory (repo root of omarchy-tweaks)
     PACKAGES_DIR="$(realpath "$SCRIPT_DIR/..")"
+    # Optional profile argument (e.g. "work" -> config-work)
+    local profile="${1:-}"
+    # If not provided, attempt fallbacks: $OMARCHY_PROFILE or short hostname
+    if [[ -z "$profile" ]]; then
+        if [[ -n "${OMARCHY_PROFILE:-}" ]]; then
+            profile="$OMARCHY_PROFILE"
+            log_info "No profile arg; using OMARCHY_PROFILE='$profile'"
+        else
+            local host_short
+            host_short="$(hostname -s 2>/dev/null || true)"
+            if [[ -n "$host_short" && -d "$PACKAGES_DIR/config-$host_short" ]]; then
+                profile="$host_short"
+                log_info "No profile arg; using hostname profile='$profile'"
+            fi
+        fi
+    fi
 
     # Backup conflicts proactively so stow can place links
     backup_conflicts_for_package "$PACKAGES_DIR/config" "$TARGET_CONFIG"
@@ -78,6 +94,26 @@ apply_configs() {
         log_warning "Stow (config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
         log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v config"
         return $STOW_STATUS_CONFIG
+    fi
+
+    # If a profile was provided, try to apply config-<profile> as an additional package
+    if [[ -n "$profile" ]]; then
+        local profile_pkg="config-$profile"
+        if [[ -d "$PACKAGES_DIR/$profile_pkg" ]]; then
+            backup_conflicts_for_package "$PACKAGES_DIR/$profile_pkg" "$TARGET_CONFIG"
+            set +e
+            STOW_OUTPUT_PROFILE=$(stow -d "$PACKAGES_DIR" -t "$TARGET_CONFIG" -R -v "$profile_pkg" 2>&1)
+            STOW_STATUS_PROFILE=$?
+            set -e
+            [[ -n "$STOW_OUTPUT_PROFILE" ]] && echo "$STOW_OUTPUT_PROFILE" | sed "s/^/[STOW $profile_pkg] /"
+            if [[ $STOW_STATUS_PROFILE -ne 0 ]]; then
+                log_warning "Stow ($profile_pkg) reported issues. Conflicts likely exist in $TARGET_CONFIG."
+                log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v '$profile_pkg'"
+                return $STOW_STATUS_PROFILE
+            fi
+        else
+            log_info "No '$profile_pkg' package found at $PACKAGES_DIR; skipping profile package"
+        fi
     fi
 
     # Stow 'home' package to ~ (for files like .bashrc)
@@ -113,8 +149,13 @@ reload_hyprland() {
 }
 
 main() {
-    log_info "Applying Omarchy tweaks..."
-    apply_configs
+    local profile_arg="${1:-}"
+    if [[ -n "$profile_arg" ]]; then
+        log_info "Applying Omarchy tweaks (profile: $profile_arg)..."
+    else
+        log_info "Applying Omarchy tweaks..."
+    fi
+    apply_configs "$profile_arg"
     reload_hyprland
     log_success "All tweaks applied successfully!"
 }
