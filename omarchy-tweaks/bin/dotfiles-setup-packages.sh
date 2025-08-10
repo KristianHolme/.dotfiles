@@ -93,7 +93,7 @@ main() {
     install_pkg stow
 
     # Install tools via curl installers
-    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
+    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
     install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"
 
     # 4) Refresh desktop database (user apps)
