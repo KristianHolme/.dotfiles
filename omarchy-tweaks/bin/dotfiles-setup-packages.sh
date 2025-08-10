@@ -91,6 +91,7 @@ main() {
     install_pkg discord
     install_pkg starship
     install_pkg stow
+    install_pkg bitwarden
 
     # Install tools via curl installers
     install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
