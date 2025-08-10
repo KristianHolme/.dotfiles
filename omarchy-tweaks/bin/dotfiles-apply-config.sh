@@ -61,20 +61,6 @@ apply_configs() {
     PACKAGES_DIR="$(realpath "$SCRIPT_DIR/..")"
     # Optional profile argument (e.g. "work" -> config-work)
     local profile="${1:-}"
-    # If not provided, attempt fallbacks: $OMARCHY_PROFILE or short hostname
-    if [[ -z "$profile" ]]; then
-        if [[ -n "${OMARCHY_PROFILE:-}" ]]; then
-            profile="$OMARCHY_PROFILE"
-            log_info "No profile arg; using OMARCHY_PROFILE='$profile'"
-        else
-            local host_short
-            host_short="$(hostname -s 2>/dev/null || true)"
-            if [[ -n "$host_short" && -d "$PACKAGES_DIR/config-$host_short" ]]; then
-                profile="$host_short"
-                log_info "No profile arg; using hostname profile='$profile'"
-            fi
-        fi
-    fi
 
     # Backup conflicts proactively so stow can place links
     backup_conflicts_for_package "$PACKAGES_DIR/config" "$TARGET_CONFIG"
@@ -112,7 +98,7 @@ apply_configs() {
                 return $STOW_STATUS_PROFILE
             fi
         else
-            log_info "No '$profile_pkg' package found at $PACKAGES_DIR; skipping profile package"
+            log_info "No '$profile_pkg' package found; skipping profile package"
         fi
     fi
 
@@ -160,6 +146,6 @@ main() {
     log_success "All tweaks applied successfully!"
 }
 
-main
+main "$@"
 exit $?
 
