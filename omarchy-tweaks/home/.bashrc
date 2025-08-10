@@ -20,14 +20,21 @@ esac
 alias j='julia'
 alias jp='julia --project=.'
 alias lg='lazygit'
+alias ca='cursor-agent'
 alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
 alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
 alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
 alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
-alias ca='cursor-agent'
+alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
 
 #variables
 export JULIA_NUM_THREADS=auto
+
+# SSH agent
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+    # Start ssh-agent if not already running
+    eval "$(ssh-agent -s)" > /dev/null
+fi
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
