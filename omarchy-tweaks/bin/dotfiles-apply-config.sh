@@ -63,42 +63,42 @@ apply_configs() {
     local profile="${1:-}"
 
     # Backup conflicts proactively so stow can place links
-    backup_conflicts_for_package "$PACKAGES_DIR/config" "$TARGET_CONFIG"
+    backup_conflicts_for_package "$PACKAGES_DIR/.config" "$TARGET_CONFIG"
 
-    # We treat the 'config' directory as a Stow package and target ~/.config
+    # We treat the '.config' directory as a Stow package and target ~/.config
     # -d: where packages live
     # -t: target directory for links
     # -R: restow (safe to re-run; updates links)
     # -v: verbose for helpful logging
-    # Stow 'config' package to ~/.config
+    # Stow '.config' package to ~/.config
     set +e
-    STOW_OUTPUT_CONFIG=$(stow -d "$PACKAGES_DIR" -t "$TARGET_CONFIG" -R -v config 2>&1)
+    STOW_OUTPUT_CONFIG=$(stow -d "$PACKAGES_DIR" -t "$TARGET_CONFIG" -R -v .config 2>&1)
     STOW_STATUS_CONFIG=$?
     set -e
-    [[ -n "$STOW_OUTPUT_CONFIG" ]] && echo "$STOW_OUTPUT_CONFIG" | sed 's/^/[STOW config] /'
+    [[ -n "$STOW_OUTPUT_CONFIG" ]] && echo "$STOW_OUTPUT_CONFIG" | sed 's/^/[STOW .config] /'
     if [[ $STOW_STATUS_CONFIG -ne 0 ]]; then
-        log_warning "Stow (config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
-        log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v config"
+        log_warning "Stow (.config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
+        log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v .config"
         return $STOW_STATUS_CONFIG
     fi
 
-    # If a profile was provided, try to apply config-<profile> as an additional package
+    # If a profile was provided, try to apply profile/.config as an additional package
     if [[ -n "$profile" ]]; then
-        local profile_pkg="config-$profile"
-        if [[ -d "$PACKAGES_DIR/$profile_pkg" ]]; then
-            backup_conflicts_for_package "$PACKAGES_DIR/$profile_pkg" "$TARGET_CONFIG"
+        local profile_config_dir="$PACKAGES_DIR/profiles/$profile/.config"
+        if [[ -d "$profile_config_dir" ]]; then
+            backup_conflicts_for_package "$profile_config_dir" "$TARGET_CONFIG"
             set +e
-            STOW_OUTPUT_PROFILE=$(stow -d "$PACKAGES_DIR" -t "$TARGET_CONFIG" -R -v "$profile_pkg" 2>&1)
+            STOW_OUTPUT_PROFILE=$(stow -d "$PACKAGES_DIR/profiles/$profile" -t "$TARGET_CONFIG" -R -v .config 2>&1)
             STOW_STATUS_PROFILE=$?
             set -e
-            [[ -n "$STOW_OUTPUT_PROFILE" ]] && echo "$STOW_OUTPUT_PROFILE" | sed "s/^/[STOW $profile_pkg] /"
+            [[ -n "$STOW_OUTPUT_PROFILE" ]] && echo "$STOW_OUTPUT_PROFILE" | sed "s/^/[STOW $profile .config] /"
             if [[ $STOW_STATUS_PROFILE -ne 0 ]]; then
-                log_warning "Stow ($profile_pkg) reported issues. Conflicts likely exist in $TARGET_CONFIG."
-                log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v '$profile_pkg'"
+                log_warning "Stow ($profile .config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
+                log_warning "Preview: stow -n -d '$PACKAGES_DIR/profiles/$profile' -t '$TARGET_CONFIG' -v .config"
                 return $STOW_STATUS_PROFILE
             fi
         else
-            log_info "No '$profile_pkg' package found; skipping profile package"
+            log_info "No profile .config found for '$profile'; skipping profile config"
         fi
     fi
 
@@ -122,6 +122,24 @@ apply_configs() {
     log_success "Symlinked configuration with Stow"
 }
 
+# Run profile-specific setup script if it exists
+apply_profile_setup() {
+    local profile="${1:-}"
+    
+    if [[ -n "$profile" ]]; then
+        local profile_script="$PACKAGES_DIR/profiles/$profile/$profile-apply-config.sh"
+        if [[ -f "$profile_script" && -x "$profile_script" ]]; then
+            log_info "Running profile setup: $profile"
+            cd "$PACKAGES_DIR/profiles/$profile"
+            ./"$profile-apply-config.sh"
+            cd - >/dev/null
+            log_success "Profile setup completed: $profile"
+        else
+            log_info "No profile setup script found for: $profile"
+        fi
+    fi
+}
+
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
 # Reload hyprland
@@ -142,6 +160,7 @@ main() {
         log_info "Applying Omarchy tweaks..."
     fi
     apply_configs "$profile_arg"
+    apply_profile_setup "$profile_arg"
     reload_hyprland
     log_success "All tweaks applied successfully!"
 }
