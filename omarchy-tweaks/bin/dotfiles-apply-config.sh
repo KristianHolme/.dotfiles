@@ -122,23 +122,6 @@ apply_configs() {
     log_success "Symlinked configuration with Stow"
 }
 
-# Run profile-specific setup script if it exists
-apply_profile_setup() {
-    local profile="${1:-}"
-    
-    if [[ -n "$profile" ]]; then
-        local profile_script="$PACKAGES_DIR/profiles/$profile/$profile-apply-config.sh"
-        if [[ -f "$profile_script" && -x "$profile_script" ]]; then
-            log_info "Running profile setup: $profile"
-            cd "$PACKAGES_DIR/profiles/$profile"
-            ./"$profile-apply-config.sh"
-            cd - >/dev/null
-            log_success "Profile setup completed: $profile"
-        else
-            log_info "No profile setup script found for: $profile"
-        fi
-    fi
-}
 
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
@@ -160,7 +143,6 @@ main() {
         log_info "Applying Omarchy tweaks..."
     fi
     apply_configs "$profile_arg"
-    apply_profile_setup "$profile_arg"
     reload_hyprland
     log_success "All tweaks applied successfully!"
 }
