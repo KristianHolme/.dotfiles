@@ -93,6 +93,14 @@ main() {
     install_pkg stow
     install_pkg bitwarden
     install_pkg google-chrome
+    install_pkg tmux
+
+    if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+        mkdir -p "$HOME/.tmux/plugins"
+        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+    else
+        log "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
+    fi
 
     # Install tools via curl installers
     install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
