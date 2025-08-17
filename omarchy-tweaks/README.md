@@ -26,6 +26,13 @@ This links the Stow packages:
 - `config/` → `~/.config`
 - `home/` → `~/` (for dotfiles like `.zshrc`, if present)
 
+If conflicts are detected, you'll get an interactive menu to choose how to resolve them.
+
+Optional profile support:
+```bash
+~/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh work
+```
+
 Preview (no changes):
 ```bash
 stow -n -d ~/.dotfiles/omarchy-tweaks -t ~/.config -v config
@@ -51,6 +58,8 @@ Example (Hypr bindings):
 
 ## Requirements
 - GNU Stow (for linking configs)
+- `gum` (for interactive conflict resolution - install with `pacman -S gum`)
+   - `gum` is installed by default in [Omarchy](https://omarchy.org)
 - Arch with `yay` (for the package setup script)
 - `curl` (for optional installers)
 - Hyprland (only if you want the Hypr configs; the apply script tries to `hyprctl reload` if present)
@@ -64,9 +73,11 @@ Example (Hypr bindings):
 - Workspace rules (e.g., `cursor` → workspace 2, `obsidian` → workspace 9)
 
 ## How it works
-1. `dotfiles-apply-config.sh` backs up conflicting files into a timestamped `_bak/` folder, then symlinks Stow packages:
-   - `config/` → `~/.config/`
-   - `home/` → `~/`
+1. `dotfiles-apply-config.sh` detects conflicts using dry-run mode, then presents interactive options:
+   - **No conflicts:** Automatically symlinks Stow packages (`config/` → `~/.config/`, `home/` → `~/`)
+   - **Conflicts detected:** Uses `gum` to offer choices:
+     - **Adopt:** Move conflicting files to dotfiles repo (via `stow --adopt`)
+     - **Abort:** Keep existing files, skip linking
 2. If Hyprland is running, it reloads the configuration.
 3. `dotfiles-setup-packages.sh` prunes selected defaults and installs preferred packages/tools via `yay`.
 
