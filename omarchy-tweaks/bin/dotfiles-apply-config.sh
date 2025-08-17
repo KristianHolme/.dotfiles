@@ -21,29 +21,60 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 
-backup_conflicts_for_package() {
-    local package_dir="$1" # e.g. /path/to/repo/config
-    local target_root="$2" # e.g. ~/.config
-    local timestamp
-    timestamp="$(date +%Y%m%d-%H%M%S)"
+stow_with_conflict_detection() {
+    local packages_dir="$1"    # e.g. /path/to/dotfiles
+    local package_name="$2"    # e.g. ".config" or "home"  
+    local target_dir="$3"      # e.g. ~/.config or ~
+    local description="$4"     # e.g. "config files" or "home files"
 
-    [[ -d "$package_dir" ]] || return 0
+    # Check if package exists
+    [[ -d "$packages_dir/$package_name" ]] || return 0
 
-    while IFS= read -r -d '' package_file; do
-        local rel_path
-        rel_path="${package_file#"$package_dir"/}"
-        local target_path
-        target_path="$target_root/$rel_path"
+    log_info "Checking for conflicts in $description..."
+    
+    # Dry run to detect conflicts
+    set +e
+    local dry_run_output
+    dry_run_output=$(stow -n -d "$packages_dir" -t "$target_dir" -R -v "$package_name" 2>&1)
+    local dry_run_status=$?
+    set -e
 
-        if [[ -e "$target_path" && ! -L "$target_path" ]]; then
-            local parent_dir backup_dir
-            parent_dir="$(dirname "$target_path")"
-            backup_dir="$parent_dir/_bak/$timestamp"
-            mkdir -p "$backup_dir"
-            mv "$target_path" "$backup_dir/"
-            log_info "Backed up $(realpath --relative-to="$target_root" "$target_path") → ${backup_dir}/"
+    if [[ $dry_run_status -eq 0 ]]; then
+        # No conflicts, proceed with normal stow
+        log_info "No conflicts detected, proceeding with $description symlinks..."
+        stow -d "$packages_dir" -t "$target_dir" -R -v "$package_name"
+        log_success "Successfully linked $description"
+    else
+        # Conflicts detected, present user with options
+        log_warning "Conflicts detected in $description:"
+        echo "$dry_run_output" | grep -E "(WARNING|ERROR|existing)" || echo "$dry_run_output"
+        echo
+        
+        if ! command -v gum >/dev/null 2>&1; then
+            log_warning "gum not found. Install with: pacman -S gum"
+            log_warning "Manual resolution required for $description conflicts"
+            return 1
         fi
-    done < <(find "$package_dir" -type f -print0)
+
+        local choice
+        choice=$(gum choose \
+            "Adopt conflicting files (move them to dotfiles repo)" \
+            "Abort (keep existing files)" \
+            --header "How should conflicts be resolved for $description?")
+
+        case "$choice" in
+            "Adopt conflicting files"*)
+                log_info "Adopting conflicting files for $description..."
+                stow -d "$packages_dir" -t "$target_dir" -R -v --adopt "$package_name"
+                log_success "Adopted conflicts and linked $description"
+                log_warning "Conflicting files moved to dotfiles repo - review and commit changes"
+                ;;
+            "Abort"*)
+                log_info "Aborted $description linking due to conflicts"
+                return 1
+                ;;
+        esac
+    fi
 }
 
 ########################################
@@ -62,64 +93,23 @@ apply_configs() {
     # Optional profile argument (e.g. "work" -> config-work)
     local profile="${1:-}"
 
-    # Backup conflicts proactively so stow can place links
-    backup_conflicts_for_package "$PACKAGES_DIR/.config" "$TARGET_CONFIG"
-
-    # We treat the '.config' directory as a Stow package and target ~/.config
-    # -d: where packages live
-    # -t: target directory for links
-    # -R: restow (safe to re-run; updates links)
-    # -v: verbose for helpful logging
-    # Stow '.config' package to ~/.config
-    set +e
-    STOW_OUTPUT_CONFIG=$(stow -d "$PACKAGES_DIR" -t "$TARGET_CONFIG" -R -v .config 2>&1)
-    STOW_STATUS_CONFIG=$?
-    set -e
-    [[ -n "$STOW_OUTPUT_CONFIG" ]] && echo "$STOW_OUTPUT_CONFIG" | sed 's/^/[STOW .config] /'
-    if [[ $STOW_STATUS_CONFIG -ne 0 ]]; then
-        log_warning "Stow (.config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
-        log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_CONFIG' -v .config"
-        return $STOW_STATUS_CONFIG
-    fi
-
+    # Apply .config package with conflict detection
+    stow_with_conflict_detection "$PACKAGES_DIR" ".config" "$TARGET_CONFIG" "config files"
+    
     # If a profile was provided, try to apply profile/.config as an additional package
     if [[ -n "$profile" ]]; then
-        local profile_config_dir="$PACKAGES_DIR/profiles/$profile/.config"
-        if [[ -d "$profile_config_dir" ]]; then
-            backup_conflicts_for_package "$profile_config_dir" "$TARGET_CONFIG"
-            set +e
-            STOW_OUTPUT_PROFILE=$(stow -d "$PACKAGES_DIR/profiles/$profile" -t "$TARGET_CONFIG" -R -v .config 2>&1)
-            STOW_STATUS_PROFILE=$?
-            set -e
-            [[ -n "$STOW_OUTPUT_PROFILE" ]] && echo "$STOW_OUTPUT_PROFILE" | sed "s/^/[STOW $profile .config] /"
-            if [[ $STOW_STATUS_PROFILE -ne 0 ]]; then
-                log_warning "Stow ($profile .config) reported issues. Conflicts likely exist in $TARGET_CONFIG."
-                log_warning "Preview: stow -n -d '$PACKAGES_DIR/profiles/$profile' -t '$TARGET_CONFIG' -v .config"
-                return $STOW_STATUS_PROFILE
-            fi
+        local profile_packages_dir="$PACKAGES_DIR/profiles/$profile"
+        if [[ -d "$profile_packages_dir/.config" ]]; then
+            stow_with_conflict_detection "$profile_packages_dir" ".config" "$TARGET_CONFIG" "profile config files"
         else
             log_info "No profile .config found for '$profile'; skipping profile config"
         fi
     fi
 
-    # Stow 'home' package to ~ (for files like .bashrc)
-    if [[ -d "$PACKAGES_DIR/home" ]]; then
-        backup_conflicts_for_package "$PACKAGES_DIR/home" "$TARGET_HOME"
-        set +e
-        STOW_OUTPUT_HOME=$(stow -d "$PACKAGES_DIR" -t "$TARGET_HOME" -R -v home 2>&1)
-        STOW_STATUS_HOME=$?
-        set -e
-        [[ -n "$STOW_OUTPUT_HOME" ]] && echo "$STOW_OUTPUT_HOME" | sed 's/^/[STOW home] /'
-        if [[ $STOW_STATUS_HOME -ne 0 ]]; then
-            log_warning "Stow (home) reported issues. Conflicts likely exist in $TARGET_HOME."
-            log_warning "Preview: stow -n -d '$PACKAGES_DIR' -t '$TARGET_HOME' -v home"
-            return $STOW_STATUS_HOME
-        fi
-    else
-        log_info "No 'home' package found; skipping home-level links"
-    fi
+    # Apply home package with conflict detection
+    stow_with_conflict_detection "$PACKAGES_DIR" "home" "$TARGET_HOME" "home files"
 
-    log_success "Symlinked configuration with Stow"
+    log_success "Configuration linking completed"
 }
 
 
