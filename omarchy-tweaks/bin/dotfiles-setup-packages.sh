@@ -86,6 +86,13 @@ main() {
 
     # 3) Install packages
     install_pkg zotero-bin
+
+    # Setup Zotero Better BibTeX extension if Zotero was installed successfully
+    if pkg_installed zotero-bin; then
+        log "Setting up Zotero Better BibTeX extension..."
+        "$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-zotero.sh" || log "Zotero setup failed (non-critical)"
+    fi
+
     install_pkg cursor-bin
     install_pkg rsync
     install_pkg discord
