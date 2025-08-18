@@ -37,13 +37,13 @@ main() {
     log_info "Fetching latest Better BibTeX release information..."
     local xpi_url
     xpi_url=$(curl -fsSL "$GITHUB_API_URL" | grep -o '"browser_download_url": *"[^"]*\.xpi"' | cut -d'"' -f4)
-    
+
     if [[ -z "$xpi_url" ]]; then
         log_error "Failed to find XPI download URL from GitHub API"
         log_error "API response may have changed or network issue occurred"
         return 1
     fi
-    
+
     log_info "Found latest release: $(basename "$xpi_url")"
 
     # Download the .xpi file to Downloads
@@ -64,8 +64,8 @@ main() {
     log_success "Better BibTeX extension downloaded successfully!"
     log_info "To complete installation:"
     log_info "1. Open Zotero"
-    log_info "2. Go to Tools → Add-ons"
-    log_info "3. Click the gear icon and select 'Install Add-on From File...'"
+    log_info "2. Go to Tools → Plugins"
+    log_info "3. Click the gear icon and select 'Install Plugin From File...'"
     log_info "4. Choose: $download_path"
     log_info "5. Click 'Install' and restart Zotero"
     log_warning "Automatic installation via command line is not supported by Zotero."
