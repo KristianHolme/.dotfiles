@@ -98,6 +98,7 @@ main() {
     install_pkg discord
     install_pkg starship
     install_pkg stow
+    install_pkg git-lfs
     install_pkg bitwarden
     install_pkg google-chrome
     install_pkg tmux
