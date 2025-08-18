@@ -32,16 +32,17 @@ else
 fi
 
 # List of servers to copy key to
+# Not necessary to copy to all, as bioints are shared and abacus and nam-shub are shared
 SERVERS=(
     "abacus-as"
-    "abacus-min" 
+    "abacus-min"
     "nam-shub-01"
     "nam-shub-02"
     "bioint01"
     "bioint02"
     "bioint03"
     "bioint04"
-    "uio"  # login node
+    "uio" # login node
 )
 
 log "Copying SSH key to ${#SERVERS[@]} servers..."
