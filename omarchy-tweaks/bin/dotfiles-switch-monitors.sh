@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TWEAKS_ROOT="$(realpath "$SCRIPT_DIR/..")"
 
 usage() {
-    cat << EOF
+    cat <<EOF
 Usage: $0 <profile_name>
 
 Switch monitor configuration for the specified omarchy-tweaks profile.
@@ -50,12 +50,12 @@ check_dependencies() {
 find_monitor_configs() {
     local profile="$1"
     local profile_dir="$TWEAKS_ROOT/profiles/$profile/.config/hypr"
-    
+
     if [[ ! -d "$profile_dir" ]]; then
         log_error "Profile directory not found: $profile_dir"
         exit 1
     fi
-    
+
     # Find monitors-*.conf files
     local configs=()
     while IFS= read -r -d '' file; do
@@ -64,13 +64,13 @@ find_monitor_configs() {
         config_name=${config_name%.conf}
         configs+=("$config_name")
     done < <(find "$profile_dir" -name "monitors-*.conf" -print0 2>/dev/null || true)
-    
+
     if [[ ${#configs[@]} -eq 0 ]]; then
         log_error "No monitor configurations found in $profile_dir"
         log_info "Expected files like monitors-1.conf, monitors-2.conf, etc."
         exit 1
     fi
-    
+
     printf '%s\n' "${configs[@]}"
 }
 
@@ -80,7 +80,7 @@ get_config_description() {
     local config="$2"
     local profile_dir="$TWEAKS_ROOT/profiles/$profile/.config/hypr"
     local monitors_file="$profile_dir/monitors-$config.conf"
-    
+
     # Extract description from comments in the file
     local description=""
     if [[ -f "$monitors_file" ]]; then
@@ -88,7 +88,7 @@ get_config_description() {
     else
         description="Monitor configuration $config"
     fi
-    
+
     echo "$description"
 }
 
@@ -109,18 +109,18 @@ switch_config() {
         log_error "Monitor config not found: $monitors_src"
         exit 1
     fi
-    
+
     # Create target directory if it doesn't exist
     mkdir -p "$target_config_dir"
     
     # Remove existing symlinks/files
     [[ -e "$monitors_target" ]] && rm -f "$monitors_target"
     [[ -e "$tiling_target" ]] && rm -f "$tiling_target"
-    
+
     # Create symlinks
     log_info "Linking monitors-$config.conf → monitors.conf"
     ln -sf "$monitors_src" "$monitors_target"
-    
+
     # Link tiling config if it exists
     if [[ -f "$tiling_src" ]]; then
         log_info "Linking tiling-$config.conf → tiling.conf"
@@ -130,7 +130,7 @@ switch_config() {
         # Create empty tiling.conf to avoid errors
         touch "$tiling_target"
     fi
-    
+
     log_success "Monitor configuration switched to: $config"
 }
 
@@ -151,14 +151,14 @@ main() {
         usage
         exit 1
     fi
-    
+
     if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
         usage
         exit 0
     fi
-    
+
     local profile="$1"
-    
+
     # Validate profile
     if [[ ! -d "$TWEAKS_ROOT/profiles/$profile" ]]; then
         log_error "Profile not found: $profile"
@@ -166,15 +166,15 @@ main() {
         find "$TWEAKS_ROOT/profiles" -maxdepth 1 -type d -exec basename {} \; | grep -v "^profiles$" | sort
         exit 1
     fi
-    
+
     check_dependencies
-    
+
     log_info "Finding monitor configurations for profile: $profile"
-    
+
     # Get available configurations
     local configs
     readarray -t configs < <(find_monitor_configs "$profile")
-    
+
     if [[ ${#configs[@]} -eq 1 ]]; then
         # Only one config, use it directly
         local config="${configs[0]}"
@@ -183,29 +183,29 @@ main() {
     else
         # Multiple configs, let user choose
         log_info "Found ${#configs[@]} monitor configurations"
-        
+
         # Build menu options with descriptions
         local options=()
         for config in "${configs[@]}"; do
             local description=$(get_config_description "$profile" "$config")
             options+=("$config: $description")
         done
-        
+
         # Show selection menu
         local selection
         selection=$(printf '%s\n' "${options[@]}" | gum choose --header "Choose monitor configuration:" || true)
-        
+
         if [[ -z "$selection" ]]; then
             log_info "No configuration selected, exiting"
             exit 0
         fi
-        
+
         # Extract config name from selection
         local config="${selection%%:*}"
-        
+
         switch_config "$profile" "$config"
     fi
-    
+
     reload_hyprland
     log_success "Monitor configuration switch completed!"
 }
