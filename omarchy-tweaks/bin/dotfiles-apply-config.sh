@@ -21,6 +21,24 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 
+# Simple function to unstow all profiles using GNU Stow -D
+unstow_all_profiles() {
+    local packages_dir="$1"
+    local target_dir="$2"
+    
+    local profiles_dir="$packages_dir/profiles"
+    [[ -d "$profiles_dir" ]] || return 0
+    
+    log_info "Unstowing any existing profiles..."
+    
+    # Unstow all profiles (ignore errors if not currently stowed)
+    for profile_path in "$profiles_dir"/*; do
+        if [[ -d "$profile_path/.config" ]]; then
+            stow -d "$profile_path" -t "$target_dir" -D ".config" 2>/dev/null || true
+        fi
+    done
+}
+
 stow_with_conflict_detection() {
     local packages_dir="$1"    # e.g. /path/to/dotfiles
     local package_name="$2"    # e.g. ".config" or "home"  
@@ -96,10 +114,14 @@ apply_configs() {
     # Apply .config package with conflict detection
     stow_with_conflict_detection "$PACKAGES_DIR" ".config" "$TARGET_CONFIG" "config files"
     
-    # If a profile was provided, try to apply profile/.config as an additional package
+    # If a profile was provided, handle profile switching
     if [[ -n "$profile" ]]; then
         local profile_packages_dir="$PACKAGES_DIR/profiles/$profile"
         if [[ -d "$profile_packages_dir/.config" ]]; then
+            # First, unstow all existing profiles to avoid profile-to-profile conflicts
+            unstow_all_profiles "$PACKAGES_DIR" "$TARGET_CONFIG"
+            
+            # Then use conflict detection for any remaining conflicts (user files, etc.)
             stow_with_conflict_detection "$profile_packages_dir" ".config" "$TARGET_CONFIG" "profile config files"
         else
             log_info "No profile .config found for '$profile'; skipping profile config"
