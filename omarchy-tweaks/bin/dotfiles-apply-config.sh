@@ -127,8 +127,8 @@ apply_configs() {
     local profile="${1:-}"
 
     # Apply base default package (includes dotfiles under dot-* inside it)
-    stow_with_conflict_detection "$PACKAGES_DIR" "default" "$TARGET_HOME" "default files"
-    
+    stow_with_conflict_detection "$PACKAGES_DIR" "default" "$TARGET_HOME" "default files" --override='.*'
+
     # If a profile was provided, handle profile switching via top-level packages named by profile
     if [[ -n "$profile" ]]; then
         local profile_pkg_name="$profile"
@@ -145,7 +145,6 @@ apply_configs() {
 
     log_success "Configuration linking completed"
 }
-
 
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
@@ -173,4 +172,3 @@ main() {
 
 main "$@"
 exit $?
-
