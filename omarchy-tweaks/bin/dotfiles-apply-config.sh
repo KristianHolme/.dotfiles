@@ -41,10 +41,10 @@ unstow_all_profiles() {
 }
 
 stow_with_conflict_detection() {
-    local packages_dir="$1"    # e.g. /path/to/dotfiles
-    local package_name="$2"    # e.g. "dot-config" or "home"  
-    local target_dir="$3"      # e.g. ~/.config or ~
-    local description="$4"     # e.g. "config files" or "home files"
+    local packages_dir="$1" # e.g. /path/to/dotfiles
+    local package_name="$2" # e.g. "dot-config" or "home"
+    local target_dir="$3"   # e.g. ~/.config or ~
+    local description="$4"  # e.g. "config files" or "home files"
     shift 4
     # Any remaining args are extra stow flags (e.g., --override, etc.)
     local extra_flags=("$@")
@@ -53,7 +53,7 @@ stow_with_conflict_detection() {
     [[ -d "$packages_dir/$package_name" ]] || return 0
 
     log_info "Checking for conflicts in $description..."
-    
+
     # Dry run to detect conflicts
     set +e
     local dry_run_output
@@ -79,7 +79,7 @@ stow_with_conflict_detection() {
         log_warning "Conflicts detected in $description:"
         echo "$dry_run_output" | grep -E "(WARNING|ERROR|existing)" || echo "$dry_run_output"
         echo
-        
+
         if ! command -v gum >/dev/null 2>&1; then
             log_warning "gum not found. Install with: pacman -S gum"
             log_warning "Manual resolution required for $description conflicts"
