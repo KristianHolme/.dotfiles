@@ -27,6 +27,8 @@ alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
 alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
 alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
 alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
+alias dst='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-ssh-tmux.sh'
+
 
 alias tb='tensorboard --logdir'
 
