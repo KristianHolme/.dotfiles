@@ -21,22 +21,23 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 
-# Simple function to unstow all profiles using GNU Stow -D
+# Simple function to unstow any existing profile packages at repo root
 unstow_all_profiles() {
     local packages_dir="$1"
     local target_dir="$2"
-    
-    local profiles_dir="$packages_dir/profiles"
-    [[ -d "$profiles_dir" ]] || return 0
-    
     log_info "Unstowing any existing profiles..."
-    
-    # Unstow all profiles (ignore errors if not currently stowed)
-    for profile_path in "$profiles_dir"/*; do
-        if [[ -d "$profile_path/dot-config" ]]; then
-            stow -d "$profile_path" -t "$target_dir" -D "dot-config" 2>/dev/null || true
+    shopt -s nullglob
+    for pkg_dir in "$packages_dir"/*; do
+        [[ -d "$pkg_dir" ]] || continue
+        local pkg_name
+        pkg_name=$(basename "$pkg_dir")
+        # Skip non-profile packages
+        if [[ "$pkg_name" == "default" || "$pkg_name" == "bin" ]]; then
+            continue
         fi
+        stow -d "$packages_dir" -t "$target_dir" -D "$pkg_name" 2>/dev/null || true
     done
+    shopt -u nullglob
 }
 
 stow_with_conflict_detection() {
@@ -58,9 +59,12 @@ stow_with_conflict_detection() {
     local dry_run_output
     # Use -S for stow (not -R) when we have --override to avoid restow conflicts
     local stow_op="-R"
-    if [[ " ${extra_flags[*]} " =~ " --override " ]]; then
-        stow_op="-S"
-    fi
+    for __flag in "${extra_flags[@]}"; do
+        if [[ "$__flag" == --override* ]]; then
+            stow_op="-S"
+            break
+        fi
+    done
     dry_run_output=$(stow -n -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
     local dry_run_status=$?
     set -e
@@ -86,12 +90,15 @@ stow_with_conflict_detection() {
         choice=$(gum choose \
             "Adopt conflicting files (move them to dotfiles repo)" \
             "Abort (keep existing files)" \
-            --header "How should conflicts be resolved for $description?")
+            --header "How should conflicts be resolved for $description?") || choice="Abort (keep existing files)"
 
         case "$choice" in
             "Adopt conflicting files"*)
                 log_info "Adopting conflicting files for $description..."
-                stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles --adopt "${extra_flags[@]}" "$package_name"
+                stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles --adopt "${extra_flags[@]}" "$package_name" || {
+                    log_warning "Adopt failed; attempting plain stow with override..."
+                    stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name"
+                }
                 log_success "Adopted conflicts and linked $description"
                 log_warning "Conflicting files moved to dotfiles repo - review and commit changes"
                 ;;
@@ -119,26 +126,22 @@ apply_configs() {
     # Optional profile argument (e.g. "work" -> config-work)
     local profile="${1:-}"
 
-    # Apply dot-config package with conflict detection (dotfiles mode)
-    stow_with_conflict_detection "$PACKAGES_DIR" "dot-config" "$TARGET_CONFIG" "config files"
+    # Apply base default package (includes dotfiles under dot-* inside it)
+    stow_with_conflict_detection "$PACKAGES_DIR" "default" "$TARGET_HOME" "default files"
     
-    # If a profile was provided, handle profile switching
+    # If a profile was provided, handle profile switching via top-level packages named by profile
     if [[ -n "$profile" ]]; then
-        local profile_packages_dir="$PACKAGES_DIR/profiles/$profile"
-        if [[ -d "$profile_packages_dir/dot-config" ]]; then
-            # First, unstow all existing profiles to avoid profile-to-profile conflicts
-            unstow_all_profiles "$PACKAGES_DIR" "$TARGET_CONFIG"
-            
-            # Then use conflict detection for any remaining conflicts (user files, etc.)
-            # Pass --override so profile can replace files provided by base dot-config
-            stow_with_conflict_detection "$profile_packages_dir" "dot-config" "$TARGET_CONFIG" "profile config files" --override
+        local profile_pkg_name="$profile"
+        if [[ -d "$PACKAGES_DIR/$profile_pkg_name" ]]; then
+            # First, unstow any existing profile overlays
+            unstow_all_profiles "$PACKAGES_DIR" "$TARGET_HOME"
+
+            # Then overlay the selected profile using override to replace base-owned files
+            stow_with_conflict_detection "$PACKAGES_DIR" "$profile_pkg_name" "$TARGET_HOME" "profile files" --override='.*'
         else
-            log_info "No profile dot-config found for '$profile'; skipping profile config"
+            log_info "No profile package '$profile_pkg_name' found; skipping profile overlay"
         fi
     fi
-
-    # Apply home package with conflict detection (dotfiles mode)
-    stow_with_conflict_detection "$PACKAGES_DIR" "home" "$TARGET_HOME" "home files"
 
     log_success "Configuration linking completed"
 }
