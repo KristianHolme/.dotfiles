@@ -26,20 +26,23 @@ alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
 alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
 alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
 alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
+alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
 
 alias tb='tensorboard --logdir'
+
+#Operations
+alias glall='find . -type d -name ".git" -execdir git pull \;'
 
 #variables
 export JULIA_NUM_THREADS=auto
 
+# Testing if this is necessary
 # SSH agent
-if [[ -z "$SSH_AUTH_SOCK" ]]; then
-    # Start ssh-agent if not already running
-    eval "$(ssh-agent -s)" >/dev/null
-fi
+# if [[ -z "$SSH_AUTH_SOCK" ]]; then
+#     # Start ssh-agent if not already running
+#     eval "$(ssh-agent -s)" >/dev/null
+# fi
 
-#Operations
-alias glall='find . -type d -name ".git" -execdir git pull \;'
 
 # starship prompt
 eval "$(starship init bash)"
