@@ -93,19 +93,19 @@ stow_with_conflict_detection() {
             --header "How should conflicts be resolved for $description?") || choice="Abort (keep existing files)"
 
         case "$choice" in
-            "Adopt conflicting files"*)
-                log_info "Adopting conflicting files for $description..."
-                stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles --adopt "${extra_flags[@]}" "$package_name" || {
-                    log_warning "Adopt failed; attempting plain stow with override..."
-                    stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name"
-                }
-                log_success "Adopted conflicts and linked $description"
-                log_warning "Conflicting files moved to dotfiles repo - review and commit changes"
-                ;;
-            "Abort"*)
-                log_info "Aborted $description linking due to conflicts"
-                return 1
-                ;;
+        "Adopt conflicting files"*)
+            log_info "Adopting conflicting files for $description..."
+            stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles --adopt "${extra_flags[@]}" "$package_name" || {
+                log_warning "Adopt failed; attempting plain stow with override..."
+                stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name"
+            }
+            log_success "Adopted conflicts and linked $description"
+            log_warning "Conflicting files moved to dotfiles repo - review and commit changes"
+            ;;
+        "Abort"*)
+            log_info "Aborted $description linking due to conflicts"
+            return 1
+            ;;
         esac
     fi
 }
