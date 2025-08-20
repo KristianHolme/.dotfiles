@@ -33,17 +33,20 @@ unstow_all_profiles() {
     
     # Unstow all profiles (ignore errors if not currently stowed)
     for profile_path in "$profiles_dir"/*; do
-        if [[ -d "$profile_path/.config" ]]; then
-            stow -d "$profile_path" -t "$target_dir" -D ".config" 2>/dev/null || true
+        if [[ -d "$profile_path/dot-config" ]]; then
+            stow -d "$profile_path" -t "$target_dir" -D "dot-config" 2>/dev/null || true
         fi
     done
 }
 
 stow_with_conflict_detection() {
     local packages_dir="$1"    # e.g. /path/to/dotfiles
-    local package_name="$2"    # e.g. ".config" or "home"  
+    local package_name="$2"    # e.g. "dot-config" or "home"  
     local target_dir="$3"      # e.g. ~/.config or ~
     local description="$4"     # e.g. "config files" or "home files"
+    shift 4
+    # Any remaining args are extra stow flags (e.g., --override, etc.)
+    local extra_flags=("$@")
 
     # Check if package exists
     [[ -d "$packages_dir/$package_name" ]] || return 0
@@ -53,14 +56,19 @@ stow_with_conflict_detection() {
     # Dry run to detect conflicts
     set +e
     local dry_run_output
-    dry_run_output=$(stow -n -d "$packages_dir" -t "$target_dir" -R -v "$package_name" 2>&1)
+    # Use -S for stow (not -R) when we have --override to avoid restow conflicts
+    local stow_op="-R"
+    if [[ " ${extra_flags[*]} " =~ " --override " ]]; then
+        stow_op="-S"
+    fi
+    dry_run_output=$(stow -n -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
     local dry_run_status=$?
     set -e
 
     if [[ $dry_run_status -eq 0 ]]; then
         # No conflicts, proceed with normal stow
         log_info "No conflicts detected, proceeding with $description symlinks..."
-        stow -d "$packages_dir" -t "$target_dir" -R -v "$package_name"
+        stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles "${extra_flags[@]}" "$package_name"
         log_success "Successfully linked $description"
     else
         # Conflicts detected, present user with options
@@ -83,7 +91,7 @@ stow_with_conflict_detection() {
         case "$choice" in
             "Adopt conflicting files"*)
                 log_info "Adopting conflicting files for $description..."
-                stow -d "$packages_dir" -t "$target_dir" -R -v --adopt "$package_name"
+                stow -d "$packages_dir" -t "$target_dir" $stow_op -v --dotfiles --adopt "${extra_flags[@]}" "$package_name"
                 log_success "Adopted conflicts and linked $description"
                 log_warning "Conflicting files moved to dotfiles repo - review and commit changes"
                 ;;
@@ -111,24 +119,25 @@ apply_configs() {
     # Optional profile argument (e.g. "work" -> config-work)
     local profile="${1:-}"
 
-    # Apply .config package with conflict detection
-    stow_with_conflict_detection "$PACKAGES_DIR" ".config" "$TARGET_CONFIG" "config files"
+    # Apply dot-config package with conflict detection (dotfiles mode)
+    stow_with_conflict_detection "$PACKAGES_DIR" "dot-config" "$TARGET_CONFIG" "config files"
     
     # If a profile was provided, handle profile switching
     if [[ -n "$profile" ]]; then
         local profile_packages_dir="$PACKAGES_DIR/profiles/$profile"
-        if [[ -d "$profile_packages_dir/.config" ]]; then
+        if [[ -d "$profile_packages_dir/dot-config" ]]; then
             # First, unstow all existing profiles to avoid profile-to-profile conflicts
             unstow_all_profiles "$PACKAGES_DIR" "$TARGET_CONFIG"
             
             # Then use conflict detection for any remaining conflicts (user files, etc.)
-            stow_with_conflict_detection "$profile_packages_dir" ".config" "$TARGET_CONFIG" "profile config files"
+            # Pass --override so profile can replace files provided by base dot-config
+            stow_with_conflict_detection "$profile_packages_dir" "dot-config" "$TARGET_CONFIG" "profile config files" --override
         else
-            log_info "No profile .config found for '$profile'; skipping profile config"
+            log_info "No profile dot-config found for '$profile'; skipping profile config"
         fi
     fi
 
-    # Apply home package with conflict detection
+    # Apply home package with conflict detection (dotfiles mode)
     stow_with_conflict_detection "$PACKAGES_DIR" "home" "$TARGET_HOME" "home files"
 
     log_success "Configuration linking completed"
