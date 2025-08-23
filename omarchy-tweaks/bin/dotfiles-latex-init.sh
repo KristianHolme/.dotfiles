@@ -32,6 +32,7 @@ Arguments:
 Options:
     -t, --type TYPE     Project type: uio-presentation
     -d, --directory DIR Target directory (default: current directory)
+    --no-git           Skip Git initialization
     -h, --help         Show this help message
 
 Examples:
@@ -89,6 +90,79 @@ Thumbs.db
 EOF
 }
 
+setup_git_repo() {
+    local project_dir="$1"
+    local project_name="$2"
+    
+    log_info "Initializing Git repository..."
+    
+    cd "$project_dir"
+    git init
+    
+    # Set up Git LFS for figures
+    git lfs install
+    git lfs track "figures/*"
+    git lfs track "*.png"
+    git lfs track "*.jpg"
+    git lfs track "*.jpeg"
+    git lfs track "*.pdf"
+    git lfs track "*.eps"
+    
+    # Add .gitattributes
+    git add .gitattributes
+    
+    # Initial commit
+    git add .
+    git commit -m "Initial commit: UiO LaTeX presentation project"
+    
+    log_success "Git repository initialized with LFS for figures"
+}
+
+push_to_github() {
+    local project_name="$1"
+    
+    if ! command -v gum >/dev/null 2>&1; then
+        log_warning "gum not found. Skipping GitHub push option."
+        log_info "Install gum with: pacman -S gum"
+        return 0
+    fi
+    
+    if ! command -v gh >/dev/null 2>&1; then
+        log_warning "GitHub CLI (gh) not found. Skipping GitHub push."
+        log_info "Install with: pacman -S github-cli"
+        return 0
+    fi
+    
+    local push_choice
+    push_choice=$(gum choose \
+        "Yes, create and push to GitHub" \
+        "No, keep local only" \
+        --header "Create GitHub repository and push?") || return 0
+    
+    case "$push_choice" in
+    "Yes, create and push to GitHub")
+        log_info "Creating GitHub repository..."
+        
+        local repo_visibility
+        repo_visibility=$(gum choose \
+            "private" \
+            "public" \
+            --header "Repository visibility:") || repo_visibility="private"
+        
+        # Create GitHub repository
+        if gh repo create "$project_name" --"$repo_visibility" --source=. --remote=origin --push; then
+            log_success "Repository created and pushed to GitHub!"
+            log_info "Repository URL: https://github.com/$(gh api user --jq .login)/$project_name"
+        else
+            log_error "Failed to create GitHub repository"
+        fi
+        ;;
+    "No, keep local only")
+        log_info "Repository kept local only"
+        ;;
+    esac
+}
+
 setup_uio_template() {
     local project_dir="$1"
     local project_name="$2"
@@ -131,6 +205,7 @@ main() {
     local project_name=""
     local template_type="uio-presentation"
     local target_directory="."
+    local init_git=true
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -142,6 +217,10 @@ main() {
             -d|--directory)
                 target_directory="$2"
                 shift 2
+                ;;
+            --no-git)
+                init_git=false
+                shift
                 ;;
             -h|--help)
                 show_help
@@ -187,11 +266,20 @@ main() {
     create_project_structure "$project_dir"
     setup_uio_template "$project_dir" "$project_name"
     
+    if [[ "$init_git" == true ]]; then
+        setup_git_repo "$project_dir" "$project_name"
+        push_to_github "$project_name"
+    fi
+    
     log_success "UiO presentation project '$project_name' created successfully!"
     log_info "Next steps:"
     log_info "  1. cd $project_dir"
     log_info "  2. nvim src/main.tex"
     log_info "  3. Use ,ll to compile and ,lv to view"
+    
+    if [[ "$init_git" == true ]]; then
+        log_info "  4. Large figures will be tracked with Git LFS automatically"
+    fi
 }
 
 main "$@"
