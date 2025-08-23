@@ -1,0 +1,200 @@
+%% =============================================================================
+%% UiO Beamer Theme Preamble
+%% University of Oslo Presentation Template
+%% =============================================================================
+%% This preamble contains all available options for the UiO beamer theme
+%% with explanations and examples. Uncomment/modify options as needed.
+
+% -----------------------------------------------------------------------------
+% Document Class & Aspect Ratio
+% -----------------------------------------------------------------------------
+% Always use 16:9 aspect ratio as recommended by UiO (most projectors use this)
+\documentclass[aspectratio=169]{beamer}
+
+% Language Options (choose one):
+% \documentclass[norsk,aspectratio=169]{beamer}        % Norwegian Bokmål
+% \documentclass[nynorsk,aspectratio=169]{beamer}      % Norwegian Nynorsk
+% \documentclass[english,aspectratio=169]{beamer}      % English
+% \documentclass[UKenglish,aspectratio=169]{beamer}    % UK English
+% \documentclass[USenglish,aspectratio=169]{beamer}    % US English
+
+% -----------------------------------------------------------------------------
+% Essential Packages
+% -----------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}     % UTF-8 encoding
+\usepackage[T1]{fontenc}        % T1 font encoding
+\usepackage{babel}              % Language support
+\usepackage{textcomp}           % Additional text symbols
+\usepackage{fancyvrb}           % Enhanced verbatim environments
+
+% -----------------------------------------------------------------------------
+% Optional Packages (commonly used)
+% -----------------------------------------------------------------------------
+\usepackage{amsmath,amsfonts,amssymb}  % Mathematics
+\usepackage{graphicx}                   % Graphics inclusion
+\usepackage{booktabs}                   % Professional tables
+\usepackage{hyperref}                   % Hyperlinks
+\usepackage{listings}                   % Code listings
+\usepackage{xcolor}                     % Extended color support
+
+% -----------------------------------------------------------------------------
+% UiO Theme Loading with Options
+% -----------------------------------------------------------------------------
+% Basic usage:
+% \usetheme{UiO}
+
+% Full options (commented out - uncomment and modify as needed):
+\usetheme[
+    % Font Selection (choose one):
+    font=noto,              % Default: Noto font (good Unicode support)
+    % font=arial,           % Arial (UiO recommended standard font)
+    % font=arev,            % Arev (good for advanced mathematics)
+    % font=none,            % No specific font (specify your own)
+    
+    % Table of Contents Options:
+    toc,                    % Automatically insert TOC for every section
+    % no-toc,               % Disable automatic TOC
+    
+    % Summary Page:
+    summary,                % Add summary page at the end
+    % summary=false,        % Disable summary page
+    
+    % Section Headers:
+    sectionheaders,         % Show section/subsection names in upper right
+    % sectionheaders=false, % Disable section headers
+    
+    % UiO Standard Compliance:
+    uiostandard,            % Follow UiO standard strictly (square bullets, etc.)
+    % uiostandard=false,    % Use default beamer styling
+    
+    % Section Separation Frames (choose color or comment out):
+    sectionsep=uioyellow,   % Add colored section separator frames
+    % sectionsep=uioblue1,  % Alternative: blue separator
+    % sectionsep=uiogreen1, % Alternative: green separator
+    % sectionsep=uioorange1,% Alternative: orange separator
+    % sectionsep=uiopink1,  % Alternative: pink separator
+    % sectionsep=uiogrey,   % Alternative: grey separator
+]{UiO}
+
+% -----------------------------------------------------------------------------
+% Available UiO Colors
+% -----------------------------------------------------------------------------
+% The following official UiO colors are available:
+% Blues:    uioblue1, uioblue2, uioblue3
+% Greens:   uiogreen1, uiogreen2, uiogreen3
+% Oranges:  uioorange1, uioorange2, uioorange3
+% Pinks:    uiopink1, uiopink2, uiopink3
+% Others:   uioyellow, uiogrey
+
+% You can use these colors in your presentation:
+% \textcolor{uioblue1}{Blue text}
+% \colorbox{uioyellow}{Yellow background}
+
+% -----------------------------------------------------------------------------
+% Presentation Metadata
+% -----------------------------------------------------------------------------
+% Required fields:
+\title{Your Presentation Title}
+\subtitle{An Optional Subtitle}        % Optional
+\author{Your Name}
+
+% UiO-specific email command:
+\uioemail{your.email@uio.no}           % Optional but recommended
+
+% Date (optional - defaults to today):
+% \date{March 15, 2024}
+% \date{\today}
+
+% -----------------------------------------------------------------------------
+% Front Page Options
+% -----------------------------------------------------------------------------
+% The \uiofrontpage command creates the title slide.
+% Usage: \uiofrontpage[options]
+% 
+% Available options:
+% - dept={Department Name}               % Your department
+% - academictitle={Professor}           % Your academic title
+% - info={Additional information}       % Supervisor, grant info, etc.
+% - date={Custom date}                  % Override default date
+% - image={filename}                    % Background image (8:9 aspect ratio ideal)
+% - inverted                            % Use white UiO seal instead of black
+% - smaller                             % Use smaller font size
+%
+% Example:
+% \uiofrontpage[
+%     dept={Department of Informatics},
+%     academictitle={Professor},
+%     info={Funded by the Research Council of Norway},
+%     image={uio_building},
+%     inverted,
+%     smaller
+% ]
+
+% -----------------------------------------------------------------------------
+% Custom Commands and Environments
+% -----------------------------------------------------------------------------
+% UiO theme provides special commands:
+
+% Full-page images:
+% \uiobigimage{Title}{filename}{Copyright info}     % With title frame
+% \uiofullpageimage{filename}                       % Completely full-page
+
+% Half-text, half-image frames:
+% \begin{uioimageframe}{Image filename}
+%   Your text content here
+% \end{uioimageframe}
+
+% -----------------------------------------------------------------------------
+% Additional Customizations
+% -----------------------------------------------------------------------------
+% Code highlighting setup (if using listings package):
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{uioblue1}\bfseries,
+    commentstyle=\color{uiogreen2}\itshape,
+    stringstyle=\color{uioorange1},
+    numberstyle=\tiny\color{uiogrey},
+    breaklines=true,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{uiogrey}
+}
+
+% Custom highlight commands:
+\newcommand{\highlight}[1]{\textcolor{uioorange1}{\textbf{#1}}}
+\newcommand{\important}[1]{\textcolor{uioblue1}{\textbf{#1}}}
+\newcommand{\note}[1]{\textcolor{uiogreen2}{\textit{#1}}}
+
+% -----------------------------------------------------------------------------
+% Bibliography Setup (if needed)
+% -----------------------------------------------------------------------------
+% Uncomment if using bibliography:
+% \usepackage[backend=biber,style=apa]{biblatex}
+% \addbibresource{../bibliography/references.bib}
+
+% -----------------------------------------------------------------------------
+% Notes for Advanced Usage
+% -----------------------------------------------------------------------------
+% 1. Images should ideally be:
+%    - Front page images: 8:9 aspect ratio
+%    - Full-page images: 16:9 aspect ratio
+%    - Half-frame images: close to square
+%
+% 2. The theme automatically handles:
+%    - UiO branding and colors
+%    - Proper typography
+%    - Section navigation
+%    - Slide numbering
+%
+% 3. Special slide types:
+%    - Use \begin{frame}[plain] for slides without header/footer
+%    - Use \begin{frame}[fragile] for slides with verbatim content
+%    - Use \begin{frame}[allowframebreaks] for long content
+%
+% 4. Best practices:
+%    - Keep slides simple and uncluttered
+%    - Use the official UiO colors consistently
+%    - Include the UiO logo on the front page
+%    - Follow the 6x6 rule (max 6 bullets, max 6 words per bullet)
+%
+% =============================================================================

@@ -1,0 +1,373 @@
+% UiO Beamer Presentation Template
+% University of Oslo Official Theme
+% Include the comprehensive preamble with all options
+\input{uio-preamble.tex}
+
+% =============================================================================
+% PRESENTATION METADATA
+% =============================================================================
+% Override the defaults from preamble if needed:
+\title{PROJECT_NAME}
+\subtitle{A Professional UiO Presentation}
+\author{Your Name}
+\uioemail{your.email@uio.no}
+
+% =============================================================================
+% DOCUMENT BEGINS
+% =============================================================================
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% FRONT PAGE
+% -----------------------------------------------------------------------------
+% Create the official UiO front page
+% Adjust options as needed - see preamble for full documentation
+\uiofrontpage[
+    dept={Your Department},
+    info={Additional information (supervisor, grant, etc.)},
+    % image={your_image},     % Uncomment and specify image file
+    % inverted,               % Uncomment for white seal
+    % smaller,                % Uncomment for smaller font
+]
+
+% -----------------------------------------------------------------------------
+% OUTLINE/TABLE OF CONTENTS
+% -----------------------------------------------------------------------------
+% Optional: Manual table of contents (automatic TOC is enabled in theme)
+% \begin{frame}
+%     \frametitle{Outline}
+%     \tableofcontents
+% \end{frame}
+
+% =============================================================================
+% SECTION 1: INTRODUCTION
+% =============================================================================
+\section{Introduction}
+
+\subsection{Motivation}
+\begin{frame}
+    \frametitle{Motivation}
+    \begin{itemize}
+        \item Why is this topic important?
+        \item What problem are we addressing?
+        \item What is the current state of the field?
+    \end{itemize}
+    
+    \vspace{1em}
+    \begin{block}{Research Question}
+        What is the central question or hypothesis of this work?
+    \end{block}
+\end{frame}
+
+\subsection{Objectives}
+\begin{frame}
+    \frametitle{Objectives and Goals}
+    \begin{enumerate}
+        \item \important{Primary objective}: Main goal of the research
+        \item \important{Secondary objective}: Supporting goal
+        \item \important{Methodological objective}: How we approach the problem
+    \end{enumerate}
+    
+    \vspace{1em}
+    \begin{alertblock}{Expected Outcome}
+        \highlight{Brief description} of what we expect to achieve
+    \end{alertblock}
+\end{frame}
+
+% =============================================================================
+% SECTION 2: BACKGROUND
+% =============================================================================
+\section{Background and Related Work}
+
+\subsection{Literature Review}
+\begin{frame}
+    \frametitle{Previous Research}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \textbf{Key Findings from Literature:}
+            \begin{itemize}
+                \item \note{Author et al. (2023)}: Important finding
+                \item \note{Research Group (2022)}: Relevant discovery
+                \item \note{Recent Study (2024)}: Latest development
+            \end{itemize}
+            
+            \vspace{1em}
+            \textbf{Research Gap:}
+            \begin{itemize}
+                \item Missing aspect 1
+                \item Unexplored area 2
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{figure}
+                \centering
+                % Uncomment and adjust when you have an image:
+                % \includegraphics[width=\textwidth]{../figures/literature-overview.png}
+                \fbox{\parbox{3cm}{\centering Literature Overview Figure}}
+                \caption{Research landscape}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% =============================================================================
+% SECTION 3: METHODOLOGY
+% =============================================================================
+\section{Methodology}
+
+\subsection{Approach}
+\begin{frame}
+    \frametitle{Our Methodological Approach}
+    \begin{enumerate}
+        \item \important{Phase 1}: Data collection and preparation
+            \begin{itemize}
+                \item Data sources
+                \item Preprocessing steps
+            \end{itemize}
+        \item \important{Phase 2}: Analysis and modeling
+            \begin{itemize}
+                \item Analytical methods
+                \item Model development
+            \end{itemize}
+        \item \important{Phase 3}: Validation and testing
+            \begin{itemize}
+                \item Validation criteria
+                \item Testing procedures
+            \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\subsection{Experimental Setup}
+\begin{frame}
+    \frametitle{Experimental Parameters}
+    \begin{table}
+        \centering
+        \caption{Key experimental parameters}
+        \begin{tabular}{ll}
+            \toprule
+            Parameter & Value \\
+            \midrule
+            Sample size & 1,000 participants \\
+            Duration & 6 months \\
+            Locations & 3 sites \\
+            Conditions & 4 experimental groups \\
+            Measurements & Weekly assessments \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    
+    \vspace{1em}
+    \begin{block}{Innovation}
+        Our novel contribution: \highlight{specific methodological innovation}
+    \end{block}
+\end{frame}
+
+% =============================================================================
+% SECTION 4: RESULTS
+% =============================================================================
+\section{Results}
+
+\subsection{Key Findings}
+\begin{frame}
+    \frametitle{Main Results}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{figure}
+                \centering
+                % Uncomment when you have actual results:
+                % \includegraphics[width=\textwidth]{../figures/main-results.png}
+                \fbox{\parbox{4cm}{\centering Main Results Chart}}
+                \caption{Key experimental outcomes}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \textbf{Highlights:}
+            \begin{itemize}
+                \item \highlight{95\%} accuracy achieved
+                \item \highlight{30\%} improvement over baseline
+                \item \highlight{Significant} statistical results (p < 0.001)
+            \end{itemize}
+            
+            \vspace{1em}
+            \begin{exampleblock}{Best Performance}
+                \textbf{Peak result}: 98.5\% in optimal conditions
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\subsection{Comparative Analysis}
+\begin{frame}
+    \frametitle{Comparison with State-of-the-Art}
+    \begin{table}
+        \centering
+        \caption{Performance comparison}
+        \begin{tabular}{lccc}
+            \toprule
+            Method & Accuracy & Speed & Reliability \\
+            \midrule
+            Baseline Method & 85.2\% & 1.0× & Medium \\
+            Previous Best & 88.1\% & 0.8× & High \\
+            Alternative Approach & 91.3\% & 1.2× & Medium \\
+            \rowcolor{uioyellow!20}
+            \textbf{Our Method} & \textbf{95.7\%} & \textbf{1.3×} & \textbf{High} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    
+    \vspace{1em}
+    \begin{alertblock}{Significance}
+        Our approach shows \important{statistically significant improvement} across all metrics
+    \end{alertblock}
+\end{frame}
+
+% =============================================================================
+% SECTION 5: DISCUSSION
+% =============================================================================
+\section{Discussion and Implications}
+
+\subsection{Analysis}
+\begin{frame}
+    \frametitle{Interpretation of Results}
+    \begin{block}{What worked well?}
+        \begin{itemize}
+            \item Key insight 1: Methodological strength
+            \item Key insight 2: Unexpected finding
+            \item Key insight 3: Theoretical contribution
+        \end{itemize}
+    \end{block}
+    
+    \begin{alertblock}{Limitations}
+        \begin{itemize}
+            \item Sample size constraints
+            \item Temporal limitations
+            \item Scope boundaries
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\subsection{Impact}
+\begin{frame}
+    \frametitle{Broader Implications}
+    \textbf{Theoretical Contributions:}
+    \begin{enumerate}
+        \item New theoretical framework
+        \item Extended existing models
+        \item Novel methodological approach
+    \end{enumerate}
+    
+    \vspace{1em}
+    \textbf{Practical Applications:}
+    \begin{itemize}
+        \item Industry application 1
+        \item Policy implications
+        \item Future research directions
+    \end{itemize}
+    
+    \vspace{1em}
+    \begin{exampleblock}{Real-world Impact}
+        This work has potential to \important{significantly improve} current practices in the field
+    \end{exampleblock}
+\end{frame}
+
+% =============================================================================
+% SECTION 6: CONCLUSION
+% =============================================================================
+\section{Conclusion and Future Work}
+
+\subsection{Summary}
+\begin{frame}
+    \frametitle{Key Contributions}
+    \textbf{Main Achievements:}
+    \begin{itemize}
+        \item ✓ \highlight{Contribution 1}: Specific achievement
+        \item ✓ \highlight{Contribution 2}: Methodological advance
+        \item ✓ \highlight{Contribution 3}: Theoretical insight
+        \item ✓ \highlight{Contribution 4}: Practical application
+    \end{itemize}
+    
+    \vspace{1em}
+    \begin{block}{Central Message}
+        We have successfully demonstrated that \important{our approach} 
+        provides \highlight{significant improvements} over existing methods
+    \end{block}
+\end{frame}
+
+\subsection{Future Directions}
+\begin{frame}
+    \frametitle{Next Steps}
+    \textbf{Immediate Goals:}
+    \begin{itemize}
+        \item Extend to larger datasets
+        \item Explore additional domains
+        \item Refine methodological approach
+    \end{itemize}
+    
+    \vspace{1em}
+    \textbf{Long-term Vision:}
+    \begin{itemize}
+        \item Develop comprehensive framework
+        \item Establish industry partnerships
+        \item Create practical implementations
+    \end{itemize}
+    
+    \vspace{1em}
+    \begin{alertblock}{Open Questions}
+        What are the next challenges to address in this research area?
+    \end{alertblock}
+\end{frame}
+
+% =============================================================================
+% THANK YOU SLIDE
+% =============================================================================
+\begin{frame}
+    \frametitle{Thank You!}
+    \centering
+    \Large Thank you for your attention!
+    
+    \vspace{2em}
+    \normalsize
+    \textbf{Questions and Discussion}
+    
+    \vspace{2em}
+    \small
+    \begin{tabular}{ll}
+        \textbf{Contact:} & your.email@uio.no \\
+        \textbf{Department:} & Your Department, UiO \\
+        \textbf{Slides:} & Available at your-website.com \\
+    \end{tabular}
+\end{frame}
+
+% =============================================================================
+% BACKUP SLIDES (Optional)
+% =============================================================================
+\appendix
+\section*{Backup Slides}
+
+\begin{frame}
+    \frametitle{Additional Technical Details}
+    \begin{itemize}
+        \item Detailed methodological information
+        \item Extended statistical analysis
+        \item Supplementary results
+        \item Technical specifications
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Extended Bibliography}
+    \begin{itemize}
+        \item Key reference 1
+        \item Key reference 2
+        \item Key reference 3
+        \item Additional reading suggestions
+    \end{itemize}
+\end{frame}
+
+% If using biblatex, uncomment:
+% \begin{frame}[allowframebreaks]
+%     \frametitle{References}
+%     \printbibliography
+% \end{frame}
+
+\end{document}
