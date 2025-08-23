@@ -180,23 +180,7 @@ setup_uio_template() {
         exit 1
     fi
     
-    # Create basic .latexmkrc
-    cat > "$project_dir/.latexmkrc" << 'EOF'
-# LaTeX build configuration
-$pdf_mode = 1;
-$pdflatex = 'pdflatex -interaction=nonstopmode -synctex=1 %O %S';
-
-# Output directories (matches VimTeX config)
-$aux_dir = '.latexmk/aux';
-$out_dir = 'output';
-
-# Clean up patterns
-$clean_ext = 'synctex.gz nav snm vrb figlist makelist fdblatexmk listing bbl bcf run.xml';
-
-# Continuous mode settings
-$preview_continuous_mode = 1;
-$pdf_previewer = 'zathura %O %S';
-EOF
+    # No need for .latexmkrc - VimTeX handles everything
 }
 
 
