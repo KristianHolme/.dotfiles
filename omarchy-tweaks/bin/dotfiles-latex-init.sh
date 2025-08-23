@@ -179,8 +179,6 @@ setup_uio_template() {
         log_error "UiO template files not found in $TEMPLATES_DIR"
         exit 1
     fi
-    
-    # No need for .latexmkrc - VimTeX handles everything
 }
 
 
