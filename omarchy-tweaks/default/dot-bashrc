@@ -38,6 +38,9 @@ alias glall='find . -type d -name ".git" -execdir git pull \;'
 #variables
 export JULIA_NUM_THREADS=auto
 
+# Add dotfiles scripts to PATH
+export PATH="$HOME/.dotfiles/omarchy-tweaks/bin:$PATH"
+
 # Testing if this is necessary
 # SSH agent
 # if [[ -z "$SSH_AUTH_SOCK" ]]; then
