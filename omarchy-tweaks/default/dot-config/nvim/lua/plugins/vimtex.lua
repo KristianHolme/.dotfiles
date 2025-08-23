@@ -9,8 +9,8 @@ return {
     -- Set compiler options
     vim.g.vimtex_compiler_method = "latexmk"
     vim.g.vimtex_compiler_latexmk = {
-      aux_dir = "./.latexmk/aux",
-      out_dir = "./.latexmk/out",
+      aux_dir = "../.latexmk/aux",
+      out_dir = "../output",
       callback = 1,
       continuous = 1,
       executable = "latexmk",
@@ -33,7 +33,7 @@ return {
     vim.g.vimtex_indent_enabled = 1
     
     -- Syntax highlighting
-    vim.g.vimtex_syntax_enabled = 1
+    vim.g.vimtex_syntax_enabled = 0
     
     -- Enable folding
     vim.g.vimtex_fold_enabled = 0
