@@ -104,6 +104,7 @@ main() {
     install_pkg tmux
     # Install LaTeX packages
     install_pkg texlive-meta
+    install_pkg zathura
 
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         mkdir -p "$HOME/.tmux/plugins"
