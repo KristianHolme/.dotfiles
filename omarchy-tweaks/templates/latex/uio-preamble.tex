@@ -38,42 +38,15 @@
 \usepackage{xcolor}                     % Extended color support
 
 % -----------------------------------------------------------------------------
-% UiO Theme Loading with Options
+% UiO Theme Loading
 % -----------------------------------------------------------------------------
-% Basic usage:
-% \usetheme{UiO}
-
-% Full options (commented out - uncomment and modify as needed):
 \usetheme[
-    % Font Selection (choose one):
-    font=noto,              % Default: Noto font (good Unicode support)
-    % font=arial,           % Arial (UiO recommended standard font)
-    % font=arev,            % Arev (good for advanced mathematics)
-    % font=none,            % No specific font (specify your own)
-    
-    % Table of Contents Options:
+    font=noto,              % Noto font (good Unicode support)
     toc,                    % Automatically insert TOC for every section
-    % no-toc,               % Disable automatic TOC
-    
-    % Summary Page:
     summary,                % Add summary page at the end
-    % summary=false,        % Disable summary page
-    
-    % Section Headers:
     sectionheaders,         % Show section/subsection names in upper right
-    % sectionheaders=false, % Disable section headers
-    
-    % UiO Standard Compliance:
-    uiostandard,            % Follow UiO standard strictly (square bullets, etc.)
-    % uiostandard=false,    % Use default beamer styling
-    
-    % Section Separation Frames (choose color or comment out):
+    uiostandard,            % Follow UiO standard strictly
     sectionsep=uioyellow,   % Add colored section separator frames
-    % sectionsep=uioblue1,  % Alternative: blue separator
-    % sectionsep=uiogreen1, % Alternative: green separator
-    % sectionsep=uioorange1,% Alternative: orange separator
-    % sectionsep=uiopink1,  % Alternative: pink separator
-    % sectionsep=uiogrey,   % Alternative: grey separator
 ]{UiO}
 
 % -----------------------------------------------------------------------------
@@ -135,10 +108,10 @@
     rulecolor=\color{uiogrey}
 }
 
-% Custom highlight commands:
-\newcommand{\highlight}[1]{\textcolor{uioorange1}{\textbf{#1}}}
-\newcommand{\important}[1]{\textcolor{uioblue1}{\textbf{#1}}}
-\newcommand{\note}[1]{\textcolor{uiogreen2}{\textit{#1}}}
+% Custom highlight commands (only define if not already defined):
+%\providecommand{\highlight}[1]{\textcolor{uioorange1}{\textbf{#1}}}
+%\providecommand{\important}[1]{\textcolor{uioblue1}{\textbf{#1}}}
+%\providecommand{\note}[1]{\textcolor{uiogreen2}{\textit{#1}}}
 
 % -----------------------------------------------------------------------------
 % Bibliography Setup (if needed)
