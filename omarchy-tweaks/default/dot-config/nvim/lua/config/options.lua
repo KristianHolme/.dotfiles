@@ -6,3 +6,6 @@ vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 vim.opt.smartindent = true
 vim.opt.autoindent = true
+
+-- Set localleader to comma for filetype-specific keybindings (like VimTeX)
+vim.g.maplocalleader = ","
