@@ -24,6 +24,23 @@ GITHUB_API_URL="https://api.github.com/repos/retorquere/zotero-better-bibtex/rel
 XPI_FILE="zotero-better-bibtex.xpi"
 RENAMED_XPI="better-bibtex@iris-advies.com.xpi"
 
+check_better_bibtex_installed() {
+    # Check if Better BibTeX is already installed
+    # Look for the extension in Zotero's extensions directory
+    if [[ -d "$EXTENSIONS_DIR" ]]; then
+        if find "$EXTENSIONS_DIR" -name "*better-bibtex*" -o -name "*@iris-advies.com*" | grep -q .; then
+            return 0  # Found
+        fi
+    fi
+    
+    # Check if the XPI file was already downloaded
+    if ls "$HOME/Downloads/"*better-bibtex*.xpi >/dev/null 2>&1; then
+        return 0  # Downloaded but maybe not installed yet
+    fi
+    
+    return 1  # Not found
+}
+
 main() {
     log_info "Setting up Zotero Better BibTeX extension..."
 
@@ -31,6 +48,12 @@ main() {
     if ! command -v zotero >/dev/null 2>&1; then
         log_error "Zotero not found in PATH. Please install Zotero first."
         return 1
+    fi
+
+    # Check if Better BibTeX is already installed or downloaded
+    if check_better_bibtex_installed; then
+        log_success "Better BibTeX extension already downloaded/installed. Skipping download."
+        return 0
     fi
 
     # Get the latest release download URL
