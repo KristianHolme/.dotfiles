@@ -6,7 +6,8 @@ return {
       ensure_installed = {
         "texlab",         -- LaTeX LSP
         "latexindent",    -- LaTeX formatter
-        "chktex",         -- LaTeX linter
+        -- Note: chktex is not available in Mason registry
+        -- You can install it system-wide with: sudo pacman -S texlive-core
       },
     },
   },

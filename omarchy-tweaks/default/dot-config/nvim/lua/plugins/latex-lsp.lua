@@ -16,10 +16,6 @@ return {
               forwardSearchAfter = false,
               onSave = false,
             },
-            chktex = {
-              onEdit = false,
-              onOpenAndSave = false,
-            },
             diagnosticsDelay = 300,
             formatterLineLength = 80,
             forwardSearch = {
