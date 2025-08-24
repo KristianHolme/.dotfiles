@@ -147,6 +147,12 @@ main() {
         "https://www.mn.uio.no/ifi/tjenester/it/hjelp/latex/uiobeamer.zip" \
         "$HOME/texmf/tex/latex/beamer/uiobeamer" \
         "$HOME/texmf/tex/latex/beamer/uiobeamer/beamerthemeUiO.sty"
+    
+    # Refresh LaTeX file database so it can find newly installed templates
+    if command -v mktexlsr >/dev/null 2>&1; then
+        log "Refreshing LaTeX file database..."
+        mktexlsr "$HOME/texmf" || log "Warning: Could not refresh LaTeX file database"
+    fi
 
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         mkdir -p "$HOME/.tmux/plugins"
