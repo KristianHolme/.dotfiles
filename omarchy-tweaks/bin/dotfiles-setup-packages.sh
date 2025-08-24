@@ -67,6 +67,40 @@ install_via_curl() {
     fi
 }
 
+install_latex_template() {
+    local name="$1"
+    local url="$2"
+    local target_dir="$3"
+    local check_file="$4"
+
+    if [[ -f "$check_file" ]]; then
+        log "LaTeX template $name already installed; skipping"
+        return 0
+    fi
+
+    log "Installing LaTeX template: $name"
+    
+    # Create temporary directory
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir"
+    
+    # Download and extract
+    curl -fsSL -o template.zip "$url"
+    unzip -q template.zip
+    
+    # Create target directory if it doesn't exist
+    mkdir -p "$target_dir"
+    
+    # Copy files to target directory
+    cp -r * "$target_dir/"
+    
+    # Clean up
+    cd - > /dev/null
+    rm -rf "$temp_dir"
+    
+    log "LaTeX template $name installed successfully"
+}
+
 main() {
     ensure_cmd yay
 
@@ -107,6 +141,13 @@ main() {
     install_pkg zathura
     install_pkg zathura-pdf-mupdf
 
+    # 4) Install LaTeX templates
+    install_latex_template \
+        "UiO Beamer Theme" \
+        "https://www.mn.uio.no/ifi/tjenester/it/hjelp/latex/uiobeamer.zip" \
+        "$HOME/texmf/tex/latex/beamer/uiobeamer" \
+        "$HOME/texmf/tex/latex/beamer/uiobeamer/beamerthemeUiO.sty"
+
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         mkdir -p "$HOME/.tmux/plugins"
         git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
@@ -118,7 +159,7 @@ main() {
     install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
     install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"
 
-    # 4) Refresh desktop database (user apps)
+    # 5) Refresh desktop database (user apps)
     update-desktop-database ~/.local/share/applications/ || true
 
     log "Done."
