@@ -140,7 +140,9 @@ main() {
     install_pkg texlive-meta
     install_pkg zathura
     install_pkg zathura-pdf-mupdf
-
+    #node required for something vimtex related?
+    omarchy-install-dev-env node
+    
     # 4) Install LaTeX templates
     install_latex_template \
         "UiO Beamer Theme" \
