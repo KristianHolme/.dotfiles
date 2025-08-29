@@ -7,10 +7,10 @@ source ~/.local/share/omarchy/default/bash/rc
 # !! Contents within this block are managed by juliaup !!
 
 case ":$PATH:" in
-*:/home/kristian/.juliaup/bin:*) ;;
+*:$HOME/.juliaup/bin:*) ;;
 
 *)
-    export PATH=/home/kristian/.juliaup/bin${PATH:+:${PATH}}
+    export PATH=$HOME/.juliaup/bin${PATH:+:${PATH}}
     ;;
 esac
 
@@ -20,17 +20,20 @@ esac
 alias j='julia'
 alias jp='julia --project=.'
 alias lg='lazygit'
-alias ca='cursor-agent'
-alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
-alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
-alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
-alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
-alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
-alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
-alias dst='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-ssh-tmux.sh'
 
-
-alias tb='tensorboard --logdir'
+if [[ "$USER" == "kristian" ]]; then
+    # Add dotfiles scripts to PATH
+    export PATH="$HOME/.dotfiles/omarchy-tweaks/bin:$PATH"
+    alias ca='cursor-agent'
+    alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
+    alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
+    alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
+    alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
+    alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
+    alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
+    alias dst='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-ssh-tmux.sh'
+    alias tb='tensorboard --logdir'
+fi
 
 #Operations
 alias glall='find . -type d -name ".git" -execdir git pull \;'
@@ -38,8 +41,6 @@ alias glall='find . -type d -name ".git" -execdir git pull \;'
 #variables
 export JULIA_NUM_THREADS=auto
 
-# Add dotfiles scripts to PATH
-export PATH="$HOME/.dotfiles/omarchy-tweaks/bin:$PATH"
 
 # Testing if this is necessary
 # SSH agent
