@@ -65,8 +65,21 @@ stow_config() {
 
     log "Stowing $package from $package_dir to $STOW_TARGET"
     mkdir -p "$STOW_TARGET/.stow"
-    stow --dir="$HOME/.dotfiles/omarchy-tweaks/default" --target="$STOW_TARGET" --stow "$package" \
-        || warn "Failed to stow $package; continuing"
+
+    # Use --dotfiles to handle dotfile packages correctly
+    if stow --dir="$HOME/.dotfiles/omarchy-tweaks/default" --target="$STOW_TARGET" --dotfiles --stow "$package" 2>&1; then
+        log "Successfully stowed $package"
+    else
+        warn "Failed to stow $package; continuing with manual symlinks"
+        # Fallback: manually symlink the contents
+        local target_dir="$STOW_TARGET/.$package"
+        if [[ -d "$target_dir" ]] || [[ -L "$target_dir" ]]; then
+            log "Target $target_dir already exists; skipping manual symlink"
+        else
+            log "Creating manual symlink: $target_dir -> $package_dir"
+            ln -sf "$package_dir" "$target_dir"
+        fi
+    fi
 }
 
 symlink_config() {
