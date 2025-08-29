@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, starship, neovim, stow
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, starship, neovim, stow, gum
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -216,6 +216,64 @@ install_neovim() {
     log "Installed neovim (AppImage) -> $INSTALL_DIR/nvim (symlink)"
 }
 
+install_gum() {
+    if command -v gum >/dev/null 2>&1; then
+        log "gum already installed; skipping"
+        return 0
+    fi
+
+    local latest_tag latest_ver asset_url tmp
+    latest_tag=$(get_latest_tag "charmbracelet/gum" || true)
+    latest_ver="${latest_tag#v}"
+
+    if command -v gum >/dev/null 2>&1; then
+        current_ver=$(gum --version 2>/dev/null | first_version_from_output || true)
+    else
+        current_ver=""
+    fi
+
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "gum already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "gum is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
+    fi
+
+    asset_url=$(find_asset_url "charmbracelet/gum" 'gum_[^/]*_Linux_x86_64\.tar\.gz$' || true)
+    if [[ -z "$asset_url" ]]; then
+        err "Could not find gum asset"
+        return 1
+    fi
+
+    tmp=$(mktemp -d)
+    trap 'rm -rf "'$tmp'"' RETURN
+    log "Downloading gum from $asset_url"
+    curl -fsSL "$asset_url" -o "$tmp/gum.tar.gz"
+
+    mkdir -p "$tmp/extract"
+    tar -xzf "$tmp/gum.tar.gz" -C "$tmp/extract"
+
+    # Find gum binary
+    local gum_bin
+    gum_bin=$(find "$tmp/extract" -type f -name gum -perm -u+x | head -n1 || true)
+    if [[ -z "$gum_bin" ]]; then
+        gum_bin=$(find "$tmp/extract" -type f -name gum | head -n1 || true)
+    fi
+
+    if [[ -n "$gum_bin" ]]; then
+        mkdir -p "$INSTALL_DIR"
+        install -m 0755 "$gum_bin" "$INSTALL_DIR/gum"
+        log "Installed gum -> $INSTALL_DIR/gum"
+    else
+        err "Could not find gum binary in archive"
+        return 1
+    fi
+}
+
 install_stow() {
     if command -v stow >/dev/null 2>&1; then
         log "stow already installed; skipping"
@@ -315,6 +373,9 @@ main() {
     install_stow
 
     install_neovim
+
+    # Install gum for interactive prompts
+    install_gum
 
     clone_or_update_omarchy
 

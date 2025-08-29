@@ -47,39 +47,100 @@ clone_or_update_omarchy() {
     git clone "$OMARCHY_REPO_URL" "$OMARCHY_DIR" || warn "omarchy clone failed; continuing"
 }
 
+stow_with_conflict_detection() {
+    local packages_dir="$1"  # e.g. $HOME/.dotfiles/omarchy-tweaks
+    local package_name="$2"  # e.g. "dot-config"
+    local target_dir="$3"    # e.g. $HOME
+    local description="$4"   # e.g. "config files"
+    shift 4
+    local extra_flags=("$@")
+
+    # Check if package exists
+    [[ -d "$packages_dir/default/$package_name" ]] || {
+        warn "Package $package_name not found in $packages_dir/default; skipping"
+        return 0
+    }
+
+    # Check if already correctly symlinked
+    local target_link="$target_dir/.$package_name"
+    local source_path="$packages_dir/default/$package_name"
+    if [[ -L "$target_link" ]] && [[ "$(readlink "$target_link")" == "$source_path" ]]; then
+        log "$package_name already symlinked correctly; skipping"
+        return 0
+    fi
+
+    log "Checking for conflicts in $description..."
+
+    # Dry run to detect conflicts
+    set +e
+    local dry_run_output
+    # Use -S for initial stow to avoid restow conflicts
+    # -d points to directory containing packages, then specify package name without slashes
+    dry_run_output=$(stow -n -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
+    local dry_run_status=$?
+    set -e
+
+    if [[ $dry_run_status -eq 0 ]]; then
+        # No conflicts, proceed with stow
+        log "No conflicts detected, proceeding with $description symlinks..."
+        stow -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles "${extra_flags[@]}" "$package_name"
+        log "Successfully stowed $package_name"
+    else
+        # Conflicts detected, present user with options
+        warn "Conflicts detected in $description:"
+        echo "$dry_run_output" | grep -E "(WARNING|ERROR|existing)" || echo "$dry_run_output"
+        echo
+
+        if ! command -v gum >/dev/null 2>&1; then
+            warn "gum not found. Install with: bash ~/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-replica.sh"
+            warn "Manual resolution required for $description conflicts"
+            return 1
+        fi
+
+        local choice
+        choice=$(gum choose \
+            "Adopt conflicting files (move them to dotfiles repo)" \
+            "Abort (keep existing files)" \
+            --header "How should conflicts be resolved for $description?") || choice="Abort (keep existing files)"
+
+        case "$choice" in
+        "Adopt conflicting files"*)
+            log "Adopting conflicting files for $description..."
+            if stow -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles --adopt "${extra_flags[@]}" "$package_name" 2>/dev/null; then
+                log "Successfully adopted conflicts and stowed $package_name"
+                warn "Conflicting files moved to dotfiles repo - review and commit changes"
+            else
+                warn "Adopt failed; falling back to manual symlinks"
+
+                # Manual symlink fallback
+                local target_dir_full="$target_dir/.$package_name"
+
+                # Remove existing symlink if it exists
+                if [[ -L "$target_dir_full" ]]; then
+                    rm "$target_dir_full"
+                fi
+
+                # Create new symlink if target doesn't exist
+                if [[ ! -e "$target_dir_full" ]]; then
+                    log "Creating manual symlink: $target_dir_full -> $source_path"
+                    ln -sf "$source_path" "$target_dir_full"
+                else
+                    warn "Target $target_dir_full exists and is not a symlink; manual intervention required"
+                fi
+            fi
+            ;;
+        "Abort"*)
+            log "Aborted $description linking due to conflicts"
+            return 1
+            ;;
+        esac
+    fi
+}
+
 stow_config() {
     local package="$1"
-    local package_dir="$HOME/.dotfiles/omarchy-tweaks/default/$package"
-
-    if [[ ! -d "$package_dir" ]]; then
-        warn "Package $package not found in $HOME/.dotfiles/omarchy-tweaks/default; skipping"
-        return 0
-    fi
-
-    # Check if already stowed by looking for stow .stow files or symlinks
-    local stow_file="$STOW_TARGET/.stow/$package"
-    if [[ -f "$stow_file" ]] || [[ -L "$STOW_TARGET/.$package" ]]; then
-        log "$package already stowed; skipping"
-        return 0
-    fi
-
-    log "Stowing $package from $package_dir to $STOW_TARGET"
-    mkdir -p "$STOW_TARGET/.stow"
-
-    # Use --dotfiles to handle dotfile packages correctly
-    if stow --dir="$HOME/.dotfiles/omarchy-tweaks/default" --target="$STOW_TARGET" --dotfiles --stow "$package" 2>&1; then
-        log "Successfully stowed $package"
-    else
-        warn "Failed to stow $package; continuing with manual symlinks"
-        # Fallback: manually symlink the contents
-        local target_dir="$STOW_TARGET/.$package"
-        if [[ -d "$target_dir" ]] || [[ -L "$target_dir" ]]; then
-            log "Target $target_dir already exists; skipping manual symlink"
-        else
-            log "Creating manual symlink: $target_dir -> $package_dir"
-            ln -sf "$package_dir" "$target_dir"
-        fi
-    fi
+    # Note: packages_dir is the parent directory containing the "default" folder with packages
+    stow_with_conflict_detection "$HOME/.dotfiles/omarchy-tweaks" "$package" "$STOW_TARGET" "$package config" --override='.*'
 }
 
 symlink_config() {
