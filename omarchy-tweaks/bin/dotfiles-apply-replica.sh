@@ -2,21 +2,17 @@
 set -Eeuo pipefail
 
 # Applies omarchy-tweaks configs for university servers:
-# - Uses stow to symlink: dot-julia, dot-config (includes nvim and starship.toml)
-# - Manually symlinks: dot-tmux.conf -> ~/.tmux.conf
+# - Creates symlinks for: julia config, starship.toml, tmux.conf  
+# - Uses stow for nvim config (to merge with LazyVim)
 # - Adds source line to server's ~/.bashrc for our dot-bashrc (idempotent)
 # - Ensures omarchy repo is cloned/updated first
 #
 # Config via env vars:
 #   OMARCHY_DIR       - omarchy clone dir (default: ~/.local/share/omarchy)
 #   OMARCHY_REPO_URL  - git URL for omarchy (default: https://github.com/basecamp/omarchy)
-#   STOW_TARGET       - stow target dir (default: $HOME)
-#   STOW_PREFIX       - stow package dir prefix (default: ~/.local)
 
 OMARCHY_DIR="${OMARCHY_DIR:-"$HOME/.local/share/omarchy"}"
 OMARCHY_REPO_URL="${OMARCHY_REPO_URL:-https://github.com/basecamp/omarchy}"
-STOW_TARGET="${STOW_TARGET:-"$HOME"}"
-STOW_PREFIX="${STOW_PREFIX:-"$HOME/.local"}"
 
 log() { echo "[omarchy-replica] $*"; }
 warn() { echo "[omarchy-replica][WARN] $*" >&2; }
@@ -47,193 +43,105 @@ clone_or_update_omarchy() {
     git clone "$OMARCHY_REPO_URL" "$OMARCHY_DIR" || warn "omarchy clone failed; continuing"
 }
 
-stow_with_conflict_detection() {
-    local packages_dir="$1"  # e.g. "." (current directory)
-    local package_name="$2"  # e.g. "dot-config"
-    local target_dir="$3"    # e.g. $HOME
-    local description="$4"   # e.g. "config files"
-    shift 4
-    local extra_flags=("$@")
+create_symlink_with_backup() {
+    local source_path="$1"
+    local target_path="$2"
+    local description="$3"
 
-    # Check if package exists (now using relative path since we're in the right directory)
-    [[ -d "default/$package_name" ]] || {
-        warn "Package $package_name not found in default/; skipping"
+    # Check if source exists
+    if [[ ! -e "$source_path" ]]; then
+        warn "Source $description not found: $source_path; skipping"
         return 0
-    }
-
-    # With --dotfiles, dot-julia becomes .julia, dot-config becomes .config, etc.
-    local target_name="${package_name#dot-}"  # Remove "dot-" prefix
-    local target_link="$target_dir/.$target_name"
-    
-    # Check if already correctly stowed by examining key files
-    case "$package_name" in
-        "dot-julia")
-            local julia_startup="$target_dir/.julia/config/startup.jl"
-            if [[ -L "$julia_startup" ]]; then
-                local link_target="$(readlink "$julia_startup")"
-                if [[ "$link_target" == *"/default/$package_name/"* ]] || [[ "$link_target" == *"default/$package_name/"* ]]; then
-                    log "$package_name already stowed correctly; skipping"
-                    return 0
-                fi
-            fi
-            
-            # Check for conflicting symlinks that don't point to our stow package
-            local julia_config_dir="$target_dir/.julia/config"
-            if [[ -L "$julia_config_dir" ]]; then
-                local config_target="$(readlink "$julia_config_dir")"
-                # If it points to a different location than our stow package, remove it
-                if [[ "$config_target" != *"/default/$package_name/"* ]] && [[ "$config_target" != *"default/$package_name/"* ]]; then
-                    warn "Found conflicting julia config symlink: $julia_config_dir -> $config_target"
-                    warn "Removing it to let stow manage julia config properly"
-                    rm "$julia_config_dir"
-                    # Also ensure the julia directory exists
-                    mkdir -p "$target_dir/.julia"
-                fi
-            fi
-            ;;
-        "dot-config")
-            # Check a few key config files to see if they're stowed
-            local files_to_check=(
-                "$target_dir/.config/nvim/lua/config/options.lua"
-                "$target_dir/.config/starship.toml"
-            )
-            local stowed_count=0
-            for file in "${files_to_check[@]}"; do
-                if [[ -L "$file" ]]; then
-                    local link_target="$(readlink "$file")"
-                    if [[ "$link_target" == *"/default/$package_name/"* ]] || [[ "$link_target" == *"default/$package_name/"* ]]; then
-                        stowed_count=$((stowed_count + 1))
-                    fi
-                fi
-            done
-            if [[ $stowed_count -gt 0 ]]; then
-                log "$package_name already stowed correctly; skipping"
-                return 0
-            fi
-            ;;
-    esac
-
-    log "Checking for conflicts in $description..."
-
-    # Dry run to detect conflicts
-    set +e
-    local dry_run_output
-    # Use -S for initial stow to avoid restow conflicts
-    # -d points to directory containing packages, then specify package name without slashes
-    dry_run_output=$(stow -n -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
-    local dry_run_status=$?
-    set -e
-
-    # Filter out the "skipping marked Stow directory" warning as it's often harmless
-    local filtered_output
-    filtered_output=$(echo "$dry_run_output" | grep -v "WARNING: skipping marked Stow directory" || true)
-
-    # Check if there are any real conflicts (not just the stow directory warning)
-    if [[ $dry_run_status -eq 0 ]] || [[ -z "$filtered_output" ]]; then
-        # No real conflicts, proceed with stow
-        log "No conflicts detected, proceeding with $description symlinks..."
-        # Suppress the stow directory warning in output
-        if stow -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name" 2>&1 | grep -v "WARNING: skipping marked Stow directory" || true; then
-            log "Successfully stowed $package_name"
-        else
-            warn "Stow command failed for $package_name"
-            return 1
-        fi
-    else
-        # Conflicts detected, present user with options
-        warn "Conflicts detected in $description:"
-        echo "$dry_run_output" | grep -E "(WARNING|ERROR|existing)" || echo "$dry_run_output"
-        echo
-
-        if ! command -v gum >/dev/null 2>&1; then
-            warn "gum not found. Install with: bash ~/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-replica.sh"
-            warn "Manual resolution required for $description conflicts"
-            return 1
-        fi
-
-        local choice
-        choice=$(gum choose \
-            "Adopt conflicting files (move them to dotfiles repo)" \
-            "Abort (keep existing files)" \
-            --header "How should conflicts be resolved for $description?") || choice="Abort (keep existing files)"
-
-        case "$choice" in
-        "Adopt conflicting files"*)
-            log "Adopting conflicting files for $description..."
-            if stow -d "default" -t "$target_dir" -S --dotfiles --adopt "${extra_flags[@]}" "$package_name"; then
-                log "Successfully adopted conflicts and stowed $package_name"
-                warn "Conflicting files moved to dotfiles repo - review and commit changes"
-            else
-                warn "Adopt failed; falling back to manual symlinks"
-
-                # Manual symlink fallback - create the correct target with --dotfiles transformation
-                local target_name="${package_name#dot-}"  # Remove "dot-" prefix  
-                local target_dir_full="$target_dir/.$target_name"
-                local source_path="$(pwd)/default/$package_name"
-
-                # Remove existing symlink if it exists
-                if [[ -L "$target_dir_full" ]]; then
-                    rm "$target_dir_full"
-                fi
-
-                # Create new symlink if target doesn't exist
-                if [[ ! -e "$target_dir_full" ]]; then
-                    log "Creating manual symlink: $target_dir_full -> $source_path"
-                    ln -sf "$source_path" "$target_dir_full"
-                else
-                    warn "Target $target_dir_full exists and is not a symlink; manual intervention required"
-                fi
-            fi
-            ;;
-        "Abort"*)
-            log "Aborted $description linking due to conflicts"
-            return 1
-            ;;
-        esac
     fi
+
+    # Check if already correctly symlinked
+    if [[ -L "$target_path" ]]; then
+        local current_target="$(readlink "$target_path")"
+        if [[ "$current_target" == "$source_path" ]] || [[ "$(realpath "$target_path" 2>/dev/null)" == "$(realpath "$source_path" 2>/dev/null)" ]]; then
+            log "$description already symlinked correctly; skipping"
+            return 0
+        fi
+        
+        # Different symlink exists, remove it
+        warn "Removing existing symlink: $target_path -> $current_target"
+        rm "$target_path"
+    elif [[ -e "$target_path" ]]; then
+        # File/directory exists but isn't a symlink, backup it
+        local backup_path="$target_path.backup.$(date +%Y%m%d_%H%M%S)"
+        log "Backing up existing $description: $target_path -> $backup_path"
+        mv "$target_path" "$backup_path"
+    fi
+
+    # Create parent directory if needed
+    mkdir -p "$(dirname "$target_path")"
+
+    # Create the symlink
+    log "Creating symlink: $target_path -> $source_path"
+    ln -sf "$source_path" "$target_path"
 }
 
-stow_config() {
-    local package="$1"
-    # Change to the correct directory to avoid stow directory marker issues
+setup_julia_config() {
+    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local julia_config_source="$dotfiles_dir/default/dot-julia/config"
+    local julia_config_target="$HOME/.julia/config"
+    
+    create_symlink_with_backup "$julia_config_source" "$julia_config_target" "Julia config"
+}
+
+setup_nvim_config() {
+    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    
+    # Check if already stowed properly
+    local test_file="$HOME/.config/nvim/lua/config/options.lua"
+    if [[ -L "$test_file" ]]; then
+        local link_target="$(readlink "$test_file")"
+        if [[ "$link_target" == *"default/dot-config/nvim"* ]]; then
+            log "Neovim config already stowed correctly; skipping"
+            return 0
+        fi
+    fi
+    
+    log "Setting up Neovim config with stow..."
+    
+    # Change to dotfiles directory for stow
     local original_pwd="$PWD"
-    cd "$HOME/.dotfiles/omarchy-tweaks" || {
+    cd "$dotfiles_dir" || {
         err "Failed to cd to dotfiles directory"
         return 1
     }
-
-    stow_with_conflict_detection "." "$package" "$STOW_TARGET" "$package config" --override='.*'
-
+    
+    # Use stow to merge nvim config (allows coexistence with LazyVim)
+    if stow -d default -t "$HOME" --dotfiles -S dot-config --adopt 2>/dev/null; then
+        log "Successfully stowed nvim config"
+    else
+        warn "Stow failed, trying without --adopt"
+        if stow -d default -t "$HOME" --dotfiles -S dot-config 2>/dev/null; then
+            log "Successfully stowed nvim config"
+        else
+            err "Failed to stow nvim config"
+            cd "$original_pwd" || true
+            return 1
+        fi
+    fi
+    
     # Return to original directory
     cd "$original_pwd" || true
 }
 
-symlink_config() {
-    local source_file="$1"
-    local target_file="$2"
-    local source_path="$HOME/.dotfiles/omarchy-tweaks/default/$source_file"
-    local target_path="$STOW_TARGET/$target_file"
+setup_starship_config() {
+    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local starship_source="$dotfiles_dir/default/dot-config/starship.toml"
+    local starship_target="$HOME/.config/starship.toml"
+    
+    create_symlink_with_backup "$starship_source" "$starship_target" "Starship config"
+}
 
-    if [[ ! -f "$source_path" ]]; then
-        warn "Source file $source_path not found; skipping"
-        return 0
-    fi
-
-    # Check if symlink already exists and points to the right place
-    if [[ -L "$target_path" ]] && [[ "$(readlink "$target_path")" == "$source_path" ]]; then
-        log "$target_file already symlinked correctly; skipping"
-        return 0
-    fi
-
-    # Backup existing file if it's not already a symlink
-    if [[ -f "$target_path" ]] && [[ ! -L "$target_path" ]]; then
-        local backup_path="$target_path.backup.$(date +%Y%m%d_%H%M%S)"
-        log "Backing up existing $target_path to $backup_path"
-        mv "$target_path" "$backup_path"
-    fi
-
-    log "Creating symlink: $target_path -> $source_path"
-    ln -sf "$source_path" "$target_path"
+setup_tmux_config() {
+    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local tmux_source="$dotfiles_dir/default/dot-tmux.conf"
+    local tmux_target="$HOME/.tmux.conf"
+    
+    create_symlink_with_backup "$tmux_source" "$tmux_target" "Tmux config"
 }
 
 ensure_bashrc_source() {
@@ -252,17 +160,18 @@ ensure_bashrc_source() {
 
 main() {
     ensure_cmd git
-    ensure_cmd stow
+    ensure_cmd stow  # Needed for nvim config
 
     # Ensure omarchy repo is available
     clone_or_update_omarchy
 
-    # Stow specific packages (only those mentioned)
-    stow_config "dot-julia"
-    stow_config "dot-config"  # includes nvim config and starship.toml
+    # Create symlinks for specific configs
+    setup_julia_config
+    setup_nvim_config
+    setup_starship_config
 
-    # Handle tmux.conf manually (stow doesn't work well with individual files)
-    symlink_config "dot-tmux.conf" ".tmux.conf"
+    # Handle tmux.conf 
+    setup_tmux_config
 
     # Ensure our bashrc is sourced from server's ~/.bashrc
     ensure_bashrc_source

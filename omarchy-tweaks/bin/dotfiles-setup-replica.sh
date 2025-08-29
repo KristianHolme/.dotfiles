@@ -216,6 +216,47 @@ install_neovim() {
     log "Installed neovim (AppImage) -> $INSTALL_DIR/nvim (symlink)"
 }
 
+install_lazyvim() {
+    local nvim_config_dir="$HOME/.config/nvim"
+    
+    # Check if LazyVim is already installed
+    if [[ -f "$nvim_config_dir/lua/config/lazy.lua" ]] || [[ -f "$nvim_config_dir/init.lua" ]]; then
+        log "LazyVim config already exists; skipping"
+        return 0
+    fi
+    
+    # Check if nvim is available
+    if ! command -v nvim >/dev/null 2>&1; then
+        warn "nvim not found; skipping LazyVim installation"
+        return 0
+    fi
+    
+    log "Installing LazyVim starter configuration..."
+    
+    # Create nvim config directory
+    mkdir -p "$nvim_config_dir"
+    
+    # Clone LazyVim starter template
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+    trap 'rm -rf "$tmp_dir"' RETURN
+    
+    if git clone https://github.com/LazyVim/starter "$tmp_dir" >/dev/null 2>&1; then
+        # Remove .git directory from starter template
+        rm -rf "$tmp_dir/.git"
+        
+        # Copy starter files to nvim config
+        cp -r "$tmp_dir"/* "$nvim_config_dir/"
+        cp -r "$tmp_dir"/.* "$nvim_config_dir/" 2>/dev/null || true
+        
+        log "LazyVim starter configuration installed"
+        log "Run 'nvim' to complete the setup and install plugins"
+    else
+        err "Failed to clone LazyVim starter template"
+        return 1
+    fi
+}
+
 install_gum() {
     if command -v gum >/dev/null 2>&1; then
         log "gum already installed; skipping"
@@ -373,6 +414,9 @@ main() {
     install_stow
 
     install_neovim
+
+    # Install LazyVim starter configuration
+    install_lazyvim
 
     # Install gum for interactive prompts
     install_gum
