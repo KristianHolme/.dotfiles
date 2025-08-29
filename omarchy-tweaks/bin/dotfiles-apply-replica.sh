@@ -66,7 +66,6 @@ stow_with_conflict_detection() {
     local target_link="$target_dir/.$target_name"
     
     # Check if already correctly stowed by examining key files
-    local already_stowed=true
     case "$package_name" in
         "dot-julia")
             local julia_startup="$target_dir/.julia/config/startup.jl"
@@ -77,7 +76,20 @@ stow_with_conflict_detection() {
                     return 0
                 fi
             fi
-            already_stowed=false
+            
+            # Check for conflicting symlinks that don't point to our stow package
+            local julia_config_dir="$target_dir/.julia/config"
+            if [[ -L "$julia_config_dir" ]]; then
+                local config_target="$(readlink "$julia_config_dir")"
+                # If it points to a different location than our stow package, remove it
+                if [[ "$config_target" != *"/default/$package_name/"* ]] && [[ "$config_target" != *"default/$package_name/"* ]]; then
+                    warn "Found conflicting julia config symlink: $julia_config_dir -> $config_target"
+                    warn "Removing it to let stow manage julia config properly"
+                    rm "$julia_config_dir"
+                    # Also ensure the julia directory exists
+                    mkdir -p "$target_dir/.julia"
+                fi
+            fi
             ;;
         "dot-config")
             # Check a few key config files to see if they're stowed
@@ -98,7 +110,6 @@ stow_with_conflict_detection() {
                 log "$package_name already stowed correctly; skipping"
                 return 0
             fi
-            already_stowed=false
             ;;
     esac
 
@@ -113,10 +124,16 @@ stow_with_conflict_detection() {
     local dry_run_status=$?
     set -e
 
-    if [[ $dry_run_status -eq 0 ]]; then
-        # No conflicts, proceed with stow
+    # Filter out the "skipping marked Stow directory" warning as it's often harmless
+    local filtered_output
+    filtered_output=$(echo "$dry_run_output" | grep -v "WARNING: skipping marked Stow directory" || true)
+
+    # Check if there are any real conflicts (not just the stow directory warning)
+    if [[ $dry_run_status -eq 0 ]] || [[ -z "$filtered_output" ]]; then
+        # No real conflicts, proceed with stow
         log "No conflicts detected, proceeding with $description symlinks..."
-        if stow -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name"; then
+        # Suppress the stow directory warning in output
+        if stow -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name" 2>&1 | grep -v "WARNING: skipping marked Stow directory" || true; then
             log "Successfully stowed $package_name"
         else
             warn "Stow command failed for $package_name"
