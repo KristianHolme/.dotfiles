@@ -125,7 +125,7 @@ install_from_tarball() {
     fi
 
     tmp=$(mktemp -d)
-    trap 'rm -rf "'$tmp'"' RETURN
+    trap '[[ -n "$tmp" ]] && rm -rf "$tmp"' RETURN
     log "Downloading $name from $asset_url"
     curl -fsSL "$asset_url" -o "$tmp/archive.tar.gz"
 
@@ -178,8 +178,10 @@ install_tree_sitter() {
     
     if command -v tree-sitter >/dev/null 2>&1; then
         current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
+        log "tree-sitter detected: current=$current_ver, latest=$latest_ver"
     else
         current_ver=""
+        log "tree-sitter not found in PATH"
     fi
     
     if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
@@ -248,7 +250,7 @@ install_neovim() {
         return 1
     fi
     tmp=$(mktemp -d)
-    trap 'rm -rf "'$tmp'"' RETURN
+    trap '[[ -n "$tmp" ]] && rm -rf "$tmp"' RETURN
     log "Downloading neovim AppImage from $asset_url"
     curl -fsSL "$asset_url" -o "$tmp/nvim.AppImage"
     install -m 0755 "$tmp/nvim.AppImage" "$INSTALL_DIR/nvim.appimage"
@@ -279,7 +281,7 @@ install_lazyvim() {
     # Clone LazyVim starter template
     local tmp_dir=""
     tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' RETURN
+    trap '[[ -n "$tmp_dir" ]] && rm -rf "$tmp_dir"' RETURN
     
     if git clone https://github.com/LazyVim/starter "$tmp_dir/lazyvim-starter" >/dev/null 2>&1; then
         # Remove .git directory from starter template
@@ -335,7 +337,7 @@ install_gum() {
     fi
 
     tmp=$(mktemp -d)
-    trap 'rm -rf "'$tmp'"' RETURN
+    trap '[[ -n "$tmp" ]] && rm -rf "$tmp"' RETURN
     log "Downloading gum from $asset_url"
     curl -fsSL "$asset_url" -o "$tmp/gum.tar.gz"
 
@@ -367,7 +369,7 @@ install_stow() {
     local prefix tmp="" src
     prefix="${STOW_PREFIX:-$(dirname "$INSTALL_DIR")}" # default to ~/.local
     tmp=$(mktemp -d)
-    trap 'rm -rf "'$tmp'"' RETURN
+    trap '[[ -n "$tmp" ]] && rm -rf "$tmp"' RETURN
     log "Downloading and building stow (latest)"
     curl -fsSL https://ftp.gnu.org/gnu/stow/stow-latest.tar.gz -o "$tmp/stow.tar.gz"
     tar -xzf "$tmp/stow.tar.gz" -C "$tmp"
