@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, starship, neovim, stow, gum
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, neovim, stow, gum
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -411,6 +411,11 @@ main() {
         "fzf" "junegunn/fzf" \
         'fzf-[^/]*-linux_amd64\.tar\.gz$' \
         fzf "fzf --version"
+
+    install_from_tarball \
+        "fd" "sharkdp/fd" \
+        'fd-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
+        fd "fd --version"
 
     install_starship
 
