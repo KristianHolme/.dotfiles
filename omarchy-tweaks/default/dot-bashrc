@@ -33,6 +33,9 @@ if [[ "$USER" == "kristian" ]]; then
     alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
     alias dst='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-ssh-tmux.sh'
     alias tb='tensorboard --logdir'
+else
+    # source special rc at ~/.dotfiles/uio/bash/bashrc
+    source ~/.dotfiles/uio/bash/bashrc
 fi
 
 #Operations
