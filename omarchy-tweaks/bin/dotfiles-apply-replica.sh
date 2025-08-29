@@ -48,26 +48,59 @@ clone_or_update_omarchy() {
 }
 
 stow_with_conflict_detection() {
-    local packages_dir="$1"  # e.g. $HOME/.dotfiles/omarchy-tweaks
+    local packages_dir="$1"  # e.g. "." (current directory)
     local package_name="$2"  # e.g. "dot-config"
     local target_dir="$3"    # e.g. $HOME
     local description="$4"   # e.g. "config files"
     shift 4
     local extra_flags=("$@")
 
-    # Check if package exists
-    [[ -d "$packages_dir/default/$package_name" ]] || {
-        warn "Package $package_name not found in $packages_dir/default; skipping"
+    # Check if package exists (now using relative path since we're in the right directory)
+    [[ -d "default/$package_name" ]] || {
+        warn "Package $package_name not found in default/; skipping"
         return 0
     }
 
-    # Check if already correctly symlinked
-    local target_link="$target_dir/.$package_name"
-    local source_path="$packages_dir/default/$package_name"
-    if [[ -L "$target_link" ]] && [[ "$(readlink "$target_link")" == "$source_path" ]]; then
-        log "$package_name already symlinked correctly; skipping"
-        return 0
-    fi
+    # With --dotfiles, dot-julia becomes .julia, dot-config becomes .config, etc.
+    local target_name="${package_name#dot-}"  # Remove "dot-" prefix
+    local target_link="$target_dir/.$target_name"
+    
+    # Check if already correctly stowed by examining key files
+    local already_stowed=true
+    case "$package_name" in
+        "dot-julia")
+            local julia_startup="$target_dir/.julia/config/startup.jl"
+            if [[ -L "$julia_startup" ]]; then
+                local link_target="$(readlink "$julia_startup")"
+                if [[ "$link_target" == *"/default/$package_name/"* ]] || [[ "$link_target" == *"default/$package_name/"* ]]; then
+                    log "$package_name already stowed correctly; skipping"
+                    return 0
+                fi
+            fi
+            already_stowed=false
+            ;;
+        "dot-config")
+            # Check a few key config files to see if they're stowed
+            local files_to_check=(
+                "$target_dir/.config/nvim/lua/config/options.lua"
+                "$target_dir/.config/starship.toml"
+            )
+            local stowed_count=0
+            for file in "${files_to_check[@]}"; do
+                if [[ -L "$file" ]]; then
+                    local link_target="$(readlink "$file")"
+                    if [[ "$link_target" == *"/default/$package_name/"* ]] || [[ "$link_target" == *"default/$package_name/"* ]]; then
+                        stowed_count=$((stowed_count + 1))
+                    fi
+                fi
+            done
+            if [[ $stowed_count -gt 0 ]]; then
+                log "$package_name already stowed correctly; skipping"
+                return 0
+            fi
+            already_stowed=false
+            ;;
+    esac
 
     log "Checking for conflicts in $description..."
 
@@ -76,15 +109,19 @@ stow_with_conflict_detection() {
     local dry_run_output
     # Use -S for initial stow to avoid restow conflicts
     # -d points to directory containing packages, then specify package name without slashes
-    dry_run_output=$(stow -n -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
+    dry_run_output=$(stow -n -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name" 2>&1)
     local dry_run_status=$?
     set -e
 
     if [[ $dry_run_status -eq 0 ]]; then
         # No conflicts, proceed with stow
         log "No conflicts detected, proceeding with $description symlinks..."
-        stow -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles "${extra_flags[@]}" "$package_name"
-        log "Successfully stowed $package_name"
+        if stow -d "default" -t "$target_dir" -S --dotfiles "${extra_flags[@]}" "$package_name"; then
+            log "Successfully stowed $package_name"
+        else
+            warn "Stow command failed for $package_name"
+            return 1
+        fi
     else
         # Conflicts detected, present user with options
         warn "Conflicts detected in $description:"
@@ -106,14 +143,16 @@ stow_with_conflict_detection() {
         case "$choice" in
         "Adopt conflicting files"*)
             log "Adopting conflicting files for $description..."
-            if stow -d "$packages_dir/default" -t "$target_dir" -S -v --dotfiles --adopt "${extra_flags[@]}" "$package_name" 2>/dev/null; then
+            if stow -d "default" -t "$target_dir" -S --dotfiles --adopt "${extra_flags[@]}" "$package_name"; then
                 log "Successfully adopted conflicts and stowed $package_name"
                 warn "Conflicting files moved to dotfiles repo - review and commit changes"
             else
                 warn "Adopt failed; falling back to manual symlinks"
 
-                # Manual symlink fallback
-                local target_dir_full="$target_dir/.$package_name"
+                # Manual symlink fallback - create the correct target with --dotfiles transformation
+                local target_name="${package_name#dot-}"  # Remove "dot-" prefix  
+                local target_dir_full="$target_dir/.$target_name"
+                local source_path="$(pwd)/default/$package_name"
 
                 # Remove existing symlink if it exists
                 if [[ -L "$target_dir_full" ]]; then
@@ -139,8 +178,17 @@ stow_with_conflict_detection() {
 
 stow_config() {
     local package="$1"
-    # Note: packages_dir is the parent directory containing the "default" folder with packages
-    stow_with_conflict_detection "$HOME/.dotfiles/omarchy-tweaks" "$package" "$STOW_TARGET" "$package config" --override='.*'
+    # Change to the correct directory to avoid stow directory marker issues
+    local original_pwd="$PWD"
+    cd "$HOME/.dotfiles/omarchy-tweaks" || {
+        err "Failed to cd to dotfiles directory"
+        return 1
+    }
+
+    stow_with_conflict_detection "." "$package" "$STOW_TARGET" "$package config" --override='.*'
+
+    # Return to original directory
+    cd "$original_pwd" || true
 }
 
 symlink_config() {
