@@ -38,11 +38,34 @@ github_api() {
     # $1: path like repos/owner/repo/releases/latest
     # Uses optional GITHUB_TOKEN if set to avoid strict rate limits
     local url="https://api.github.com/$1"
+    local response http_code
+    
+    # Add small delay to be nice to GitHub API
+    sleep 0.2
+    
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-        curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "$url"
+        response=$(curl -fsSL -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" "$url" 2>/dev/null)
     else
-        curl -fsSL "$url"
+        response=$(curl -fsSL -w "%{http_code}" "$url" 2>/dev/null)
     fi
+    
+    http_code="${response: -3}"
+    response="${response%???}"
+    
+    case "$http_code" in
+        200) echo "$response" ;;
+        403) 
+            warn "GitHub API rate limit exceeded (403). Solutions:"
+            warn "1. Wait an hour for reset, or"
+            warn "2. Set GITHUB_TOKEN environment variable for 5000/hour limit"
+            warn "3. Get token at: https://github.com/settings/tokens"
+            return 1
+            ;;
+        *)
+            warn "GitHub API error: HTTP $http_code for $url"
+            return 1
+            ;;
+    esac
 }
 
 get_latest_tag() {
