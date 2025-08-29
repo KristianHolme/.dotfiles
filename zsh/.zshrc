@@ -1,4 +1,4 @@
-# echo "TEST IN ZSHRC"
+echo "TEST IN ZSHRC"
 export TEST_THREE="ZSHRC"
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -121,7 +121,7 @@ export TERM=xterm-256color
 export PATH=$HOME/.local/bin:$PATH
 
 
-# module load Python/3.9.6-GCCcore-11.2.0
+module load Python/3.9.6-GCCcore-11.2.0
 unset MESA_LOADER_DRIVER_OVERRIDE
 
 #export QT_QPA_PLATFORMTHEME=qt5ct
