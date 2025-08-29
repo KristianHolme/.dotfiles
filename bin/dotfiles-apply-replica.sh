@@ -89,7 +89,7 @@ setup_julia_config() {
 }
 
 setup_nvim_config() {
-    local dotfiles_dir="$HOME/.dotfiles/"
+    local dotfiles_dir="$HOME/.dotfiles"
     
     # Check if already stowed properly
     local test_file="$HOME/.config/nvim/lua/config/options.lua"
@@ -129,7 +129,7 @@ setup_nvim_config() {
 }
 
 setup_tmux_config() {
-    local dotfiles_dir="$HOME/.dotfiles/"
+    local dotfiles_dir="$HOME/.dotfiles"
     local tmux_source="$dotfiles_dir/default/dot-tmux.conf"
     local tmux_target="$HOME/.tmux.conf"
     
