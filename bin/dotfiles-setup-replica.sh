@@ -203,7 +203,7 @@ install_tree_sitter() {
     fi
     
     tmp=$(mktemp -d)
-    trap 'rm -rf "$tmp"' RETURN
+    trap '[[ -n "$tmp" ]] && rm -rf "$tmp"' RETURN
     log "Downloading tree-sitter from $asset_url"
     curl -fsSL "$asset_url" -o "$tmp/tree-sitter.gz"
     gunzip "$tmp/tree-sitter.gz"
