@@ -81,7 +81,7 @@ create_symlink_with_backup() {
 }
 
 setup_julia_config() {
-    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local dotfiles_dir="$HOME/.dotfiles/"
     local julia_config_source="$dotfiles_dir/default/dot-julia/config"
     local julia_config_target="$HOME/.julia/config"
     
@@ -89,7 +89,7 @@ setup_julia_config() {
 }
 
 setup_nvim_config() {
-    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local dotfiles_dir="$HOME/.dotfiles/"
     
     # Check if already stowed properly
     local test_file="$HOME/.config/nvim/lua/config/options.lua"
@@ -129,7 +129,7 @@ setup_nvim_config() {
 }
 
 setup_starship_config() {
-    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local dotfiles_dir="$HOME/.dotfiles/"
     local starship_source="$dotfiles_dir/default/dot-config/starship.toml"
     local starship_target="$HOME/.config/starship.toml"
     
@@ -137,7 +137,7 @@ setup_starship_config() {
 }
 
 setup_tmux_config() {
-    local dotfiles_dir="$HOME/.dotfiles/omarchy-tweaks"
+    local dotfiles_dir="$HOME/.dotfiles/"
     local tmux_source="$dotfiles_dir/default/dot-tmux.conf"
     local tmux_target="$HOME/.tmux.conf"
     
@@ -146,7 +146,7 @@ setup_tmux_config() {
 
 ensure_bashrc_source() {
     local bashrc_path="$HOME/.bashrc"
-    local source_line="source '$HOME/.dotfiles/omarchy-tweaks/default/dot-bashrc'"
+    local source_line="source '$HOME/.dotfiles/default/dot-bashrc'"
 
     # Check if already sourced
     if grep -qF "$source_line" "$bashrc_path" 2>/dev/null; then

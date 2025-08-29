@@ -124,7 +124,7 @@ main() {
     # Setup Zotero Better BibTeX extension if Zotero was installed successfully
     if pkg_installed zotero-bin; then
         log "Setting up Zotero Better BibTeX extension..."
-        "$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-zotero.sh" || log "Zotero setup failed (non-critical)"
+        "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log "Zotero setup failed (non-critical)"
     fi
 
     install_pkg cursor-bin
@@ -164,7 +164,7 @@ main() {
     fi
 
     # Install tools via curl installers
-    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/omarchy-tweaks/bin/julia-setup.jl"
+    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/bin/julia-setup.jl"
     install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"
 
     # 5) Refresh desktop database (user apps)

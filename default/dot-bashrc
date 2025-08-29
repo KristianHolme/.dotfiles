@@ -23,19 +23,16 @@ alias lg='lazygit'
 
 if [[ "$USER" == "kristian" ]]; then
     # Add dotfiles scripts to PATH
-    export PATH="$HOME/.dotfiles/omarchy-tweaks/bin:$PATH"
+    export PATH="$HOME/.dotfiles/bin:$PATH"
     alias ca='cursor-agent'
-    alias dac='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-apply-config.sh'
-    alias dsp='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-packages.sh'
-    alias dfb='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-backup.sh'
-    alias dfr='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-firefly-restore.sh'
-    alias dss='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-setup-ssh.sh'
-    alias drs='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-rsync-ssh.sh'
-    alias dst='$HOME/.dotfiles/omarchy-tweaks/bin/dotfiles-ssh-tmux.sh'
+    alias dac='$HOME/.dotfiles/bin/dotfiles-apply-config.sh'
+    alias dsp='$HOME/.dotfiles/bin/dotfiles-setup-packages.sh'
+    alias dfb='$HOME/.dotfiles/bin/dotfiles-firefly-backup.sh'
+    alias dfr='$HOME/.dotfiles/bin/dotfiles-firefly-restore.sh'
+    alias dss='$HOME/.dotfiles/bin/dotfiles-setup-ssh.sh'
+    alias drs='$HOME/.dotfiles/bin/dotfiles-rsync-ssh.sh'
+    alias dst='$HOME/.dotfiles/bin/dotfiles-ssh-tmux.sh'
     alias tb='tensorboard --logdir'
-else
-    # source special rc at ~/.dotfiles/uio/bash/bashrc
-    source ~/.dotfiles/uio/bash/bashrc
 fi
 
 #Operations
