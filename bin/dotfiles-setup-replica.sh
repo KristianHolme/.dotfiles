@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, neovim, stow, gum
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, neovim, stow, gum
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -169,6 +169,46 @@ install_starship() {
     fi
     log "Installing/updating starship to $latest_tag"
     curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$INSTALL_DIR"
+}
+
+install_tree_sitter() {
+    local latest_tag latest_ver current_ver asset_url tmp=""
+    latest_tag=$(get_latest_tag "tree-sitter/tree-sitter" || true)
+    latest_ver="${latest_tag#v}"
+    
+    if command -v tree-sitter >/dev/null 2>&1; then
+        current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
+    else
+        current_ver=""
+    fi
+    
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "tree-sitter already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "tree-sitter is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
+    fi
+    
+    mkdir -p "$INSTALL_DIR"
+    
+    # tree-sitter releases as tree-sitter-linux-x64.gz
+    asset_url=$(find_asset_url "tree-sitter/tree-sitter" 'tree-sitter-linux-x64\.gz$' || true)
+    if [[ -z "$asset_url" ]]; then
+        err "Could not find tree-sitter linux binary"
+        return 1
+    fi
+    
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' RETURN
+    log "Downloading tree-sitter from $asset_url"
+    curl -fsSL "$asset_url" -o "$tmp/tree-sitter.gz"
+    gunzip "$tmp/tree-sitter.gz"
+    install -m 0755 "$tmp/tree-sitter" "$INSTALL_DIR/tree-sitter"
+    log "Installed tree-sitter -> $INSTALL_DIR/tree-sitter"
 }
 
 install_neovim() {
@@ -416,6 +456,8 @@ main() {
         "fd" "sharkdp/fd" \
         'fd-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
         fd "fd --version"
+
+    install_tree_sitter
 
     install_starship
 
