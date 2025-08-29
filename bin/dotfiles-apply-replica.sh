@@ -128,14 +128,6 @@ setup_nvim_config() {
     cd "$original_pwd" || true
 }
 
-setup_starship_config() {
-    local dotfiles_dir="$HOME/.dotfiles/"
-    local starship_source="$dotfiles_dir/default/dot-config/starship.toml"
-    local starship_target="$HOME/.config/starship.toml"
-    
-    create_symlink_with_backup "$starship_source" "$starship_target" "Starship config"
-}
-
 setup_tmux_config() {
     local dotfiles_dir="$HOME/.dotfiles/"
     local tmux_source="$dotfiles_dir/default/dot-tmux.conf"
@@ -167,8 +159,7 @@ main() {
 
     # Create symlinks for specific configs
     setup_julia_config
-    setup_nvim_config
-    setup_starship_config
+    setup_nvim_config  # This stows entire dot-config (includes starship.toml)
 
     # Handle tmux.conf 
     setup_tmux_config
