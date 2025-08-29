@@ -180,7 +180,7 @@ install_neovim() {
 
     # prefer official tarball when glibc >= 2.29, else AppImage fallback
     if [[ -n "$glibc_ver" ]] && ver_ge "$glibc_ver" "2.29"; then
-        asset_url=$(find_asset_url "neovim/neovim" 'nvim-linux64\.tar\.gz$' || true)
+        asset_url=$(find_asset_url "neovim/neovim" 'nvim-linux-x86_64\.tar\.gz$' || true)
         if [[ -n "$asset_url" ]]; then
             tmp=$(mktemp -d)
             trap 'rm -rf "'$tmp'"' RETURN
@@ -191,8 +191,14 @@ install_neovim() {
             nvim_target_dir="$NVIM_OPT_DIR/$latest_tag"
             mkdir -p "$NVIM_OPT_DIR"
             rm -rf "$nvim_target_dir"
-            # tarball extracts to nvim-linux64
-            mv "$tmp/extract"/nvim-linux64 "$nvim_target_dir"
+            # Locate extracted Neovim root directory dynamically (contains bin/nvim)
+            local nvim_root
+            nvim_root=$(find "$tmp/extract" -maxdepth 4 -type f -name nvim -path '*/bin/nvim' -print -quit 2>/dev/null | xargs -r dirname | xargs -r dirname || true)
+            if [[ -z "$nvim_root" || ! -x "$nvim_root/bin/nvim" ]]; then
+                err "Could not locate extracted Neovim root directory"
+                return 1
+            fi
+            mv "$nvim_root" "$nvim_target_dir"
             ln -sf "$nvim_target_dir/bin/nvim" "$INSTALL_DIR/nvim"
             log "Installed neovim (tarball) -> $INSTALL_DIR/nvim"
             return 0
@@ -204,7 +210,7 @@ install_neovim() {
     fi
 
     # AppImage fallback for older glibc
-    asset_url=$(find_asset_url "neovim/neovim-releases" 'nvim.*x86_64.*AppImage$' || true)
+    asset_url=$(find_asset_url "neovim/neovim" 'nvim-linux-x86_64\.appimage$' || true)
     if [[ -z "$asset_url" ]]; then
         err "Could not find neovim AppImage asset"
         return 1
@@ -264,7 +270,7 @@ main() {
 
     install_from_tarball \
         "lazygit" "jesseduffield/lazygit" \
-        'lazygit_[^/]*_Linux_x86_64\.tar\.gz$' \
+        'lazygit_[^/]*_linux_x86_64\.tar\.gz$' \
         lazygit "lazygit --version"
 
     install_from_tarball \
