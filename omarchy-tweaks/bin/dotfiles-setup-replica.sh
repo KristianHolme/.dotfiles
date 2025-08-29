@@ -95,7 +95,7 @@ install_from_tarball() {
     # $5 version_cmd (command to print version, quoted string)
     local name="$1" or="$2" asset_pat="$3" bin_name="$4" version_cmd="$5"
 
-    local latest_tag latest_ver current_ver asset_url tmp dir bin_path
+    local latest_tag latest_ver current_ver asset_url tmp="" dir bin_path
 
     log "Checking $name releases..."
     latest_tag=$(get_latest_tag "$or") || { warn "Failed to get $name latest tag"; latest_tag=""; }
@@ -172,7 +172,7 @@ install_starship() {
 }
 
 install_neovim() {
-    local latest_tag latest_ver current_ver glibc_ver asset_url tmp
+    local latest_tag latest_ver current_ver glibc_ver asset_url tmp=""
     latest_tag=$(get_latest_tag "neovim/neovim" || true)
     latest_ver="${latest_tag#v}"
 
@@ -267,7 +267,7 @@ install_gum() {
         return 0
     fi
 
-    local latest_tag latest_ver asset_url tmp
+    local latest_tag latest_ver asset_url tmp=""
     latest_tag=$(get_latest_tag "charmbracelet/gum" || true)
     latest_ver="${latest_tag#v}"
 
@@ -324,7 +324,7 @@ install_stow() {
         log "stow already installed; skipping"
         return 0
     fi
-    local prefix tmp src
+    local prefix tmp="" src
     prefix="${STOW_PREFIX:-$(dirname "$INSTALL_DIR")}" # default to ~/.local
     tmp=$(mktemp -d)
     trap 'rm -rf "'$tmp'"' RETURN
