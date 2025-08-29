@@ -26,6 +26,12 @@ ensure_cmd() {
     command -v "$1" >/dev/null 2>&1 || { err "Missing required command: $1"; exit 1; }
 }
 
+# Ensure local bin is in PATH for tools like stow (idempotent)
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin${PATH:+:${PATH}}" ;;
+esac
+
 clone_or_update_omarchy() {
     if [[ -d "$OMARCHY_DIR/.git" ]]; then
         log "Updating omarchy in $OMARCHY_DIR"

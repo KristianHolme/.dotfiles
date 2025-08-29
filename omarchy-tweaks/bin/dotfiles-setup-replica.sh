@@ -225,7 +225,7 @@ install_stow() {
     prefix="${STOW_PREFIX:-$(dirname "$INSTALL_DIR")}" # default to ~/.local
     tmp=$(mktemp -d)
     trap 'rm -rf "'$tmp'"' RETURN
-    log "Downloading stow (latest)"
+    log "Downloading and building stow (latest)"
     curl -fsSL https://ftp.gnu.org/gnu/stow/stow-latest.tar.gz -o "$tmp/stow.tar.gz"
     tar -xzf "$tmp/stow.tar.gz" -C "$tmp"
     src=$(find "$tmp" -maxdepth 1 -type d -name 'stow-*' | head -n1 || true)
@@ -233,8 +233,24 @@ install_stow() {
         err "Failed to locate stow source directory"
         return 1
     fi
-    ( cd "$src" && ./configure --prefix="$prefix" >/dev/null && make -s >/dev/null && make -s install >/dev/null )
-    log "Installed stow -> $prefix/bin/stow"
+
+    # Build and install stow, handling missing test dependencies gracefully
+    (
+        cd "$src"
+        # Configure with minimal output, suppress warnings about missing test modules
+        ./configure --prefix="$prefix" --quiet 2>&1 | grep -v "WARNING.*missing modules" || true
+        # Build quietly, skip tests if dependencies are missing
+        make -s 2>&1 | grep -v "WARNING.*missing modules" || true
+        # Install quietly
+        make -s install 2>&1 | grep -v "WARNING.*missing modules" || true
+    )
+
+    if command -v stow >/dev/null 2>&1; then
+        log "Installed stow -> $prefix/bin/stow"
+    else
+        err "Failed to install stow"
+        return 1
+    fi
 }
 
 clone_or_update_omarchy() {
