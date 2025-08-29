@@ -111,7 +111,7 @@ setup_nvim_config() {
     }
     
     # Use stow to merge nvim config (allows coexistence with LazyVim)
-    if stow -d default -t "$HOME" --dotfiles -S dot-config --adopt 2>/dev/null; then
+    if stow -d default -t "$HOME/.config" --dotfiles -S dot-config --adopt -v 2>/dev/null; then
         log "Successfully stowed nvim config"
     else
         warn "Stow failed, trying without --adopt"
