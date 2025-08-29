@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, starship, neovim
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, starship, neovim, stow
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -19,9 +19,9 @@ OMARCHY_DIR="${OMARCHY_DIR:-"$HOME/.local/share/omarchy"}"
 OMARCHY_REPO_URL="${OMARCHY_REPO_URL:-https://github.com/basecamp/omarchy}"
 NVIM_OPT_DIR="${NVIM_OPT_DIR:-"$HOME/.local/opt/neovim"}"
 
-log() { echo "[omarchy-unipriv] $*"; }
-warn() { echo "[omarchy-unipriv][WARN] $*" >&2; }
-err() { echo "[omarchy-unipriv][ERR] $*" >&2; }
+log() { echo "[omarchy-replica] $*"; }
+warn() { echo "[omarchy-replica][WARN] $*" >&2; }
+err() { echo "[omarchy-replica][ERR] $*" >&2; }
 
 ensure_cmd() {
     command -v "$1" >/dev/null 2>&1 || { err "Missing required command: $1"; exit 1; }
@@ -63,8 +63,9 @@ find_asset_url() {
 }
 
 first_version_from_output() {
-    # Reads stdin, extracts first x.y or x.y.z... sequence
-    sed -n 's/.*\b\([0-9]\+\(\.[0-9]\+\)\+\)\b.*/\1/p' | head -n1
+    # Reads stdin, extracts first x.y or x.y.z... sequence (robust)
+    # Requires grep with -E and -o support
+    grep -Eo '([0-9]+)(\.[0-9]+)+' | head -n1
 }
 
 ver_ge() {
@@ -106,9 +107,15 @@ install_from_tarball() {
         current_ver=""
     fi
 
-    if [[ -n "$current_ver" && -n "$latest_ver" && "$current_ver" == "$latest_ver" ]]; then
-        log "$name already up to date ($current_ver)"
-        return 0
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "$name already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "$name is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
     fi
 
     asset_url=$(find_asset_url "$or" "$asset_pat")
@@ -138,7 +145,7 @@ install_from_tarball() {
 
     mkdir -p "$INSTALL_DIR"
     install -m 0755 "$bin_path" "$INSTALL_DIR/$bin_name"
-    log "Installed $name -> $INSTALL_DIR/$bin_name"
+    log "Installed/updated $name -> $INSTALL_DIR/$bin_name"
 }
 
 install_starship() {
@@ -150,9 +157,15 @@ install_starship() {
     else
         current_ver=""
     fi
-    if [[ -n "$current_ver" && -n "$latest_ver" && "$current_ver" == "$latest_ver" ]]; then
-        log "starship already up to date ($current_ver)"
-        return 0
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "starship already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "starship is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
     fi
     log "Installing/updating starship to $latest_tag"
     curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$INSTALL_DIR"
@@ -169,9 +182,15 @@ install_neovim() {
         current_ver=""
     fi
 
-    if [[ -n "$current_ver" && -n "$latest_ver" && "$current_ver" == "$latest_ver" ]]; then
-        log "neovim already up to date ($current_ver)"
-        return 0
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "neovim already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "neovim is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
     fi
 
     glibc_ver=$(detect_glibc_version || true)
@@ -197,6 +216,27 @@ install_neovim() {
     log "Installed neovim (AppImage) -> $INSTALL_DIR/nvim (symlink)"
 }
 
+install_stow() {
+    if command -v stow >/dev/null 2>&1; then
+        log "stow already installed; skipping"
+        return 0
+    fi
+    local prefix tmp src
+    prefix="${STOW_PREFIX:-$(dirname "$INSTALL_DIR")}" # default to ~/.local
+    tmp=$(mktemp -d)
+    trap 'rm -rf "'$tmp'"' RETURN
+    log "Downloading stow (latest)"
+    curl -fsSL https://ftp.gnu.org/gnu/stow/stow-latest.tar.gz -o "$tmp/stow.tar.gz"
+    tar -xzf "$tmp/stow.tar.gz" -C "$tmp"
+    src=$(find "$tmp" -maxdepth 1 -type d -name 'stow-*' | head -n1 || true)
+    if [[ -z "$src" ]]; then
+        err "Failed to locate stow source directory"
+        return 1
+    fi
+    ( cd "$src" && ./configure --prefix="$prefix" >/dev/null && make -s >/dev/null && make -s install >/dev/null )
+    log "Installed stow -> $prefix/bin/stow"
+}
+
 clone_or_update_omarchy() {
     if [[ -d "$OMARCHY_DIR/.git" ]]; then
         log "Updating omarchy in $OMARCHY_DIR"
@@ -217,6 +257,8 @@ main() {
     ensure_cmd tar
     ensure_cmd git
     ensure_cmd install
+    ensure_cmd make
+    ensure_cmd perl
 
     if ! arch_is_supported; then
         err "Unsupported architecture $(uname -m). This script targets x86_64 Linux."
@@ -252,6 +294,9 @@ main() {
         fzf "fzf --version"
 
     install_starship
+
+    # Build/install GNU stow user-locally if missing
+    install_stow
 
     install_neovim
 
