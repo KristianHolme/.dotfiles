@@ -237,17 +237,21 @@ install_lazyvim() {
     mkdir -p "$nvim_config_dir"
     
     # Clone LazyVim starter template
-    local tmp_dir
+    local tmp_dir=""
     tmp_dir=$(mktemp -d)
     trap 'rm -rf "$tmp_dir"' RETURN
     
-    if git clone https://github.com/LazyVim/starter "$tmp_dir" >/dev/null 2>&1; then
+    if git clone https://github.com/LazyVim/starter "$tmp_dir/lazyvim-starter" >/dev/null 2>&1; then
         # Remove .git directory from starter template
-        rm -rf "$tmp_dir/.git"
+        rm -rf "$tmp_dir/lazyvim-starter/.git"
         
-        # Copy starter files to nvim config
-        cp -r "$tmp_dir"/* "$nvim_config_dir/"
-        cp -r "$tmp_dir"/.* "$nvim_config_dir/" 2>/dev/null || true
+        # Copy starter files to nvim config (use pushd/popd to avoid path issues)
+        pushd "$tmp_dir/lazyvim-starter" >/dev/null
+        
+        # Copy all files (visible and hidden) from the LazyVim starter
+        cp -r . "$nvim_config_dir/"
+        
+        popd >/dev/null
         
         log "LazyVim starter configuration installed"
         log "Run 'nvim' to complete the setup and install plugins"
