@@ -21,9 +21,10 @@ alias j='julia'
 alias jp='julia --project=.'
 alias lg='lazygit'
 
+export PATH="$HOME/.dotfiles/bin:$PATH"
+
 if [[ "$USER" == "kristian" ]]; then
     # Add dotfiles scripts to PATH
-    export PATH="$HOME/.dotfiles/bin:$PATH"
     alias ca='cursor-agent'
     alias dac='$HOME/.dotfiles/bin/dotfiles-apply-config.sh'
     alias dsp='$HOME/.dotfiles/bin/dotfiles-setup-packages.sh'
@@ -33,6 +34,9 @@ if [[ "$USER" == "kristian" ]]; then
     alias drs='$HOME/.dotfiles/bin/dotfiles-rsync-ssh.sh'
     alias dst='$HOME/.dotfiles/bin/dotfiles-ssh-tmux.sh'
     alias tb='tensorboard --logdir'
+else
+    alias dsr='dotfiles-setup-replica.sh'
+    alias dar='dotfiles-apply-replica.sh'
 fi
 
 #Operations
