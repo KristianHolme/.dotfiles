@@ -7,6 +7,9 @@
 
 set -e  # Exit on any error
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-dotfiles.sh"
+
 # Default values
 SOURCE_HOST="atalanta"
 SOURCE_DIR="~/Code/DRL_RDE/data/studies"
@@ -77,12 +80,7 @@ case "$SOURCE_HOST" in
 esac
 
 # Check if gum is installed
-if ! command -v gum &> /dev/null; then
-    echo "Error: gum is not installed. Please install it first:"
-    echo "  Arch: sudo pacman -S gum"
-    echo "  Other: https://github.com/charmbracelet/gum#installation"
-    exit 1
-fi
+ensure_cmd gum
 
 # Expand tilde in paths
 SOURCE_DIR_EXPANDED="${SOURCE_DIR/#\~/$HOME}"

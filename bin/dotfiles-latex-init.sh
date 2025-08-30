@@ -6,19 +6,8 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-dotfiles.sh"
 TEMPLATES_DIR="$SCRIPT_DIR/../templates/latex"
-
-# Colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 show_help() {
     cat << EOF
@@ -121,15 +110,10 @@ setup_git_repo() {
 push_to_github() {
     local project_name="$1"
     
-    if ! command -v gum >/dev/null 2>&1; then
-        log_warning "gum not found. Skipping GitHub push option."
-        log_info "Install gum with: pacman -S gum"
-        return 0
-    fi
-    
-    if ! command -v gh >/dev/null 2>&1; then
-        log_warning "GitHub CLI (gh) not found. Skipping GitHub push."
-        log_info "Install with: pacman -S github-cli"
+    # ensure_cmd exits on failure, so we check first if we want to proceed.
+    if ! command -v gum >/dev/null 2>&1 || ! command -v gh >/dev/null 2>&1; then
+        log_warning "gum or gh CLI not found. Skipping GitHub push option."
+        log_info "Install with: pacman -S gum github-cli"
         return 0
     fi
     

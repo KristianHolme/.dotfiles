@@ -6,21 +6,14 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-dotfiles.sh"
+
 # Script lives in bin/, configs live one directory up in ../config
 CONFIG_SOURCE="$(realpath "$SCRIPT_DIR/../config")"
 TARGET_CONFIG="$HOME/.config"
 TARGET_HOME="$HOME"
 
 # Colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-
 # Simple function to unstow any existing profile packages at repo root
 unstow_all_profiles() {
     local packages_dir="$1"
@@ -116,10 +109,7 @@ stow_with_conflict_detection() {
 apply_configs() {
     log_info "Linking with GNU Stow"
 
-    if ! command -v stow >/dev/null 2>&1; then
-        log_warning "stow not found. Please install GNU Stow (e.g. pacman -S stow) and re-run."
-        return 1
-    fi
+    ensure_cmd "stow"
 
     # Packages directory (repo root of omarchy-tweaks)
     PACKAGES_DIR="$(realpath "$SCRIPT_DIR/..")"

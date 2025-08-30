@@ -6,25 +6,19 @@ set -Eeuo pipefail
 # - Installs requested packages
 # - Refreshes application launchers
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-dotfiles.sh"
+
 OMARCHY_BIN="$HOME/.local/share/omarchy/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
-
-log() { echo -e "[omarchy-tweaks] $*"; }
-
-ensure_cmd() {
-    command -v "$1" >/dev/null 2>&1 || {
-        echo "Missing required command: $1"
-        exit 1
-    }
-}
 
 remove_webapp() {
     local name="$1"
     if [[ -f "$DESKTOP_DIR/$name.desktop" ]]; then
-        log "Removing web app: $name"
+        log_info "Removing web app: $name"
         "$OMARCHY_BIN/omarchy-webapp-remove" "$name" || true
     else
-        log "Skip web app (not found): $name"
+        log_info "Skip web app (not found): $name"
     fi
 }
 
@@ -33,19 +27,19 @@ pkg_installed() { yay -Qi "$1" >/dev/null 2>&1; }
 remove_pkg() {
     local pkg="$1"
     if pkg_installed "$pkg"; then
-        log "Removing package: $pkg"
+        log_info "Removing package: $pkg"
         yay -Rns --noconfirm "$pkg" || true
     else
-        log "Skip package (not installed): $pkg"
+        log_info "Skip package (not installed): $pkg"
     fi
 }
 
 install_pkg() {
     local pkg="$1"
     if pkg_installed "$pkg"; then
-        log "Already installed: $pkg"
+        log_info "Already installed: $pkg"
     else
-        log "Installing package: $pkg"
+        log_info "Installing package: $pkg"
         yay -Sy --noconfirm "$pkg"
     fi
 }
@@ -57,9 +51,9 @@ install_via_curl() {
     local post_install_cmd="${4:-}"
 
     if command -v "$check_cmd" >/dev/null 2>&1; then
-        log "$name already installed; skipping installer"
+        log_info "$name already installed; skipping installer"
     else
-        log "Installing $name"
+        log_info "Installing $name"
         curl -fsSL "$url" | bash
         if [[ -n "$post_install_cmd" ]]; then
             eval "$post_install_cmd"
@@ -74,11 +68,11 @@ install_latex_template() {
     local check_file="$4"
 
     if [[ -f "$check_file" ]]; then
-        log "LaTeX template $name already installed; skipping"
+        log_info "LaTeX template $name already installed; skipping"
         return 0
     fi
 
-    log "Installing LaTeX template: $name"
+    log_info "Installing LaTeX template: $name"
     
     # Create temporary directory
     local temp_dir=$(mktemp -d)
@@ -98,7 +92,7 @@ install_latex_template() {
     cd - > /dev/null
     rm -rf "$temp_dir"
     
-    log "LaTeX template $name installed successfully"
+    log_info "LaTeX template $name installed successfully"
 }
 
 main() {
@@ -123,8 +117,8 @@ main() {
 
     # Setup Zotero Better BibTeX extension if Zotero was installed successfully
     if pkg_installed zotero-bin; then
-        log "Setting up Zotero Better BibTeX extension..."
-        "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log "Zotero setup failed (non-critical)"
+        log_info "Setting up Zotero Better BibTeX extension..."
+        "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log_info "Zotero setup failed (non-critical)"
     fi
 
     install_pkg cursor-bin
@@ -152,15 +146,15 @@ main() {
     
     # Refresh LaTeX file database so it can find newly installed templates
     if command -v mktexlsr >/dev/null 2>&1; then
-        log "Refreshing LaTeX file database..."
-        mktexlsr "$HOME/texmf" || log "Warning: Could not refresh LaTeX file database"
+        log_info "Refreshing LaTeX file database..."
+        mktexlsr "$HOME/texmf" || log_warning "Warning: Could not refresh LaTeX file database"
     fi
 
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         mkdir -p "$HOME/.tmux/plugins"
         git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
     else
-        log "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
+        log_info "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
     fi
 
     # Install tools via curl installers
@@ -170,7 +164,7 @@ main() {
     # 5) Refresh desktop database (user apps)
     update-desktop-database ~/.local/share/applications/ || true
 
-    log "Done."
+    log_info "Done."
 }
 
 main "$@"
