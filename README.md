@@ -64,7 +64,7 @@ export GITHUB_TOKEN="your_token_here"
 ```
 
 Installs to `~/.local/bin`:
-- CLI tools: `eza`, `zoxide`, `starship`, `fzf`, `ripgrep`, `lazygit`, `fd`, `tree-sitter`
+- CLI tools: `eza`, `zoxide`, `starship`, `fzf`, `ripgrep`, `lazygit`, `fd`, `tree-sitter`, `git-lfs`
 - Development: `neovim` (with LazyVim), `stow`, `gum`
 - Repositories: clones [Omarchy](https://github.com/basecamp/omarchy) to `~/.local/share/omarchy`
 

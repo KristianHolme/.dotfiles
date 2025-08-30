@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, neovim, stow, gum
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, git-lfs, neovim, stow, gum
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -198,7 +198,7 @@ install_tree_sitter() {
     local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp=""
     latest_tag=$(get_latest_tag "tree-sitter/tree-sitter" || true)
     latest_ver="${latest_tag#v}"
-    
+
     if command -v tree-sitter >/dev/null 2>&1; then
         current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
         log "tree-sitter detected: current=$current_ver, latest=$latest_ver"
@@ -206,7 +206,7 @@ install_tree_sitter() {
         current_ver=""
         log "tree-sitter not found in PATH"
     fi
-    
+
     if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
         if [[ "$current_ver" == "$latest_ver" ]]; then
             log "tree-sitter already up to date ($current_ver)"
@@ -217,16 +217,16 @@ install_tree_sitter() {
             return 0
         fi
     fi
-    
+
     mkdir -p "$INSTALL_DIR"
-    
+
     # tree-sitter releases as tree-sitter-linux-x64.gz
     asset_url=$(find_asset_url "tree-sitter/tree-sitter" 'tree-sitter-linux-x64\.gz$' || true)
     if [[ -z "$asset_url" ]]; then
         err "Could not find tree-sitter linux binary"
         return 1
     fi
-    
+
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log "Downloading tree-sitter from $asset_url"
@@ -234,6 +234,63 @@ install_tree_sitter() {
     gunzip "$tmp/tree-sitter.gz"
     install -m 0755 "$tmp/tree-sitter" "$INSTALL_DIR/tree-sitter"
     log "Installed tree-sitter -> $INSTALL_DIR/tree-sitter"
+}
+
+install_git_lfs() {
+    local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp=""
+    latest_tag=$(get_latest_tag "git-lfs/git-lfs" || true)
+    latest_ver="${latest_tag#v}"
+
+    if command -v git-lfs >/dev/null 2>&1; then
+        current_ver=$(git lfs version 2>/dev/null | grep -Eo 'git-lfs/([0-9]+\.)+[0-9]+' | cut -d'/' -f2 || true)
+        log "git-lfs detected: current=$current_ver, latest=$latest_ver"
+    else
+        current_ver=""
+        log "git-lfs not found in PATH"
+    fi
+
+    if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+        if [[ "$current_ver" == "$latest_ver" ]]; then
+            log "git-lfs already up to date ($current_ver)"
+            return 0
+        fi
+        if ver_ge "$current_ver" "$latest_ver"; then
+            log "git-lfs is newer or equal ($current_ver >= $latest_ver); skipping"
+            return 0
+        fi
+    fi
+
+    mkdir -p "$INSTALL_DIR"
+
+    # git-lfs releases as git-lfs-linux-amd64-v*.tar.gz
+    asset_url=$(find_asset_url "git-lfs/git-lfs" 'git-lfs-linux-amd64-v.*\.tar\.gz$' || true)
+    if [[ -z "$asset_url" ]]; then
+        err "Could not find git-lfs linux binary"
+        return 1
+    fi
+
+    tmp=$(mktemp -d)
+    trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
+    log "Downloading git-lfs from $asset_url"
+    curl -fsSL "$asset_url" -o "$tmp/git-lfs.tar.gz"
+    tar -xzf "$tmp/git-lfs.tar.gz" -C "$tmp"
+    
+    # Find the git-lfs binary in the extracted tarball
+    local git_lfs_bin
+    git_lfs_bin=$(find "$tmp" -name "git-lfs" -type f -executable | head -n1 || true)
+    if [[ -z "$git_lfs_bin" ]]; then
+        err "Could not find git-lfs binary in downloaded archive"
+        return 1
+    fi
+    
+    install -m 0755 "$git_lfs_bin" "$INSTALL_DIR/git-lfs"
+    log "Installed git-lfs -> $INSTALL_DIR/git-lfs"
+    
+    # Install git-lfs hooks (this is safe to run multiple times)
+    if command -v git-lfs >/dev/null 2>&1; then
+        git lfs install --skip-smudge 2>/dev/null || warn "Failed to install git-lfs hooks"
+        log "Configured git-lfs hooks"
+    fi
 }
 
 install_neovim() {
@@ -483,6 +540,8 @@ main() {
         fd "fd --version"
 
     install_tree_sitter
+
+    install_git_lfs
 
     install_starship
 
