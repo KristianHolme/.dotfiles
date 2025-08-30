@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, git-lfs, neovim, stow, gum
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, git-lfs, btop, neovim, stow, gum
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -542,6 +542,11 @@ main() {
     install_tree_sitter
 
     install_git_lfs
+
+    install_from_tarball \
+        "btop" "aristocratos/btop" \
+        'btop-x86_64-linux-musl\.tbz$' \
+        btop "btop --version"
 
     install_starship
 
