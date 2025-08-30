@@ -336,20 +336,7 @@ install_stow() {
     fi
 }
 
-clone_or_update_omarchy() {
-    if [[ -d "$OMARCHY_DIR/.git" ]]; then
-        log_info "Updating omarchy in $OMARCHY_DIR"
-        git -C "$OMARCHY_DIR" pull --ff-only || log_warning "omarchy update failed; continuing"
-        return 0
-    fi
-    if [[ -z "${OMARCHY_REPO_URL}" ]]; then
-        log_warning "OMARCHY_REPO_URL not set and no existing clone at $OMARCHY_DIR; skipping clone"
-        return 0
-    fi
-    mkdir -p "$(dirname "$OMARCHY_DIR")"
-    log_info "Cloning omarchy from $OMARCHY_REPO_URL -> $OMARCHY_DIR"
-    git clone "$OMARCHY_REPO_URL" "$OMARCHY_DIR" || log_warning "omarchy clone failed; continuing"
-}
+
 
 main() {
     ensure_cmd curl tar git install make perl

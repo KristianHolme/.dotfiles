@@ -4,6 +4,11 @@
 # Should be sourced by other scripts:
 #   source "$(dirname "${BASH_SOURCE[0]}")/lib-dotfiles.sh"
 
+# Standard error handling - inherit from calling script if already set
+if [[ ! "${-}" =~ e ]]; then
+    set -Eeuo pipefail
+fi
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -171,12 +176,21 @@ detect_glibc_version() {
 }
 
 install_from_tarball() {
-    # $1 name
-    # $2 owner/repo
-    # $3 asset_name_regex (extended regex against full asset filename)
-    # $4 binary_name (as it should be named in INSTALL_DIR)
-    # $5 version_cmd (command to print version, quoted string)
-    # $6 INSTALL_DIR (optional, defaults to ~/.local/bin)
+    # Downloads and installs a binary from a GitHub release tarball
+    # Performs version checking to avoid unnecessary downloads
+    # 
+    # Arguments:
+    # $1 name               - Human readable name for logging
+    # $2 owner/repo         - GitHub repository in format "owner/repo"  
+    # $3 asset_name_regex   - Extended regex to match tarball filename
+    # $4 binary_name        - Name the binary should have in INSTALL_DIR
+    # $5 version_cmd        - Command to get current version (quoted string)
+    # $6 INSTALL_DIR        - Target directory (optional, defaults to ~/.local/bin)
+    #
+    # Example:
+    #   install_from_tarball "ripgrep" "BurntSushi/ripgrep" \
+    #     'ripgrep-[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
+    #     "rg" "rg --version" "$HOME/.local/bin"
     local name="$1" or="$2" asset_pat="$3" bin_name="$4" version_cmd="$5"
     local INSTALL_DIR="${6:-$HOME/.local/bin}"
 
