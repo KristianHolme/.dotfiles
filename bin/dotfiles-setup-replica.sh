@@ -150,10 +150,25 @@ install_from_tarball() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log "Downloading $name from $asset_url"
-    curl -fsSL "$asset_url" -o "$tmp/archive.tar.gz"
+    
+    # Detect compression format from URL
+    local archive_name extract_opts
+    if [[ "$asset_url" =~ \.tbz$ ]] || [[ "$asset_url" =~ \.tar\.bz2$ ]]; then
+        archive_name="archive.tar.bz2"
+        extract_opts="-xjf"
+    elif [[ "$asset_url" =~ \.tar\.xz$ ]] || [[ "$asset_url" =~ \.txz$ ]]; then
+        archive_name="archive.tar.xz"
+        extract_opts="-xJf"
+    else
+        # Default to gzip (covers .tar.gz, .tgz, etc.)
+        archive_name="archive.tar.gz"
+        extract_opts="-xzf"
+    fi
+    
+    curl -fsSL "$asset_url" -o "$tmp/$archive_name"
 
     mkdir -p "$tmp/extract"
-    tar -xzf "$tmp/archive.tar.gz" -C "$tmp/extract"
+    tar $extract_opts "$tmp/$archive_name" -C "$tmp/extract"
 
     # locate binary in extracted contents
     bin_path=$(find "$tmp/extract" -type f -name "$bin_name" -perm -u+x | head -n1 || true)
