@@ -1,0 +1,29 @@
+{
+    "window.commandCenter": true,
+    "cursor.composer.shouldChimeAfterChatFinishes": true,
+    "terminal.integrated.commandsToSkipShell": [
+        "language-julia.interrupt"
+    ],
+    "julia.symbolCacheDownload": true,
+    "julia.enableCrashReporter": true,
+    "julia.executablePath": "/home/kristian/.juliaup/bin/julia",
+    "julia.numTestProcesses": 12,
+    "julia.NumThreads": "auto",
+    "editor.defaultFormatter": "julialang.language-julia",
+    "editor.formatOnSave": true,
+    "workbench.colorTheme": "Default Dark Modern",
+    "julia.enableTelemetry": true,
+    "git.openRepositoryInParentFolders": "never",
+    "git.confirmSync": false,
+    "editor.fontFamily": "'Firacode nerd font', 'monospace', monospace",
+    "explorer.confirmDelete": false,
+    "cursor.cpp.disabledLanguages": [
+        "markdown"
+    ],
+    "explorer.confirmDragAndDrop": false,
+    "cursor.cpp.enablePartialAccepts": true,
+    "vim.useCtrlKeys": false,
+    "vim.useSystemClipboard": true,
+    "vim.smartRelativeLine": true,
+    "editor.lineNumbers": "relative"
+}
