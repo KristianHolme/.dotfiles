@@ -3,7 +3,7 @@
 source ~/.local/share/omarchy/default/bash/rc
 
 # Source custom functions
-source ~/.dotfiles/default/.bashrc-functions
+source ~/.dotfiles/default/dot-bashrc-functions
 
 # >>> juliaup initialize >>>
 
