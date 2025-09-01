@@ -1,0 +1,16 @@
+# Custom bash functions
+# Add your custom functions here
+
+# Verbose git pull all function
+# Finds all git repositories in subdirectories and pulls them with verbose output
+function glall() {
+    echo "Searching for git repositories..."
+    find . -type d -name ".git" | while read -r gitdir; do
+        repo_dir="$(dirname "$gitdir")"
+        echo "Pulling in: $repo_dir"
+        cd "$repo_dir" && git pull
+        cd - > /dev/null
+        echo "---"
+    done
+    echo "Finished pulling all repositories."
+}

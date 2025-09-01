@@ -2,6 +2,9 @@
 # (don't mess with these directly, just overwrite them here!)
 source ~/.local/share/omarchy/default/bash/rc
 
+# Source custom functions
+source ~/.dotfiles/default/.bashrc-functions
+
 # >>> juliaup initialize >>>
 
 # !! Contents within this block are managed by juliaup !!
@@ -20,6 +23,7 @@ esac
 alias j='julia'
 alias jp='julia --project=.'
 alias lg='lazygit'
+alias r='source ~/.bashrc'
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
 
@@ -40,7 +44,6 @@ else
 fi
 
 #Operations
-alias glall='find . -type d -name ".git" -execdir git pull \;'
 
 #variables
 export JULIA_NUM_THREADS=auto
