@@ -21,6 +21,6 @@
   "vim.useSystemClipboard": true,
   "vim.smartRelativeLine": true,
   "editor.lineNumbers": "relative",
-  "files.autoSave": "onFocusChange"
+  "files.autoSave": "onFocusChange",
+  "workbench.panel.defaultLocation": "right"
 }
-
