@@ -6,5 +6,3 @@ return {
     require("treesitter-context").setup(opts)
   end,
 }
-
-
