@@ -5,7 +5,7 @@ return {
 			-- julia = { "julia-lsp" },
 			lua = { "stylua" },
 			json = { "prettier" },
-			-- latex = { "tex-fmt" },
+			tex = { "tex-fmt" },
 		},
 	},
 }
