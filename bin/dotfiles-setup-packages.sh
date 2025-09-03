@@ -132,6 +132,7 @@ main() {
     install_pkg tmux
     # Install LaTeX packages
     install_pkg texlive-meta
+    install_pkg tex-fmt
     install_pkg zathura
     install_pkg zathura-pdf-mupdf
     #node required for something vimtex related?
