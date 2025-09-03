@@ -2,10 +2,10 @@ return {
 	"stevearc/conform.nvim",
 	opts = {
 		formatters_by_ft = {
-			julia = { "juliaformatter" },
+			julia = { "julia-lsp" },
 			lua = { "stylua" },
 			json = { "prettier" },
-			-- add other languages as needed
+			latex = { "tex-fmt" },
 		},
 	},
 }
