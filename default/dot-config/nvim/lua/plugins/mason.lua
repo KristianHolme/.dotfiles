@@ -6,7 +6,9 @@ return {
 				"texlab", -- LaTeX LSP
 				"julia-lsp",
 				"prettier",
+				"tex-fmt",
 			},
 		},
 	},
 }
+
