@@ -2,7 +2,7 @@ return {
 	"lervag/vimtex",
 	lazy = false,
 	init = function()
-		vim.g.vimtex_view_method = "zathura"
+		vim.g.vimtex_view_method = "zathura_simple"
 		vim.g.vimtex_root_method = { "latexmkrc", "toc" }
 		-- Set compiler options
 		vim.g.vimtex_compiler_latexmk = {
