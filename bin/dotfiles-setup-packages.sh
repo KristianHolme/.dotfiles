@@ -73,25 +73,25 @@ install_latex_template() {
     fi
 
     log_info "Installing LaTeX template: $name"
-    
+
     # Create temporary directory
     local temp_dir=$(mktemp -d)
     cd "$temp_dir"
-    
+
     # Download and extract
     curl -fsSL -o template.zip "$url"
     unzip -q template.zip
-    
+
     # Create target directory if it doesn't exist
     mkdir -p "$target_dir"
-    
+
     # Copy files to target directory
     cp -r * "$target_dir/"
-    
+
     # Clean up
-    cd - > /dev/null
+    cd - >/dev/null
     rm -rf "$temp_dir"
-    
+
     log_info "LaTeX template $name installed successfully"
 }
 
@@ -132,19 +132,20 @@ main() {
     install_pkg tmux
     # Install LaTeX packages
     install_pkg texlive-meta
-    install_pkg tex-fmt
+    # TODO: remove if not necessary
+    # install_pkg tex-fmt
     install_pkg zathura
     install_pkg zathura-pdf-mupdf
     #node required for something vimtex related?
     omarchy-install-dev-env node
-    
+
     # 4) Install LaTeX templates
     install_latex_template \
         "UiO Beamer Theme" \
         "https://www.mn.uio.no/ifi/tjenester/it/hjelp/latex/uiobeamer.zip" \
         "$HOME/texmf/tex/latex/beamer/uiobeamer" \
         "$HOME/texmf/tex/latex/beamer/uiobeamer/beamerthemeUiO.sty"
-    
+
     # Refresh LaTeX file database so it can find newly installed templates
     if command -v mktexlsr >/dev/null 2>&1; then
         log_info "Refreshing LaTeX file database..."
