@@ -24,8 +24,8 @@ NVIM_OPT_DIR="${NVIM_OPT_DIR:-"$HOME/.local/opt/neovim"}"
 
 arch_is_supported() {
     case "$(uname -m)" in
-        x86_64|amd64) return 0 ;;
-        *) return 1 ;;
+    x86_64 | amd64) return 0 ;;
+    *) return 1 ;;
     esac
 }
 
@@ -132,7 +132,7 @@ install_git_lfs() {
     log_info "Downloading git-lfs from $asset_url"
     curl -fsSL "$asset_url" -o "$tmp/git-lfs.tar.gz"
     tar -xzf "$tmp/git-lfs.tar.gz" -C "$tmp"
-    
+
     # Find the git-lfs binary in the extracted tarball
     local git_lfs_bin
     git_lfs_bin=$(find "$tmp" -name "git-lfs" -type f -executable | head -n1 || true)
@@ -140,10 +140,10 @@ install_git_lfs() {
         log_error "Could not find git-lfs binary in downloaded archive"
         return 1
     fi
-    
+
     install -m 0755 "$git_lfs_bin" "$INSTALL_DIR/git-lfs"
     log_success "Installed git-lfs -> $INSTALL_DIR/git-lfs"
-    
+
     # Install git-lfs hooks (this is safe to run multiple times)
     if command -v git-lfs >/dev/null 2>&1; then
         git lfs install --skip-smudge 2>/dev/null || log_warning "Failed to install git-lfs hooks"
@@ -198,41 +198,41 @@ install_neovim() {
 
 install_lazyvim() {
     local nvim_config_dir="$HOME/.config/nvim"
-    
+
     # Check if LazyVim is already installed
     if [[ -f "$nvim_config_dir/lua/config/lazy.lua" ]] || [[ -f "$nvim_config_dir/init.lua" ]]; then
         log_info "LazyVim config already exists; skipping"
         return 0
     fi
-    
+
     # Check if nvim is available
     if ! command -v nvim >/dev/null 2>&1; then
         log_warning "nvim not found; skipping LazyVim installation"
         return 0
     fi
-    
+
     log_info "Installing LazyVim starter configuration..."
-    
+
     # Create nvim config directory
     mkdir -p "$nvim_config_dir"
-    
+
     # Clone LazyVim starter template
     local tmp_dir=""
     tmp_dir=$(mktemp -d)
     trap 't="${tmp_dir:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
-    
+
     if git clone https://github.com/LazyVim/starter "$tmp_dir/lazyvim-starter" >/dev/null 2>&1; then
         # Remove .git directory from starter template
         rm -rf "$tmp_dir/lazyvim-starter/.git"
-        
+
         # Copy starter files to nvim config (use pushd/popd to avoid path issues)
         pushd "$tmp_dir/lazyvim-starter" >/dev/null
-        
+
         # Copy all files (visible and hidden) from the LazyVim starter
         cp -r . "$nvim_config_dir/"
-        
+
         popd >/dev/null
-        
+
         log_success "LazyVim starter configuration installed"
         log_info "Run 'nvim' to complete the setup and install plugins"
     else
@@ -336,8 +336,6 @@ install_stow() {
     fi
 }
 
-
-
 main() {
     ensure_cmd curl tar git install make perl
 
@@ -413,5 +411,3 @@ main() {
 }
 
 main "$@"
-
-
