@@ -401,6 +401,12 @@ main() {
     # Install gum for interactive prompts
     install_gum
 
+    # Install Julia (juliaup) and Run Julia setup on first install
+    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && $SCRIPT_DIR/julia-setup.jl"
+
+    # Install/Update Runic script used by custom local formatter
+    "$SCRIPT_DIR/dotfiles-install-runic.sh" || log_warning "Runic installation failed"
+
     clone_or_update_omarchy "$OMARCHY_DIR" "$OMARCHY_REPO_URL"
 
     log_success "Done. Restart your shell or: source ~/.bashrc"

@@ -2,8 +2,10 @@
 
 using Pkg
 Pkg.activate()
-packages = ["Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson",
-    "PkgTemplates", "ProgressMeter", "BasicAutoloads", "OhMyREPL", "Reexport"]
+packages = [
+    "Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson",
+    "PkgTemplates", "ProgressMeter", "BasicAutoloads", "OhMyREPL", "Reexport",
+]
 for p in packages
     try
         Pkg.add(p)
@@ -12,3 +14,6 @@ for p in packages
         @warn "Error installing $p" exception = (e, catch_backtrace())
     end
 end
+
+Pkg.activate("runic", shared = true)
+Pkg.add("Runic")

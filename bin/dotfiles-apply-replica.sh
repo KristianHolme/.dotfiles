@@ -96,10 +96,18 @@ ensure_bashrc_source() {
 }
 
 main() {
-    ensure_cmd git stow
+    ensure_cmd git stow curl
 
     # Ensure omarchy repo is available
     clone_or_update_omarchy "$OMARCHY_DIR" "$OMARCHY_REPO_URL"
+
+    # Run Julia setup only if Julia is already installed (installation happens in setup script)
+    if command -v julia >/dev/null 2>&1; then
+        log_info "Running Julia setup script"
+        "$SCRIPT_DIR/julia-setup.jl" || log_warning "julia-setup.jl failed"
+    else
+        log_warning "Julia not found; install it via dotfiles-setup-replica.sh first"
+    fi
 
     # Create symlinks for specific configs
     setup_julia_config

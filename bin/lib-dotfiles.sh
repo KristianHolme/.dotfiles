@@ -34,6 +34,25 @@ ensure_cmd() {
     done
 }
 
+# Portable helper to install a tool via piping curl to bash.
+# Usage: install_via_curl "Name" check_cmd url [post_install_cmd]
+install_via_curl() {
+    local name="$1"
+    local check_cmd="$2"
+    local url="$3"
+    local post_install_cmd="${4:-}"
+
+    if command -v "$check_cmd" >/dev/null 2>&1; then
+        log_info "$name already installed; skipping installer"
+    else
+        log_info "Installing $name"
+        curl -fsSL "$url" | bash
+        if [[ -n "$post_install_cmd" ]]; then
+            eval "$post_install_cmd"
+        fi
+    fi
+}
+
 # Creates a symlink to a target file or directory, backing up the target if it exists and is not already a symlink.
 # This function is idempotent.
 # Usage: create_symlink_with_backup "/path/to/source" "/path/to/target" "Description for logging"

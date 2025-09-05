@@ -44,23 +44,6 @@ install_pkg() {
     fi
 }
 
-install_via_curl() {
-    local name="$1"
-    local check_cmd="$2"
-    local url="$3"
-    local post_install_cmd="${4:-}"
-
-    if command -v "$check_cmd" >/dev/null 2>&1; then
-        log_info "$name already installed; skipping installer"
-    else
-        log_info "Installing $name"
-        curl -fsSL "$url" | bash
-        if [[ -n "$post_install_cmd" ]]; then
-            eval "$post_install_cmd"
-        fi
-    fi
-}
-
 install_latex_template() {
     local name="$1"
     local url="$2"
@@ -115,9 +98,9 @@ main() {
     # 3) Install packages
     install_pkg zotero-bin
 
-    # Setup Zotero Better BibTeX extension if Zotero was installed successfully
+    # Setup Zotero extensions if Zotero was installed successfully
     if pkg_installed zotero-bin; then
-        log_info "Setting up Zotero Better BibTeX extension..."
+        log_info "Setting up Zotero extensions..."
         "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log_info "Zotero setup failed (non-critical)"
     fi
 
@@ -162,6 +145,9 @@ main() {
     # Install tools via curl installers
     install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/bin/julia-setup.jl"
     install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"
+
+    # Install/Update Runic script used by custom local formatter
+    "$SCRIPT_DIR/dotfiles-install-runic.sh" || log_warning "Runic installation failed"
 
     # 5) Refresh desktop database (user apps)
     update-desktop-database ~/.local/share/applications/ || true

@@ -1,12 +1,13 @@
 {
   "window.commandCenter": true,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+  "terminal.integrated.commandsToSkipShell": [
+    "language-julia.interrupt"
+  ],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
   "julia.numTestProcesses": 12,
   "julia.NumThreads": "auto",
-  "editor.defaultFormatter": "julialang.language-julia",
   "editor.formatOnSave": true,
   "workbench.colorTheme": "Default Dark Modern",
   "julia.enableTelemetry": true,
@@ -14,7 +15,9 @@
   "git.confirmSync": false,
   "editor.fontFamily": "'Firacode nerd font', 'monospace', monospace",
   "explorer.confirmDelete": false,
-  "cursor.cpp.disabledLanguages": ["markdown"],
+  "cursor.cpp.disabledLanguages": [
+    "markdown"
+  ],
   "explorer.confirmDragAndDrop": false,
   "cursor.cpp.enablePartialAccepts": true,
   "vim.useCtrlKeys": false,
@@ -22,5 +25,16 @@
   "vim.smartRelativeLine": true,
   "editor.lineNumbers": "relative",
   "files.autoSave": "onFocusChange",
-  "workbench.panel.defaultLocation": "right"
+  "workbench.panel.defaultLocation": "right",
+  "customLocalFormatters.formatters": [
+    {
+      "command": "julia --project=@runic --startup-file=no -e 'using Runic; exit(Runic.main(ARGS))'",
+      "languages": [
+        "julia"
+      ]
+    }
+  ],
+  "[julia]": {
+    "editor.defaultFormatter": "jkillian.custom-local-formatters"
+  }
 }
