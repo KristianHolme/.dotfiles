@@ -6,7 +6,7 @@ return {
 		vim.g.vimtex_root_method = { "latexmkrc", "toc" }
 		-- Set compiler options
 		vim.g.vimtex_compiler_latexmk = {
-			aux_dir = "../.latexmk/aux",
+			aux_dir = "../aux",
 			out_dir = "../output",
 		}
 		-- Set quickfix options
