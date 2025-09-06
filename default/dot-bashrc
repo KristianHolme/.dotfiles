@@ -21,7 +21,8 @@ esac
 
 # Aliases
 alias j='julia'
-alias jp='julia --project=.'
+alias jp='julia --project'
+alias jtest='julia --project -e "using Pkg;Pkg.test()"'
 alias lg='lazygit'
 alias r='source ~/.bashrc'
 
