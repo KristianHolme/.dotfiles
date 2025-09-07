@@ -17,6 +17,10 @@ SERVERS=(
 	"bioint02"
 	"bioint03"
 	"bioint04"
+	# personal machines via Tailscale
+	"bengal"
+	"kaspi"
+	"sibir"
 )
 
 # Check if gum is installed
@@ -27,8 +31,12 @@ if ! command -v gum &>/dev/null; then
 	exit 1
 fi
 
+# Hide current host from selection
+CURRENT_HOST="$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo "")"
+FILTERED=$(printf '%s\n' "${SERVERS[@]}" | awk -v h="$CURRENT_HOST" 'tolower($0)!=tolower(h)')
+
 # Let user choose server with fuzzy finding
-SELECTED=$(printf '%s\n' "${SERVERS[@]}" | gum filter \
+SELECTED=$(printf '%s\n' "$FILTERED" | gum filter \
 	--header "🔍 Choose server to connect to:" \
 	--placeholder "Type to search servers..." \
 	--prompt "❯ ")

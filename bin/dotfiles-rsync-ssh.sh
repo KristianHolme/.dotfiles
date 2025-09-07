@@ -3,7 +3,7 @@
 # General script to sync directories from remote machines to local machine
 # Usage: ./dotfiles-rsync-ssh.sh [--from HOST] [--source-dir DIR] [--target-dir DIR]
 # Allows interactive selection of multiple directories using gum
-# Supported hosts: atalanta (default), bioint01, bioint02, bioint03, bioint04
+# Supported hosts: atalanta (default), bioint01, bioint02, bioint03, bioint04, bengal, kaspi, sibir
 
 set -e # Exit on any error
 
@@ -72,9 +72,12 @@ atalanta)
 bioint01 | bioint02 | bioint03 | bioint04)
 	USE_JUMP_HOST=true
 	;;
+bengal | kaspi | sibir)
+	USE_JUMP_HOST=false
+	;;
 *)
 	echo "❌ Error: Unsupported host '$SOURCE_HOST'"
-	echo "Supported hosts: atalanta, bioint01, bioint02, bioint03, bioint04"
+	echo "Supported hosts: atalanta, bioint01, bioint02, bioint03, bioint04, bengal, kaspi, sibir"
 	exit 1
 	;;
 esac
