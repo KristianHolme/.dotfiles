@@ -105,35 +105,30 @@ setup_tailscale() {
 
 	# Check if Tailscale is already installed
 	if command -v tailscale >/dev/null 2>&1; then
-		log_info "Tailscale already installed; skipping download"
+		log_info "Tailscale already installed and configured; skipping setup"
 	else
 		log_info "Installing Tailscale..."
 		curl -fsSL https://tailscale.com/install.sh | sh
-	fi
 
-	# Check if Tailscale is connected
-	if tailscale status >/dev/null 2>&1; then
-		log_info "Tailscale already connected and running"
-	else
 		log_info "Starting Tailscale connection..."
 		sudo tailscale up
-	fi
 
-	# Ask if user wants to enable SSH using gum
-	if command -v gum >/dev/null 2>&1; then
-		if gum confirm "Enable Tailscale SSH access to this machine?"; then
-			log_info "Enabling Tailscale SSH..."
-			tailscale set --ssh
-			log_success "Tailscale SSH enabled successfully"
+		# Ask if user wants to enable SSH using gum
+		if command -v gum >/dev/null 2>&1; then
+			if gum confirm "Enable Tailscale SSH access to this machine?"; then
+				log_info "Enabling Tailscale SSH..."
+				tailscale set --ssh
+				log_success "Tailscale SSH enabled successfully"
+			else
+				log_info "Skipping Tailscale SSH setup"
+			fi
 		else
-			log_info "Skipping Tailscale SSH setup"
+			log_warning "gum not available; skipping SSH setup choice"
+			log_info "To enable SSH later, run: tailscale set --ssh"
 		fi
-	else
-		log_warning "gum not available; skipping SSH setup choice"
-		log_info "To enable SSH later, run: tailscale set --ssh"
-	fi
 
-	log_success "Tailscale setup completed"
+		log_success "Tailscale setup completed"
+	fi
 }
 
 main() {
