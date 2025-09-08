@@ -78,6 +78,64 @@ install_latex_template() {
 	log_info "LaTeX template $name installed successfully"
 }
 
+refresh_latex_database() {
+	# Refresh LaTeX file database so it can find newly installed templates
+	if command -v mktexlsr >/dev/null 2>&1; then
+		log_info "Refreshing LaTeX file database..."
+		mktexlsr "$HOME/texmf" || log_warning "Warning: Could not refresh LaTeX file database"
+	else
+		log_info "mktexlsr not found; skipping LaTeX database refresh"
+	fi
+}
+
+setup_tmux_tpm() {
+	# Setup tmux plugin manager (tpm)
+	if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+		log_info "Installing tmux plugin manager..."
+		mkdir -p "$HOME/.tmux/plugins"
+		git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+	else
+		log_info "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
+	fi
+}
+
+setup_tailscale() {
+	# Install and configure Tailscale
+	log_info "Setting up Tailscale..."
+
+	# Check if Tailscale is already installed
+	if command -v tailscale >/dev/null 2>&1; then
+		log_info "Tailscale already installed; skipping download"
+	else
+		log_info "Installing Tailscale..."
+		curl -fsSL https://tailscale.com/install.sh | sh
+	fi
+
+	# Check if Tailscale is connected
+	if tailscale status >/dev/null 2>&1; then
+		log_info "Tailscale already connected and running"
+	else
+		log_info "Starting Tailscale connection..."
+		sudo tailscale up
+	fi
+
+	# Ask if user wants to enable SSH using gum
+	if command -v gum >/dev/null 2>&1; then
+		if gum confirm "Enable Tailscale SSH access to this machine?"; then
+			log_info "Enabling Tailscale SSH..."
+			tailscale set --ssh
+			log_success "Tailscale SSH enabled successfully"
+		else
+			log_info "Skipping Tailscale SSH setup"
+		fi
+	else
+		log_warning "gum not available; skipping SSH setup choice"
+		log_info "To enable SSH later, run: tailscale set --ssh"
+	fi
+
+	log_success "Tailscale setup completed"
+}
+
 main() {
 	ensure_cmd yay
 
@@ -130,18 +188,12 @@ main() {
 		"$HOME/texmf/tex/latex/beamer/uiobeamer" \
 		"$HOME/texmf/tex/latex/beamer/uiobeamer/beamerthemeUiO.sty"
 
-	# Refresh LaTeX file database so it can find newly installed templates
-	if command -v mktexlsr >/dev/null 2>&1; then
-		log_info "Refreshing LaTeX file database..."
-		mktexlsr "$HOME/texmf" || log_warning "Warning: Could not refresh LaTeX file database"
-	fi
+	# Setup development environment tools
+	refresh_latex_database
+	setup_tmux_tpm
 
-	if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-		mkdir -p "$HOME/.tmux/plugins"
-		git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-	else
-		log_info "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
-	fi
+	# Network and connectivity setup
+	setup_tailscale
 
 	# Install tools via curl installers
 	install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/bin/julia-setup.jl"
