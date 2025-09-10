@@ -53,8 +53,8 @@ echo
 
 # Connect with SSH and handle tmux sessions
 # -t forces pseudo-terminal allocation (needed for tmux)
-# tmux attach || tmux new-session: attach to existing session, or create new one if none exists
-ssh "$SELECTED" -t 'tmux attach || tmux new-session'
+# Attach or create named session with UTF-8 env and UTF-8 client
+ssh "$SELECTED" -t 'bash -lc "tmux -u new-session -A -s main"'
 
 echo
 echo "✅ Disconnected from $SELECTED"
