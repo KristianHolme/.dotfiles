@@ -19,15 +19,17 @@ Arguments:
     PROJECT_NAME    Name of the project directory to create
 
 Options:
-    -t, --type TYPE     Project type: uio-presentation
+    -t, --type TYPE     Project type: default|uio-presentation
     -d, --directory DIR Target directory (default: current directory)
     --no-git           Skip Git initialization
     -h, --help         Show this help message
 
 Examples:
+    $0 -t default my-doc                   # Creates plain LaTeX article project
     $0 -t uio-presentation my-uio-talk     # Creates UiO presentation project
 
 Available templates:
+    default           - Plain LaTeX article with minimal preamble
     uio-presentation  - University of Oslo official beamer presentation
 EOF
 }
@@ -38,7 +40,7 @@ create_project_structure() {
 	log_info "Creating project structure..."
 
 	# Basic directories
-	mkdir -p "$project_dir"/{src,figures,output, aux}
+	mkdir -p "$project_dir"/{src,figures,output,aux}
 
 	# Create .gitignore
 	cat >"$project_dir/.gitignore" <<'EOF'
@@ -101,7 +103,7 @@ setup_git_repo() {
 
 	# Initial commit
 	git add .
-	git commit -m "Initial commit: UiO LaTeX presentation project"
+	git commit -m "Initial commit: LaTeX project '$project_name'"
 
 	log_success "Git repository initialized with LFS for figures"
 }
@@ -164,9 +166,25 @@ setup_uio_template() {
 	fi
 }
 
+setup_default_template() {
+	local project_dir="$1"
+	local project_name="$2"
+
+	log_info "Setting up default plain document template..."
+
+	if [[ -f "$TEMPLATES_DIR/default-main.tex" && -f "$TEMPLATES_DIR/default-preamble.tex" ]]; then
+		cp "$TEMPLATES_DIR/default-main.tex" "$project_dir/src/main.tex"
+		cp "$TEMPLATES_DIR/default-preamble.tex" "$project_dir/src/preamble.tex"
+		sed -i "s/PROJECT_NAME/$project_name/g" "$project_dir/src/main.tex"
+	else
+		log_error "Default template files not found in $TEMPLATES_DIR"
+		exit 1
+	fi
+}
+
 main() {
 	local project_name=""
-	local template_type="uio-presentation"
+	local template_type="default"
 	local target_directory="."
 	local init_git=true
 
@@ -209,9 +227,9 @@ main() {
 		exit 1
 	fi
 
-	if [[ "$template_type" != "uio-presentation" ]]; then
+	if [[ "$template_type" != "uio-presentation" && "$template_type" != "default" ]]; then
 		log_error "Invalid template type: $template_type"
-		log_info "Currently available: uio-presentation"
+		log_info "Currently available: default, uio-presentation"
 		exit 1
 	fi
 
@@ -223,18 +241,25 @@ main() {
 		exit 1
 	fi
 
-	log_info "Creating UiO presentation project: $project_name"
+	log_info "Creating LaTeX project ($template_type): $project_name"
 	log_info "Target directory: $project_dir"
 
 	create_project_structure "$project_dir"
-	setup_uio_template "$project_dir" "$project_name"
+	case "$template_type" in
+	"uio-presentation")
+		setup_uio_template "$project_dir" "$project_name"
+		;;
+	"default")
+		setup_default_template "$project_dir" "$project_name"
+		;;
+	esac
 
 	if [[ "$init_git" == true ]]; then
 		setup_git_repo "$project_dir" "$project_name"
 		push_to_github "$project_name"
 	fi
 
-	log_success "UiO presentation project '$project_name' created successfully!"
+	log_success "LaTeX project '$project_name' created successfully!"
 	log_info "Next steps:"
 	log_info "  1. cd $project_dir"
 	log_info "  2. nvim src/main.tex"
