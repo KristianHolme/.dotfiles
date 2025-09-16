@@ -36,5 +36,8 @@
   ],
   "[julia]": {
     "editor.defaultFormatter": "jkillian.custom-local-formatters"
+  },
+  "remote.SSH.remotePlatform": {
+    "bengal": "linux"
   }
 }
