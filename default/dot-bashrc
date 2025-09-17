@@ -24,7 +24,13 @@ alias j='julia'
 alias jp='julia --project'
 alias jtest='julia --project -e "using Pkg;Pkg.test()"'
 alias lg='lazygit'
+unalias r
 alias r='source ~/.bashrc'
+unalias cd  #omarchy aliases to zoxide
+unalias ls
+unalias lsa
+alias l='eza -lh --group-directories-first --icons=auto'
+alias la='l -a'
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
 
