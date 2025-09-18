@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Exit if already running
+pgrep -f "alacritty --class ScreensaverBlur" >/dev/null && exit 0
+
+focused=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true).name')
+
+for m in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+  hyprctl dispatch focusmonitor "$m"
+  hyprctl dispatch exec -- \
+    alacritty --class ScreensaverBlur \
+      --config-file ~/.local/share/omarchy/default/alacritty/screensaver.toml \
+      -e bash -lc 'read -t 999999 || true'
+done
+
+hyprctl dispatch focusmonitor "$focused"
+
+
