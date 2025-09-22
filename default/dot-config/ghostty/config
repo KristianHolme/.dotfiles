@@ -19,3 +19,5 @@ shell-integration-features = no-cursor
 
 # Keyboard bindings
 keybind = f11=toggle_fullscreen
+keybind = global:super+ctrl+enter=toggle_quick_terminal
+quit-after-last-window-closed = false
