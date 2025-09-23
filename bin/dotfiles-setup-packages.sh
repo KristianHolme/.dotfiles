@@ -164,7 +164,7 @@ main() {
 	install_pkg stow
 	install_pkg git-lfs
 	install_pkg bitwarden
-	install_pkg google-chrome
+	# install_pkg google-chrome
 	install_pkg tmux
 	install_pkg shfmt
 	# Install LaTeX packages
@@ -175,7 +175,7 @@ main() {
 	install_pkg zathura-pdf-mupdf
 	#node required for something vimtex related?
 	omarchy-install-dev-env node
-	install_pkg luajit
+	install_pkg xdg-desktop-portal-hyprland
 
 	# 4) Install LaTeX templates
 	install_latex_template \
