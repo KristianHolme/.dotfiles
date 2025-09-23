@@ -175,6 +175,7 @@ main() {
 	install_pkg zathura-pdf-mupdf
 	#node required for something vimtex related?
 	omarchy-install-dev-env node
+	install_pkg luajit
 
 	# 4) Install LaTeX templates
 	install_latex_template \
