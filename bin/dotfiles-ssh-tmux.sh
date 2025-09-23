@@ -54,7 +54,7 @@ echo
 # Connect with SSH and handle tmux sessions
 # -t forces pseudo-terminal allocation (needed for tmux)
 # Attach or create named session with UTF-8 env and UTF-8 client
-ssh "$SELECTED" -t 'tmux -u new-session -A -s main'
+ssh "$SELECTED" -t 'printf "\033]0;%s\007" "$(hostname -s)"; tmux -u new-session -A -s main'
 
 echo
 echo "✅ Disconnected from $SELECTED"
