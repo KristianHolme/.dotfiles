@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate()
 packages = [
     "Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson", "JET",
-    "PkgTemplates", "ProgressMeter", "BasicAutoloads", "OhMyREPL", "Reexport",
+    "PkgTemplates", "ProgressMeter", "OhMyREPL", "Reexport",
     "Infiltrator",
 ]
 for p in packages
