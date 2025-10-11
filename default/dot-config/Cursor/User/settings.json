@@ -14,9 +14,7 @@
   "git.confirmSync": false,
   "editor.fontFamily": "'Firacode nerd font', 'monospace', monospace",
   "explorer.confirmDelete": false,
-  "cursor.cpp.disabledLanguages": [
-    "markdown"
-  ],
+  "cursor.cpp.disabledLanguages": [],
   "explorer.confirmDragAndDrop": false,
   "cursor.cpp.enablePartialAccepts": true,
   "vim.useCtrlKeys": false,
@@ -41,5 +39,7 @@
   },
   "python.terminal.activateEnvironment": false,
   "workbench.colorTheme": "Default Dark Modern",
-  "remote.autoForwardPortsSource": "hybrid"
+  "remote.autoForwardPortsSource": "hybrid",
+  "git.suggestSmartCommit": false,
+  "editor.cursorSurroundingLines": 8
 }
