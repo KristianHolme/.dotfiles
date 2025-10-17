@@ -41,5 +41,5 @@
   "workbench.colorTheme": "Default Dark Modern",
   "remote.autoForwardPortsSource": "hybrid",
   "git.suggestSmartCommit": false,
-  "editor.cursorSurroundingLines": 8
+  "editor.cursorSurroundingLines": 8,
 }
