@@ -19,6 +19,8 @@ shell-integration-features = no-cursor
 
 # Keyboard bindings
 keybind = f11=toggle_fullscreen
+keybind = shift+insert=paste_from_clipboard
+keybind = control+insert=copy_to_clipboard
 keybind = global:super+ctrl+enter=toggle_quick_terminal
 keybind = ctrl+shift+|=new_split:right
 keybind = ctrl+shift+-=new_split:down
