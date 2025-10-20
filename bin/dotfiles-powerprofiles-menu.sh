@@ -10,14 +10,14 @@ current=$(powerprofilesctl get 2>/dev/null || true)
 # Compute preselect index (1-based) within options
 pre_index=""
 if [[ -n "$current" ]]; then
-	pre_index=$(printf '%s\n' "$options" | nl -ba | awk -v c="$current" '$2==c{print $1; exit}') || true
+	pre_index=$(echo -e "$options" | grep -nxF "$current" | cut -d: -f1) || true
 fi
 
 # Show menu with optional preselection
 if [[ -n "$pre_index" ]]; then
-	selection=$(printf '%s\n' "$options" | walker --dmenu --theme dmenu_250 -p "Power Profile…" -a "$pre_index" || true)
+	selection=$(echo -e "$options" | omarchy-launch-walker --dmenu --width 295 --minheight 1 --maxheight 600 -p "Power Profile…" -c "$pre_index" 2>/dev/null || true)
 else
-	selection=$(printf '%s\n' "$options" | walker --dmenu --theme dmenu_250 -p "Power Profile…" || true)
+	selection=$(echo -e "$options" | omarchy-launch-walker --dmenu --width 295 --minheight 1 --maxheight 600 -p "Power Profile…" 2>/dev/null || true)
 fi
 
 if [[ -n "$selection" && "$selection" != "CNCLD" ]]; then
