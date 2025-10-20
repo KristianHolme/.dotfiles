@@ -17,7 +17,6 @@ Comprehensive dotfiles management with support for both local development and un
 │   ├── dotfiles-setup-ssh.sh    # SSH key setup and distribution
 │   ├── dotfiles-setup-zotero.sh # Zotero Better BibTeX extension installer
 │   ├── dotfiles-power-suspend.sh # Configure power button for suspend
-│   ├── dotfiles-powerprofiles-menu.sh # Interactive power profile switcher
 │   ├── dotfiles-firefly-backup.sh # Firefly III backup utility
 │   └── dotfiles-firefly-restore.sh # Firefly III restore utility
 ├── default/                      # Default configuration package
@@ -185,8 +184,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 # Configure power button for suspend
 ~/.dotfiles/bin/dotfiles-power-suspend.sh
 
-# Interactive power profile switcher
-~/.dotfiles/bin/dotfiles-powerprofiles-menu.sh
+# Power profile menu (now uses omarchy-menu power)
 ```
 
 **Power button configuration:**
@@ -194,7 +192,8 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 - Options: reboot system, restart services, or apply on next reboot
 
 **Power profile menu:**
-- Interactive selection using `walker` with dmenu theme
+- Uses `omarchy-menu power` (integrated with omarchy system)
+- Interactive selection using `walker` with consistent styling
 - Integrates with `powerprofilesctl` for profile switching
 
 ## Backup & Restore
