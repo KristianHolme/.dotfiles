@@ -6,7 +6,7 @@
   ],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
-  "julia.numTestProcesses": 12,
+  "julia.numTestProcesses": 6,
   "julia.NumThreads": "auto",
   "editor.formatOnSave": true,
   "julia.enableTelemetry": true,
@@ -45,4 +45,5 @@
   "extensions.experimental.affinity": {
     "asvetliakov.vscode-neovim": 1
   },
+  "update.mode": "manual",
 }
