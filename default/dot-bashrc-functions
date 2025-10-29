@@ -8,8 +8,8 @@ function find_relevant_folders() {
     local marker="$1"
     local description="$2"
     local type="${3:-f}"
-    echo "Searching for $description..."
-    find . -name "$marker" -type "$type" | while read -r marker_path; do
+    echo "Searching for $description..." >&2
+    find . -maxdepth 2 -name "$marker" -type "$type" | while read -r marker_path; do
         local folder_dir="$(dirname "$marker_path")"
         echo "$folder_dir"
     done
@@ -18,7 +18,13 @@ function find_relevant_folders() {
 # Verbose git pull all function
 # Finds all git repositories in subdirectories and pulls them with verbose output
 function glall() {
-    find_relevant_folders ".git" "git repositories" "d" | while read -r repo_dir; do
+    local folders
+    folders=$(find_relevant_folders ".git" "git repositories" "d")
+    if [ -z "$folders" ]; then
+        echo "No git repositories found." >&2
+        return
+    fi
+    echo "$folders" | while read -r repo_dir; do
         echo "Pulling in: $repo_dir"
         cd "$repo_dir" && git pull
         cd - > /dev/null
@@ -30,7 +36,13 @@ function glall() {
 # Julia project update function
 # Finds all Julia projects (Project.toml) and updates them using pkg update
 function jupall() {
-    find_relevant_folders "Project.toml" "Julia projects" | while read -r project_dir; do
+    local folders
+    folders=$(find_relevant_folders "Project.toml" "Julia projects")
+    if [ -z "$folders" ]; then
+        echo "No Julia projects found." >&2
+        return
+    fi
+    echo "$folders" | while read -r project_dir; do
         echo "Updating Julia project in: $project_dir"
         cd "$project_dir" && pkg update
         cd - > /dev/null
@@ -42,7 +54,13 @@ function jupall() {
 # Julia project precompile function
 # Finds all Julia projects (Project.toml) and precompiles them using pkg precompile
 function jprecall() {
-    find_relevant_folders "Project.toml" "Julia projects" | while read -r project_dir; do
+    local folders
+    folders=$(find_relevant_folders "Project.toml" "Julia projects")
+    if [ -z "$folders" ]; then
+        echo "No Julia projects found." >&2
+        return
+    fi
+    echo "$folders" | while read -r project_dir; do
         echo "Precompiling Julia project in: $project_dir"
         cd "$project_dir" && pkg precompile
         cd - > /dev/null
