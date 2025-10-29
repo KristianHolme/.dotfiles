@@ -1,16 +1,52 @@
 # Custom bash functions
 # Add your custom functions here
 
+# Helper function to find relevant folders based on marker files or directories
+# Usage: find_relevant_folders <marker_name> <description> <type>
+# type: "f" for files, "d" for directories
+function find_relevant_folders() {
+    local marker="$1"
+    local description="$2"
+    local type="${3:-f}"
+    echo "Searching for $description..."
+    find . -name "$marker" -type "$type" | while read -r marker_path; do
+        local folder_dir="$(dirname "$marker_path")"
+        echo "$folder_dir"
+    done
+}
+
 # Verbose git pull all function
 # Finds all git repositories in subdirectories and pulls them with verbose output
 function glall() {
-    echo "Searching for git repositories..."
-    find . -type d -name ".git" | while read -r gitdir; do
-        repo_dir="$(dirname "$gitdir")"
+    find_relevant_folders ".git" "git repositories" "d" | while read -r repo_dir; do
         echo "Pulling in: $repo_dir"
         cd "$repo_dir" && git pull
         cd - > /dev/null
         echo "---"
     done
     echo "Finished pulling all repositories."
+}
+
+# Julia project update function
+# Finds all Julia projects (Project.toml) and updates them using pkg update
+function jupall() {
+    find_relevant_folders "Project.toml" "Julia projects" | while read -r project_dir; do
+        echo "Updating Julia project in: $project_dir"
+        cd "$project_dir" && pkg update
+        cd - > /dev/null
+        echo "---"
+    done
+    echo "Finished updating all Julia projects."
+}
+
+# Julia project precompile function
+# Finds all Julia projects (Project.toml) and precompiles them using pkg precompile
+function jprecall() {
+    find_relevant_folders "Project.toml" "Julia projects" | while read -r project_dir; do
+        echo "Precompiling Julia project in: $project_dir"
+        cd "$project_dir" && pkg precompile
+        cd - > /dev/null
+        echo "---"
+    done
+    echo "Finished precompiling all Julia projects."
 }
