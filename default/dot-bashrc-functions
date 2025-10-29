@@ -36,12 +36,17 @@ function glall() {
         echo "No git repositories found." >&2
         return
     fi
-    echo "$folders" | while read -r repo_dir; do
+    local original_dir="$PWD"
+    echo "$folders" | while IFS= read -r repo_dir; do
+        repo_dir=$(echo "$repo_dir" | tr -d '\n\r')
+        if [ -z "$repo_dir" ] || [ ! -d "$repo_dir" ]; then
+            continue
+        fi
         echo "Pulling in: $repo_dir"
-        cd "$repo_dir" && git pull
-        cd - > /dev/null
+        (cd "$repo_dir" && git pull) || true
         echo "---"
     done
+    cd "$original_dir" 2>/dev/null || true
     echo "Finished pulling all repositories."
 }
 
@@ -57,12 +62,16 @@ function jupall() {
         echo "No Julia projects found." >&2
         return
     fi
+    local original_dir="$PWD"
     echo "$folders" | while read -r project_dir; do
+        if [ -z "$project_dir" ]; then
+            continue
+        fi
         echo "Updating Julia project in: $project_dir"
-        cd "$project_dir" && pkg update
-        cd - > /dev/null
+        (cd "$project_dir" && pkg update) || true
         echo "---"
     done
+    cd "$original_dir" 2>/dev/null || true
     echo "Finished updating all Julia projects."
 }
 
@@ -78,11 +87,15 @@ function jprecall() {
         echo "No Julia projects found." >&2
         return
     fi
+    local original_dir="$PWD"
     echo "$folders" | while read -r project_dir; do
+        if [ -z "$project_dir" ]; then
+            continue
+        fi
         echo "Precompiling Julia project in: $project_dir"
-        cd "$project_dir" && pkg precompile
-        cd - > /dev/null
+        (cd "$project_dir" && pkg precompile) || true
         echo "---"
     done
+    cd "$original_dir" 2>/dev/null || true
     echo "Finished precompiling all Julia projects."
 }
