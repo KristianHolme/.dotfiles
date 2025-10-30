@@ -114,6 +114,15 @@ Installs essential Julia packages to your global environment:
 - **Performance:** BenchmarkTools, BasicAutoloads
 - **Utilities:** DrWatson, ProgressMeter, OhMyREPL, Reexport
 
+#### Julia Package Manager as App (Experimental)
+Install the Julia package manager as a standalone app for faster package operations:
+
+1. Start Julia REPL
+2. Enter package mode by pressing `]`
+3. Run: `app add https://github.com/JuliaLang/Pkg.jl/tree/pkg-app`
+
+This experimental feature allows Pkg to be used as a standalone application.
+
 ## Remote Access & Sync
 
 ### SSH Connection with tmux
