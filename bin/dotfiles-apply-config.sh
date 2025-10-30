@@ -138,11 +138,118 @@ apply_configs() {
 
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
+# Check for blank monitors (0x0 resolution) and fix them
+check_and_fix_monitors() {
+	if ! command -v hyprctl &>/dev/null || ! command -v jq &>/dev/null; then
+		return 0
+	fi
+	
+	local monitors_json
+	monitors_json=$(hyprctl monitors -j 2>/dev/null)
+	if [[ $? -ne 0 ]]; then
+		return 0
+	fi
+	
+	# Check for monitors with 0x0 resolution
+	local blank_monitors
+	blank_monitors=$(echo "$monitors_json" | jq -r '.[] | select(.width == 0 or .height == 0) | .name' 2>/dev/null)
+	
+	if [[ -n "$blank_monitors" ]]; then
+		log_warning "Detected blank monitors (0x0 resolution): $(echo "$blank_monitors" | tr '\n' ' ')"
+		log_info "Attempting to refresh monitors..."
+		
+		# Try safe refresh methods first
+		# Turn DPMS off and on for each blank monitor
+		while IFS= read -r monitor; do
+			[[ -z "$monitor" ]] && continue
+			hyprctl dispatch dpms off "$monitor" >/dev/null 2>&1
+			sleep 0.2
+			hyprctl dispatch dpms on "$monitor" >/dev/null 2>&1
+		done <<< "$blank_monitors"
+		
+		sleep 0.5
+		
+		# Check if still blank
+		monitors_json=$(hyprctl monitors -j 2>/dev/null)
+		blank_monitors=$(echo "$monitors_json" | jq -r '.[] | select(.width == 0 or .height == 0) | .name' 2>/dev/null)
+		
+		if [[ -n "$blank_monitors" ]]; then
+			log_warning "Some monitors are still blank after refresh"
+			log_info "You may need to manually restart Hyprland (Super+Esc -> Relaunch) or reconnect monitors"
+			return 1
+		else
+			log_success "Monitors refreshed successfully"
+		fi
+	fi
+}
+
 # Reload hyprland
 reload_hyprland() {
 	if command -v hyprctl &>/dev/null; then
-		hyprctl reload || true
-		log_success "Reloaded Hyprland configuration"
+		# When switching profiles, workspace bindings to non-existent monitors can cause issues.
+		# Hyprland should handle this gracefully, but we ensure a clean reload.
+		log_info "Reloading Hyprland configuration..."
+		
+		# Reload configuration - capture both stdout and stderr to check for issues
+		local reload_output
+		reload_output=$(hyprctl reload 2>&1)
+		local reload_status=$?
+		
+		if [[ $reload_status -eq 0 ]]; then
+			# Check for warnings about workspace/monitor bindings in the output
+			# These are often non-fatal when switching profiles
+			if echo "$reload_output" | grep -qiE "(workspace.*monitor|monitor.*not found|monitor.*does not exist)"; then
+				log_info "Note: Some workspace bindings reference monitors that may not be available"
+				log_info "This is normal when switching profiles - workspaces will use available monitors"
+			fi
+			
+			# Wait a moment for monitors to initialize, then check for blank monitors
+			sleep 0.5
+			check_and_fix_monitors || true
+			
+			# Restart waybar after monitor configuration changes to ensure it appears on all monitors
+			# Wait a bit longer for monitors to be fully initialized before restarting waybar
+			# Waybar queries monitors at startup, so we need to ensure all monitors are ready
+			if command -v omarchy-restart-waybar &>/dev/null; then
+				log_info "Restarting waybar to ensure it appears on all monitors..."
+				# Wait longer to ensure monitors are fully initialized
+				sleep 2
+				omarchy-restart-waybar >/dev/null 2>&1 || true
+				# Give waybar time to detect all monitors
+				sleep 1
+			fi
+			
+			log_success "Reloaded Hyprland configuration"
+		else
+			# Check if it's warnings about missing monitors (common when switching profiles)
+			if echo "$reload_output" | grep -qiE "(workspace|monitor)" && echo "$reload_output" | grep -qiE "(not found|does not exist|ignored|warning)"; then
+				log_warning "Hyprland reloaded with warnings about workspace/monitor bindings"
+				log_info "This is normal when switching profiles with different monitor setups"
+				
+				# Still check for blank monitors
+				sleep 0.5
+				check_and_fix_monitors || true
+				
+				# Restart waybar after monitor configuration changes
+				# Wait a bit longer for monitors to be fully initialized before restarting waybar
+				# Waybar queries monitors at startup, so we need to ensure all monitors are ready
+				if command -v omarchy-restart-waybar &>/dev/null; then
+					log_info "Restarting waybar to ensure it appears on all monitors..."
+					# Wait longer to ensure monitors are fully initialized
+					sleep 2
+					omarchy-restart-waybar >/dev/null 2>&1 || true
+					# Give waybar time to detect all monitors
+					sleep 1
+				fi
+				
+				log_success "Configuration applied successfully"
+			else
+				log_warning "Hyprland reload failed:"
+				echo "$reload_output" | head -10
+				log_info "Tip: If workspace bindings are causing issues, try moving workspaces manually"
+				return 1
+			fi
+		fi
 	else
 		log_warning "hyprctl not found. Please reload Hyprland manually."
 	fi
