@@ -60,12 +60,33 @@ fi
 export JULIA_NUM_THREADS=auto
 
 
-# Testing if this is necessary
-# SSH agent
-# if [[ -z "$SSH_AUTH_SOCK" ]]; then
-#     # Start ssh-agent if not already running
-#     eval "$(ssh-agent -s)" >/dev/null
-# fi
+# SSH agent setup
+# Use systemd ssh-agent socket if available, otherwise start manually
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+    # Try systemd user ssh-agent socket first
+    if [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+    elif systemctl --user is-active --quiet ssh-agent.socket 2>/dev/null; then
+        # Socket is active, check for environment variable
+        if [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+            export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+        fi
+    else
+        # Fallback: start ssh-agent manually
+        eval "$(ssh-agent -s)" >/dev/null
+    fi
+fi
+
+# Auto-add SSH key if agent is running and key isn't already loaded
+if [[ -n "$SSH_AUTH_SOCK" ]] && command -v ssh-add &>/dev/null; then
+    KEY_FILE="$HOME/.ssh/id_ed25519"
+    if [[ -f "$KEY_FILE" ]]; then
+        # Check if key is already loaded (suppress errors if agent connection fails)
+        if ! ssh-add -l &>/dev/null || ! ssh-add -l | grep -q "$(ssh-keygen -lf "$KEY_FILE" 2>/dev/null | awk '{print $2}')" 2>/dev/null; then
+            ssh-add "$KEY_FILE" 2>/dev/null
+        fi
+    fi
+fi
 
 
 # starship prompt
