@@ -10,7 +10,7 @@ source "$SCRIPT_DIR/lib-dotfiles.sh"
 TEMPLATES_DIR="$SCRIPT_DIR/../templates/latex"
 
 show_help() {
-	cat <<EOF
+    cat <<EOF
 LaTeX Project Initialization Script
 
 Usage: $0 [OPTIONS] PROJECT_NAME
@@ -35,15 +35,15 @@ EOF
 }
 
 create_project_structure() {
-	local project_dir="$1"
+    local project_dir="$1"
 
-	log_info "Creating project structure..."
+    log_info "Creating project structure..."
 
-	# Basic directories
-	mkdir -p "$project_dir"/{src,figures,output,aux}
+    # Basic directories
+    mkdir -p "$project_dir"/{src,figures,output,aux}
 
-	# Create .gitignore
-	cat >"$project_dir/.gitignore" <<'EOF'
+    # Create .gitignore
+    cat >"$project_dir/.gitignore" <<'EOF'
 # LaTeX auxiliary files
 *.aux
 *.fdb_latexmk
@@ -81,193 +81,193 @@ EOF
 }
 
 setup_git_repo() {
-	local project_dir="$1"
-	local project_name="$2"
+    local project_dir="$1"
+    local project_name="$2"
 
-	log_info "Initializing Git repository..."
+    log_info "Initializing Git repository..."
 
-	cd "$project_dir"
-	git init
+    cd "$project_dir"
+    git init
 
-	# Set up Git LFS for figures
-	git lfs install
-	git lfs track "figures/*"
-	git lfs track "*.png"
-	git lfs track "*.jpg"
-	git lfs track "*.jpeg"
-	git lfs track "*.pdf"
-	git lfs track "*.eps"
+    # Set up Git LFS for figures
+    git lfs install
+    git lfs track "figures/*"
+    git lfs track "*.png"
+    git lfs track "*.jpg"
+    git lfs track "*.jpeg"
+    git lfs track "*.pdf"
+    git lfs track "*.eps"
 
-	# Add .gitattributes
-	git add .gitattributes
+    # Add .gitattributes
+    git add .gitattributes
 
-	# Initial commit
-	git add .
-	git commit -m "Initial commit: LaTeX project '$project_name'"
+    # Initial commit
+    git add .
+    git commit -m "Initial commit: LaTeX project '$project_name'"
 
-	log_success "Git repository initialized with LFS for figures"
+    log_success "Git repository initialized with LFS for figures"
 }
 
 push_to_github() {
-	local project_name="$1"
+    local project_name="$1"
 
-	# ensure_cmd exits on failure, so we check first if we want to proceed.
-	if ! command -v gum >/dev/null 2>&1 || ! command -v gh >/dev/null 2>&1; then
-		log_warning "gum or gh CLI not found. Skipping GitHub push option."
-		log_info "Install with: pacman -S gum github-cli"
-		return 0
-	fi
+    # ensure_cmd exits on failure, so we check first if we want to proceed.
+    if ! command -v gum >/dev/null 2>&1 || ! command -v gh >/dev/null 2>&1; then
+        log_warning "gum or gh CLI not found. Skipping GitHub push option."
+        log_info "Install with: pacman -S gum github-cli"
+        return 0
+    fi
 
-	local push_choice
-	push_choice=$(gum choose \
-		"Yes, create and push to GitHub" \
-		"No, keep local only" \
-		--header "Create GitHub repository and push?") || return 0
+    local push_choice
+    push_choice=$(gum choose \
+        "Yes, create and push to GitHub" \
+        "No, keep local only" \
+        --header "Create GitHub repository and push?") || return 0
 
-	case "$push_choice" in
-	"Yes, create and push to GitHub")
-		log_info "Creating GitHub repository..."
+    case "$push_choice" in
+    "Yes, create and push to GitHub")
+        log_info "Creating GitHub repository..."
 
-		local repo_visibility
-		repo_visibility=$(gum choose \
-			"private" \
-			"public" \
-			--header "Repository visibility:") || repo_visibility="private"
+        local repo_visibility
+        repo_visibility=$(gum choose \
+            "private" \
+            "public" \
+            --header "Repository visibility:") || repo_visibility="private"
 
-		# Create GitHub repository
-		if gh repo create "$project_name" --"$repo_visibility" --source=. --remote=origin --push; then
-			log_success "Repository created and pushed to GitHub!"
-			log_info "Repository URL: https://github.com/$(gh api user --jq .login)/$project_name"
-		else
-			log_error "Failed to create GitHub repository"
-		fi
-		;;
-	"No, keep local only")
-		log_info "Repository kept local only"
-		;;
-	esac
+        # Create GitHub repository
+        if gh repo create "$project_name" --"$repo_visibility" --source=. --remote=origin --push; then
+            log_success "Repository created and pushed to GitHub!"
+            log_info "Repository URL: https://github.com/$(gh api user --jq .login)/$project_name"
+        else
+            log_error "Failed to create GitHub repository"
+        fi
+        ;;
+    "No, keep local only")
+        log_info "Repository kept local only"
+        ;;
+    esac
 }
 
 setup_uio_template() {
-	local project_dir="$1"
-	local project_name="$2"
+    local project_dir="$1"
+    local project_name="$2"
 
-	log_info "Setting up UiO presentation template..."
+    log_info "Setting up UiO presentation template..."
 
-	if [[ -f "$TEMPLATES_DIR/uio-presentation.tex" && -f "$TEMPLATES_DIR/uio-preamble.tex" ]]; then
-		cp "$TEMPLATES_DIR/uio-presentation.tex" "$project_dir/src/main.tex"
-		cp "$TEMPLATES_DIR/uio-preamble.tex" "$project_dir/src/uio-preamble.tex"
+    if [[ -f "$TEMPLATES_DIR/uio-presentation.tex" && -f "$TEMPLATES_DIR/uio-preamble.tex" ]]; then
+        cp "$TEMPLATES_DIR/uio-presentation.tex" "$project_dir/src/main.tex"
+        cp "$TEMPLATES_DIR/uio-preamble.tex" "$project_dir/src/uio-preamble.tex"
 
-		# Replace PROJECT_NAME placeholder
-		sed -i "s/PROJECT_NAME/$project_name/g" "$project_dir/src/main.tex"
-	else
-		log_error "UiO template files not found in $TEMPLATES_DIR"
-		exit 1
-	fi
+        # Replace PROJECT_NAME placeholder
+        sed -i "s/PROJECT_NAME/$project_name/g" "$project_dir/src/main.tex"
+    else
+        log_error "UiO template files not found in $TEMPLATES_DIR"
+        exit 1
+    fi
 }
 
 setup_default_template() {
-	local project_dir="$1"
-	local project_name="$2"
+    local project_dir="$1"
+    local project_name="$2"
 
-	log_info "Setting up default plain document template..."
+    log_info "Setting up default plain document template..."
 
-	if [[ -f "$TEMPLATES_DIR/default-main.tex" && -f "$TEMPLATES_DIR/default-preamble.tex" ]]; then
-		cp "$TEMPLATES_DIR/default-main.tex" "$project_dir/src/main.tex"
-		cp "$TEMPLATES_DIR/default-preamble.tex" "$project_dir/src/preamble.tex"
-		sed -i "s/PROJECT_NAME/$project_name/g" "$project_dir/src/main.tex"
-	else
-		log_error "Default template files not found in $TEMPLATES_DIR"
-		exit 1
-	fi
+    if [[ -f "$TEMPLATES_DIR/default-main.tex" && -f "$TEMPLATES_DIR/default-preamble.tex" ]]; then
+        cp "$TEMPLATES_DIR/default-main.tex" "$project_dir/src/main.tex"
+        cp "$TEMPLATES_DIR/default-preamble.tex" "$project_dir/src/preamble.tex"
+        sed -i "s/PROJECT_NAME/$project_name/g" "$project_dir/src/main.tex"
+    else
+        log_error "Default template files not found in $TEMPLATES_DIR"
+        exit 1
+    fi
 }
 
 main() {
-	local project_name=""
-	local template_type="default"
-	local target_directory="."
-	local init_git=true
+    local project_name=""
+    local template_type="default"
+    local target_directory="."
+    local init_git=true
 
-	# Parse arguments
-	while [[ $# -gt 0 ]]; do
-		case $1 in
-		-t | --type)
-			template_type="$2"
-			shift 2
-			;;
-		-d | --directory)
-			target_directory="$2"
-			shift 2
-			;;
-		--no-git)
-			init_git=false
-			shift
-			;;
-		-h | --help)
-			show_help
-			exit 0
-			;;
-		*)
-			if [[ -z "$project_name" ]]; then
-				project_name="$1"
-			else
-				log_error "Unknown argument: $1"
-				show_help
-				exit 1
-			fi
-			shift
-			;;
-		esac
-	done
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        -t | --type)
+            template_type="$2"
+            shift 2
+            ;;
+        -d | --directory)
+            target_directory="$2"
+            shift 2
+            ;;
+        --no-git)
+            init_git=false
+            shift
+            ;;
+        -h | --help)
+            show_help
+            exit 0
+            ;;
+        *)
+            if [[ -z "$project_name" ]]; then
+                project_name="$1"
+            else
+                log_error "Unknown argument: $1"
+                show_help
+                exit 1
+            fi
+            shift
+            ;;
+        esac
+    done
 
-	# Validate arguments
-	if [[ -z "$project_name" ]]; then
-		log_error "Project name is required"
-		show_help
-		exit 1
-	fi
+    # Validate arguments
+    if [[ -z "$project_name" ]]; then
+        log_error "Project name is required"
+        show_help
+        exit 1
+    fi
 
-	if [[ "$template_type" != "uio-presentation" && "$template_type" != "default" ]]; then
-		log_error "Invalid template type: $template_type"
-		log_info "Currently available: default, uio-presentation"
-		exit 1
-	fi
+    if [[ "$template_type" != "uio-presentation" && "$template_type" != "default" ]]; then
+        log_error "Invalid template type: $template_type"
+        log_info "Currently available: default, uio-presentation"
+        exit 1
+    fi
 
-	# Create project
-	local project_dir="$target_directory/$project_name"
+    # Create project
+    local project_dir="$target_directory/$project_name"
 
-	if [[ -d "$project_dir" ]]; then
-		log_error "Directory $project_dir already exists"
-		exit 1
-	fi
+    if [[ -d "$project_dir" ]]; then
+        log_error "Directory $project_dir already exists"
+        exit 1
+    fi
 
-	log_info "Creating LaTeX project ($template_type): $project_name"
-	log_info "Target directory: $project_dir"
+    log_info "Creating LaTeX project ($template_type): $project_name"
+    log_info "Target directory: $project_dir"
 
-	create_project_structure "$project_dir"
-	case "$template_type" in
-	"uio-presentation")
-		setup_uio_template "$project_dir" "$project_name"
-		;;
-	"default")
-		setup_default_template "$project_dir" "$project_name"
-		;;
-	esac
+    create_project_structure "$project_dir"
+    case "$template_type" in
+    "uio-presentation")
+        setup_uio_template "$project_dir" "$project_name"
+        ;;
+    "default")
+        setup_default_template "$project_dir" "$project_name"
+        ;;
+    esac
 
-	if [[ "$init_git" == true ]]; then
-		setup_git_repo "$project_dir" "$project_name"
-		push_to_github "$project_name"
-	fi
+    if [[ "$init_git" == true ]]; then
+        setup_git_repo "$project_dir" "$project_name"
+        push_to_github "$project_name"
+    fi
 
-	log_success "LaTeX project '$project_name' created successfully!"
-	log_info "Next steps:"
-	log_info "  1. cd $project_dir"
-	log_info "  2. nvim src/main.tex"
-	log_info "  3. Use ,ll to compile and ,lv to view"
+    log_success "LaTeX project '$project_name' created successfully!"
+    log_info "Next steps:"
+    log_info "  1. cd $project_dir"
+    log_info "  2. nvim src/main.tex"
+    log_info "  3. Use ,ll to compile and ,lv to view"
 
-	if [[ "$init_git" == true ]]; then
-		log_info "  4. Large figures will be tracked with Git LFS automatically"
-	fi
+    if [[ "$init_git" == true ]]; then
+        log_info "  4. Large figures will be tracked with Git LFS automatically"
+    fi
 }
 
 main "$@"
