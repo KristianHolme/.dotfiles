@@ -299,6 +299,29 @@ install_gum() {
 	fi
 }
 
+install_tpm() {
+	local tpm_dir="$HOME/.tmux/plugins/tpm"
+	
+	# Check if TPM is already installed
+	if [[ -d "$tpm_dir" ]]; then
+		log_info "tmux plugin manager (tpm) already installed; skipping"
+		return 0
+	fi
+	
+	log_info "Installing tmux plugin manager (tpm)..."
+	
+	# Create parent directory if needed
+	mkdir -p "$(dirname "$tpm_dir")"
+	
+	# Clone TPM
+	if git clone https://github.com/tmux-plugins/tpm "$tpm_dir" >/dev/null 2>&1; then
+		log_success "Installed tmux plugin manager -> $tpm_dir"
+	else
+		log_error "Failed to clone tmux plugin manager"
+		return 1
+	fi
+}
+
 install_stow() {
 	if command -v stow >/dev/null 2>&1; then
 		log_info "stow already installed; skipping"
@@ -398,7 +421,10 @@ main() {
 
 	# Install gum for interactive prompts
 	install_gum
-
+	
+	# Install tmux plugin manager
+	install_tpm
+	
 	# Install Julia (juliaup) and Run Julia setup on first install
 	install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && $SCRIPT_DIR/julia-setup.jl"
 
