@@ -163,6 +163,8 @@ Automated SSH key distribution:
 - **Multi-server setup:** Copies public key to all configured servers
 - **Servers:** abacus-as/min, nam-shub-01/02, bioint01-04, uio
 
+**SSH Agent Setup:** Enable automatic SSH agent startup with `systemctl --user enable --now ssh-agent.socket` to enable automatic key loading and agent forwarding.
+
 ## Application Setup
 
 ### Zotero Better BibTeX Extension
