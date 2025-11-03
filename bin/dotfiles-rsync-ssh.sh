@@ -15,6 +15,7 @@ SOURCE_HOST="atalanta"
 SOURCE_DIR="~/Code/DRL_RDE/data/studies"
 TARGET_DIR="" # Will default to SOURCE_DIR if not specified
 USE_JUMP_HOST=false
+DELETE_FILES=true # Use --delete by default to mirror source exactly
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
         TARGET_DIR="$2"
         shift 2
         ;;
+    --no-delete)
+        DELETE_FILES=false
+        shift
+        ;;
     -h | --help)
         echo "Usage: $0 [--from HOST] [--source-dir DIR] [--target-dir DIR]"
         echo
@@ -42,6 +47,8 @@ while [[ $# -gt 0 ]]; do
         echo "  -s, --source-dir DIR   Remote source directory (default: ~/Code/DRL_RDE/data/studies)"
         echo "  -t, --target-dir DIR   Local target directory (default: same as source directory)"
         echo "                     Path is relative to home directory"
+        echo "  --no-delete          Do not delete files in destination that don't exist in source"
+        echo "                     Use this when merging files from multiple machines"
         echo "  -h, --help         Show this help message"
         echo
         echo "Examples:"
@@ -49,6 +56,8 @@ while [[ $# -gt 0 ]]; do
         echo "  $0 --from bioint01                                   # Sync studies from bioint01 via atalanta"
         echo "  $0 --source-dir ~/Documents --target-dir ~/Backup   # Sync Documents to ~/Backup"
         echo "  $0 --from atalanta --source-dir ~/projects --target-dir ~/local-projects"
+        echo "  $0 --no-delete --from machine1                      # Merge files from machine1 without deleting"
+        echo "  $0 --no-delete --from machine2                      # Then merge files from machine2, keeping both"
         exit 0
         ;;
     *)
@@ -197,12 +206,30 @@ echo "📍 Target: $TARGET_DIR_EXPANDED"
 if [ "$USE_JUMP_HOST" = true ]; then
     echo "🌉 Via jump host: atalanta"
 fi
+if [ "$DELETE_FILES" = false ]; then
+    echo "⚠️  Merge mode: files will not be deleted (merging from multiple machines)"
+fi
 echo
 
 # Confirm before proceeding
 if ! gum confirm "Proceed with syncing these directories?"; then
     echo "❌ Sync cancelled."
     exit 0
+fi
+
+# Prompt user about deleting files if not explicitly set with --no-delete
+if [ "$DELETE_FILES" = true ]; then
+    echo
+    if gum confirm --default=false \
+        --affirmative="Yes, delete files not on server" \
+        --negative="No, keep all existing files (merge mode)" \
+        "Delete files in destination that don't exist on $SOURCE_HOST?"; then
+        DELETE_FILES=true
+        echo "ℹ️  Delete mode: files will be deleted to match server exactly"
+    else
+        DELETE_FILES=false
+        echo "ℹ️  Merge mode: files will not be deleted (safe for multiple machines)"
+    fi
 fi
 
 echo
@@ -238,11 +265,17 @@ for directory in "${FILTERED_DIRECTORIES[@]}"; do
     # Create local directory if it doesn't exist
     mkdir -p "$DEST"
 
+    # Build rsync command with optional --delete flag
+    RSYNC_DELETE_FLAG=""
+    if [ "$DELETE_FILES" = true ]; then
+        RSYNC_DELETE_FLAG="--delete"
+    fi
+
     # Run rsync with minimal output (overall progress only)
     if [ "$USE_JUMP_HOST" = true ]; then
-        rsync -az --delete --info=progress2 --no-inc-recursive -e "ssh -J atalanta" "${SOURCE}/" "${DEST}/"
+        rsync -az $RSYNC_DELETE_FLAG --info=progress2 --no-inc-recursive -e "ssh -J atalanta" "${SOURCE}/" "${DEST}/"
     else
-        rsync -az --delete --info=progress2 --no-inc-recursive "${SOURCE}/" "${DEST}/"
+        rsync -az $RSYNC_DELETE_FLAG --info=progress2 --no-inc-recursive "${SOURCE}/" "${DEST}/"
     fi
 
     echo "✅ [$CURRENT_DIR/$DIRECTORY_COUNT] Completed: $directory"
