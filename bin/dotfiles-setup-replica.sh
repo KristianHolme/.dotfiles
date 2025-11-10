@@ -426,7 +426,7 @@ main() {
     install_tpm
 
     # Install Julia (juliaup) and Run Julia setup on first install
-    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && $SCRIPT_DIR/julia-setup.jl"
+    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && $SCRIPT_DIR/julia-setup.jl" --yes
 
     # Install/Update Runic script used by custom local formatter
     "$SCRIPT_DIR/dotfiles-install-runic.sh" || log_warning "Runic installation failed"
