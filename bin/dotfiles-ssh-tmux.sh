@@ -18,6 +18,12 @@ SERVERS=(
     "bioint03"
     "bioint04"
     "saga"
+    "ml1"
+    "ml2"
+    "ml3"
+    "ml4"
+    "ml6"
+    "ml7"
     # personal machines via Tailscale
     "bengal"
     "kaspi"
