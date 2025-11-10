@@ -44,7 +44,7 @@ Host abacus*
     SendEnv TERM
     SetEnv TERM=xterm-256color
 
-Host freebio* bioint0*
+Host freebio* bioint0* ml*
     HostName %h.hpc.uio.no
     User kholme
     ForwardAgent yes
