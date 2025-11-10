@@ -35,18 +35,19 @@ ensure_cmd() {
 }
 
 # Portable helper to install a tool via piping curl to bash.
-# Usage: install_via_curl "Name" check_cmd url [post_install_cmd]
+# Usage: install_via_curl "Name" check_cmd url [post_install_cmd] [installer_args...]
 install_via_curl() {
     local name="$1"
     local check_cmd="$2"
     local url="$3"
     local post_install_cmd="${4:-}"
+    local installer_args=("${@:5}")
 
     if command -v "$check_cmd" >/dev/null 2>&1; then
         log_info "$name already installed; skipping installer"
     else
         log_info "Installing $name"
-        curl -fsSL "$url" | bash
+        curl -fsSL "$url" | bash -s -- "${installer_args[@]}"
         if [[ -n "$post_install_cmd" ]]; then
             eval "$post_install_cmd"
         fi
