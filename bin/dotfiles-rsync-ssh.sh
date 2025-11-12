@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # General script to sync directories from remote machines to local machine
-# Usage: ./dotfiles-rsync-ssh.sh [--from HOST] [--source-dir DIR] [--target-dir DIR]
-# Allows interactive selection of multiple directories using gum
-# Supported hosts: atalanta (default), bioint01, bioint02, bioint03, bioint04, bengal, kaspi, sibir
+# Usage: ./dotfiles-rsync-ssh.sh [--source-dir DIR] [--target-dir DIR]
+# Allows interactive selection of machine and multiple directories using gum
 
 set -e # Exit on any error
 
@@ -11,19 +10,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib-dotfiles.sh"
 
 # Default values
-SOURCE_HOST="atalanta"
+SOURCE_HOST=""
 SOURCE_DIR="~/Code/DRL_RDE/data/studies"
 TARGET_DIR="" # Will default to SOURCE_DIR if not specified
 USE_JUMP_HOST=false
 DELETE_FILES=true # Use --delete by default to mirror source exactly
 
+# Machine groups
+declare -A MACHINE_GROUPS
+MACHINE_GROUPS[math]="abacus-as abacus-min atalanta nam-shub-01 nam-shub-02"
+MACHINE_GROUPS[lightweight]="bioint01 bioint02 bioint03 bioint04"
+MACHINE_GROUPS[ml]="ml1 ml2 ml3 ml4 ml6 ml7"
+
+# Standalone machines
+STANDALONE_MACHINES=("saga" "bengal" "kaspi" "sibir")
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-    -f | --from)
-        SOURCE_HOST="$2"
-        shift 2
-        ;;
     -s | --source-dir)
         SOURCE_DIR="$2"
         shift 2
@@ -37,13 +41,11 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     -h | --help)
-        echo "Usage: $0 [--from HOST] [--source-dir DIR] [--target-dir DIR]"
+        echo "Usage: $0 [--source-dir DIR] [--target-dir DIR]"
         echo
         echo "General script to sync directories from remote machines to local machine"
         echo
         echo "Options:"
-        echo "  --from HOST        Source host (default: atalanta)"
-        echo "                     Supported: atalanta, bioint01, bioint02, bioint03, bioint04"
         echo "  -s, --source-dir DIR   Remote source directory (default: ~/Code/DRL_RDE/data/studies)"
         echo "  -t, --target-dir DIR   Local target directory (default: same as source directory)"
         echo "                     Path is relative to home directory"
@@ -52,12 +54,9 @@ while [[ $# -gt 0 ]]; do
         echo "  -h, --help         Show this help message"
         echo
         echo "Examples:"
-        echo "  $0                                                    # Sync studies from atalanta"
-        echo "  $0 --from bioint01                                   # Sync studies from bioint01 via atalanta"
+        echo "  $0                                                    # Interactive machine selection, sync studies"
         echo "  $0 --source-dir ~/Documents --target-dir ~/Backup   # Sync Documents to ~/Backup"
-        echo "  $0 --from atalanta --source-dir ~/projects --target-dir ~/local-projects"
-        echo "  $0 --no-delete --from machine1                      # Merge files from machine1 without deleting"
-        echo "  $0 --no-delete --from machine2                      # Then merge files from machine2, keeping both"
+        echo "  $0 --no-delete                                      # Merge files without deleting"
         exit 0
         ;;
     *)
@@ -73,26 +72,80 @@ if [ -z "$TARGET_DIR" ]; then
     TARGET_DIR="$SOURCE_DIR"
 fi
 
+# Check if gum is installed
+ensure_cmd gum
+
+# Build menu options for first level (groups + standalone machines)
+FIRST_LEVEL_OPTIONS=()
+for group in "${!MACHINE_GROUPS[@]}"; do
+    FIRST_LEVEL_OPTIONS+=("$group (group)")
+done
+for machine in "${STANDALONE_MACHINES[@]}"; do
+    FIRST_LEVEL_OPTIONS+=("$machine")
+done
+
+# Sort options for consistent display
+IFS=$'\n' FIRST_LEVEL_OPTIONS=($(printf '%s\n' "${FIRST_LEVEL_OPTIONS[@]}" | sort))
+
+# First level menu: select group or standalone machine with fuzzy finding
+SELECTED_FIRST=$(printf '%s\n' "${FIRST_LEVEL_OPTIONS[@]}" | gum filter \
+    --header "🔍 Choose a group or machine:" \
+    --placeholder "Type to search..." \
+    --prompt "❯ ")
+
+if [ -z "$SELECTED_FIRST" ]; then
+    echo "❌ No selection made. Exiting."
+    exit 0
+fi
+
+# Determine if it's a group or standalone machine
+if [[ "$SELECTED_FIRST" == *" (group)" ]]; then
+    # It's a group - extract group name
+    GROUP_NAME="${SELECTED_FIRST% (group)}"
+    
+    # Second level menu: select machine from group with fuzzy finding
+    # Properly split the space-separated string into an array
+    MACHINES_STR="${MACHINE_GROUPS[$GROUP_NAME]}"
+    # Use readarray to properly split into array
+    readarray -t MACHINES < <(echo "$MACHINES_STR" | tr ' ' '\n')
+    
+    SELECTED_HOST=$(printf '%s\n' "${MACHINES[@]}" | gum filter \
+        --header "🔍 Choose a machine from $GROUP_NAME:" \
+        --placeholder "Type to search machines..." \
+        --prompt "❯ ")
+    
+    if [ -z "$SELECTED_HOST" ]; then
+        echo "❌ No machine selected. Exiting."
+        exit 0
+    fi
+    SOURCE_HOST="$SELECTED_HOST"
+else
+    # It's a standalone machine
+    SOURCE_HOST="$SELECTED_FIRST"
+fi
+
 # Validate source host and set jump host logic
 case "$SOURCE_HOST" in
-atalanta)
+atalanta | abacus-as | abacus-min | nam-shub-01 | nam-shub-02)
     USE_JUMP_HOST=false
     ;;
 bioint01 | bioint02 | bioint03 | bioint04)
     USE_JUMP_HOST=true
+    ;;
+ml1 | ml2 | ml3 | ml4 | ml6 | ml7)
+    USE_JUMP_HOST=false
+    ;;
+saga)
+    USE_JUMP_HOST=false
     ;;
 bengal | kaspi | sibir)
     USE_JUMP_HOST=false
     ;;
 *)
     echo "❌ Error: Unsupported host '$SOURCE_HOST'"
-    echo "Supported hosts: atalanta, bioint01, bioint02, bioint03, bioint04, bengal, kaspi, sibir"
     exit 1
     ;;
 esac
-
-# Check if gum is installed
-ensure_cmd gum
 
 # Expand tilde in paths
 SOURCE_DIR_EXPANDED="${SOURCE_DIR/#\~/$HOME}"
