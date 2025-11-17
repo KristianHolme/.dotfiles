@@ -12,7 +12,6 @@
   "julia.enableTelemetry": true,
   "git.openRepositoryInParentFolders": "never",
   "git.confirmSync": false,
-  "editor.fontFamily": "'Firacode nerd font', 'monospace', monospace",
   "explorer.confirmDelete": false,
   "cursor.cpp.disabledLanguages": [],
   "explorer.confirmDragAndDrop": false,
@@ -46,4 +45,6 @@
     "asvetliakov.vscode-neovim": 1
   },
   "update.mode": "manual",
+  "terminal.integrated.fontLigatures.enabled": true,
+  "editor.fontFamily": "'JetBrains Mono', 'monospace', monospace",
 }
