@@ -39,6 +39,7 @@ alias y='yazi'
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
 export PATH="$HOME/.julia/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 if [[ "$USER" == "kristian" ]]; then
     # Add dotfiles scripts to PATH
