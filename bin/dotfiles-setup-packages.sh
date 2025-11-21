@@ -166,6 +166,7 @@ main() {
     install_pkg bitwarden
     # install_pkg google-chrome
     install_pkg tmux
+    install_pkg yazi
     install_pkg shfmt
     # Install LaTeX packages
     install_pkg texlive-meta
