@@ -1,0 +1,44 @@
+#!/bin/bash
+# Show the idle blur overlay on all monitors
+set -euo pipefail
+
+source "$(dirname "${BASH_SOURCE[0]}")/lib-dotfiles.sh"
+
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/dotfiles-idle-blur.pid"
+
+# Check if already running
+if [[ -f "$PIDFILE" ]]; then
+    PID=$(cat "$PIDFILE")
+    if kill -0 "$PID" 2>/dev/null; then
+        log_info "Idle blur overlay already running (PID: $PID)"
+        exit 0
+    else
+        rm -f "$PIDFILE"
+    fi
+fi
+
+# Ensure overlay binary exists
+OVERLAY_BIN="$(dirname "${BASH_SOURCE[0]}")/dotfiles-idle-blur-overlay"
+if [[ ! -x "$OVERLAY_BIN" ]]; then
+    log_error "Overlay binary not found: $OVERLAY_BIN"
+    log_info "Run: $(dirname "${BASH_SOURCE[0]}")/dotfiles-build-idle-blur-overlay.sh"
+    exit 1
+fi
+
+# Launch overlay in background
+log_info "Showing idle blur overlay..."
+"$OVERLAY_BIN" &
+OVERLAY_PID=$!
+
+# Store PID
+echo "$OVERLAY_PID" > "$PIDFILE"
+
+# Wait a moment to ensure it started
+sleep 0.1
+if ! kill -0 "$OVERLAY_PID" 2>/dev/null; then
+    rm -f "$PIDFILE"
+    log_error "Failed to start overlay"
+    exit 1
+fi
+
+log_success "Idle blur overlay started (PID: $OVERLAY_PID)"
