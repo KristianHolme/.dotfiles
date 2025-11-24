@@ -17,7 +17,6 @@ Comprehensive dotfiles management with support for both local development and un
 │   ├── dotfiles-setup-ssh.sh    # SSH key setup and distribution
 │   ├── dotfiles-setup-zotero.sh # Zotero Better BibTeX extension installer
 │   ├── dotfiles-power-suspend.sh # Configure power button for suspend
-│   ├── dotfiles-powerprofiles-menu.sh # Interactive power profile switcher
 │   ├── dotfiles-firefly-backup.sh # Firefly III backup utility
 │   └── dotfiles-firefly-restore.sh # Firefly III restore utility
 ├── default/                      # Default configuration package
@@ -115,6 +114,15 @@ Installs essential Julia packages to your global environment:
 - **Performance:** BenchmarkTools, BasicAutoloads
 - **Utilities:** DrWatson, ProgressMeter, OhMyREPL, Reexport
 
+#### Julia Package Manager as App (Experimental)
+Install the Julia package manager as a standalone app for faster package operations:
+
+1. Start Julia REPL
+2. Enter package mode by pressing `]`
+3. Run: `app add https://github.com/JuliaLang/Pkg.jl/tree/pkg-app`
+
+This experimental feature allows Pkg to be used as a standalone application.
+
 ## Remote Access & Sync
 
 ### SSH Connection with tmux
@@ -164,6 +172,8 @@ Automated SSH key distribution:
 - **Multi-server setup:** Copies public key to all configured servers
 - **Servers:** abacus-as/min, nam-shub-01/02, bioint01-04, uio
 
+**SSH Agent Setup:** Enable automatic SSH agent startup with `systemctl --user enable --now ssh-agent.socket` to enable automatic key loading and agent forwarding.
+
 ## Application Setup
 
 ### Zotero Better BibTeX Extension
@@ -185,8 +195,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 # Configure power button for suspend
 ~/.dotfiles/bin/dotfiles-power-suspend.sh
 
-# Interactive power profile switcher
-~/.dotfiles/bin/dotfiles-powerprofiles-menu.sh
+# Power profile menu (now uses omarchy-menu power)
 ```
 
 **Power button configuration:**
@@ -194,7 +203,8 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 - Options: reboot system, restart services, or apply on next reboot
 
 **Power profile menu:**
-- Interactive selection using `walker` with dmenu theme
+- Uses `omarchy-menu power` (integrated with omarchy system)
+- Interactive selection using `walker` with consistent styling
 - Integrates with `powerprofilesctl` for profile switching
 
 ### Idle Blur Overlay

@@ -1,3 +1,6 @@
+# If not running interactively, don't do anything (leave this at the top of this file)
+[[ $- != *i* ]] && return
+
 # All the default Omarchy aliases and functions
 # (don't mess with these directly, just overwrite them here!)
 source ~/.local/share/omarchy/default/bash/rc
@@ -23,6 +26,7 @@ esac
 alias j='julia'
 alias jp='julia --project'
 alias jtest='julia --project -e "using Pkg;Pkg.test()"'
+alias jtemp='julia --project=@temp'
 alias lg='lazygit'
 unalias r
 alias r='source ~/.bashrc'
@@ -31,8 +35,11 @@ unalias ls
 unalias lsa
 alias l='eza -lh --group-directories-first --icons=auto'
 alias la='l -a'
+alias y='yazi'
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
+export PATH="$HOME/.julia/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 if [[ "$USER" == "kristian" ]]; then
     # Add dotfiles scripts to PATH
@@ -56,12 +63,33 @@ fi
 export JULIA_NUM_THREADS=auto
 
 
-# Testing if this is necessary
-# SSH agent
-# if [[ -z "$SSH_AUTH_SOCK" ]]; then
-#     # Start ssh-agent if not already running
-#     eval "$(ssh-agent -s)" >/dev/null
-# fi
+# SSH agent setup
+# Use systemd ssh-agent socket if available, otherwise start manually
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+    # Try systemd user ssh-agent socket first
+    if [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+    elif systemctl --user is-active --quiet ssh-agent.socket 2>/dev/null; then
+        # Socket is active, check for environment variable
+        if [[ -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+            export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+        fi
+    else
+        # Fallback: start ssh-agent manually
+        eval "$(ssh-agent -s)" >/dev/null
+    fi
+fi
+
+# Auto-add SSH key if agent is running and key isn't already loaded
+if [[ -n "$SSH_AUTH_SOCK" ]] && command -v ssh-add &>/dev/null; then
+    KEY_FILE="$HOME/.ssh/id_ed25519"
+    if [[ -f "$KEY_FILE" ]]; then
+        # Check if key is already loaded (suppress errors if agent connection fails)
+        if ! ssh-add -l &>/dev/null || ! ssh-add -l | grep -q "$(ssh-keygen -lf "$KEY_FILE" 2>/dev/null | awk '{print $2}')" 2>/dev/null; then
+            ssh-add "$KEY_FILE" 2>/dev/null
+        fi
+    fi
+fi
 
 
 # starship prompt

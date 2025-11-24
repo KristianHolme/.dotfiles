@@ -1,18 +1,19 @@
 {
   "window.commandCenter": true,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+  "terminal.integrated.commandsToSkipShell": [
+    "language-julia.interrupt"
+  ],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
-  "julia.numTestProcesses": 12,
+  "julia.numTestProcesses": 6,
   "julia.NumThreads": "auto",
   "editor.formatOnSave": true,
   "julia.enableTelemetry": true,
   "git.openRepositoryInParentFolders": "never",
   "git.confirmSync": false,
-  "editor.fontFamily": "'Firacode nerd font', 'monospace', monospace",
   "explorer.confirmDelete": false,
-  "cursor.cpp.disabledLanguages": ["markdown"],
+  "cursor.cpp.disabledLanguages": [],
   "explorer.confirmDragAndDrop": false,
   "cursor.cpp.enablePartialAccepts": true,
   "vim.useCtrlKeys": false,
@@ -24,7 +25,9 @@
   "customLocalFormatters.formatters": [
     {
       "command": "julia --project=@runic --startup-file=no -e 'using Runic; exit(Runic.main(ARGS))'",
-      "languages": ["julia"]
+      "languages": [
+        "julia"
+      ]
     }
   ],
   "[julia]": {
@@ -32,5 +35,16 @@
   },
   "remote.SSH.remotePlatform": {
     "bengal": "linux"
-  }
+  },
+  "python.terminal.activateEnvironment": false,
+  "workbench.colorTheme": "Gruvbox Dark Medium",
+  "remote.autoForwardPortsSource": "hybrid",
+  "git.suggestSmartCommit": false,
+  "editor.cursorSurroundingLines": 8,
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1
+  },
+  "update.mode": "manual",
+  "terminal.integrated.fontLigatures.enabled": true,
+  "editor.fontFamily": "'JetBrains Mono', 'monospace', monospace",
 }

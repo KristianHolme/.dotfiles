@@ -1,16 +1,101 @@
 # Custom bash functions
 # Add your custom functions here
 
+# Helper function to find relevant folders based on marker files or directories
+# Usage: find_relevant_folders <marker_name> <description> <type> [depth]
+# type: "f" for files, "d" for directories
+# depth: integer for max depth (default: 2), or "inf" for unlimited depth
+function find_relevant_folders() {
+    local marker="$1"
+    local description="$2"
+    local type="${3:-f}"
+    local depth="${4:-2}"
+    echo "Searching for $description..." >&2
+    if [ "$depth" = "inf" ] || [ "$depth" = "infinity" ]; then
+        find . -name "$marker" -type "$type" | while read -r marker_path; do
+            local folder_dir="$(dirname "$marker_path")"
+            echo "$folder_dir"
+        done
+    else
+        find . -maxdepth "$depth" -name "$marker" -type "$type" | while read -r marker_path; do
+            local folder_dir="$(dirname "$marker_path")"
+            echo "$folder_dir"
+        done
+    fi
+}
+
 # Verbose git pull all function
 # Finds all git repositories in subdirectories and pulls them with verbose output
+# Usage: glall [depth]
+# depth: integer for max depth (default: 2), or "inf" for unlimited depth
 function glall() {
-    echo "Searching for git repositories..."
-    find . -type d -name ".git" | while read -r gitdir; do
-        repo_dir="$(dirname "$gitdir")"
+    local depth="${1:-2}"
+    local folders
+    folders=$(find_relevant_folders ".git" "git repositories" "d" "$depth")
+    if [ -z "$folders" ]; then
+        echo "No git repositories found." >&2
+        return
+    fi
+    local original_dir="$PWD"
+    echo "$folders" | while IFS= read -r repo_dir; do
+        repo_dir=$(echo "$repo_dir" | tr -d '\n\r')
+        if [ -z "$repo_dir" ] || [ ! -d "$repo_dir" ]; then
+            continue
+        fi
         echo "Pulling in: $repo_dir"
-        cd "$repo_dir" && git pull
-        cd - > /dev/null
+        (cd "$repo_dir" && git pull) || true
         echo "---"
     done
+    cd "$original_dir" 2>/dev/null || true
     echo "Finished pulling all repositories."
+}
+
+# Julia project update function
+# Finds all Julia projects (Project.toml) and updates them using pkg update
+# Usage: jupall [depth]
+# depth: integer for max depth (default: 2), or "inf" for unlimited depth
+function jupall() {
+    local depth="${1:-2}"
+    local folders
+    folders=$(find_relevant_folders "Project.toml" "Julia projects" "f" "$depth")
+    if [ -z "$folders" ]; then
+        echo "No Julia projects found." >&2
+        return
+    fi
+    local original_dir="$PWD"
+    echo "$folders" | while read -r project_dir; do
+        if [ -z "$project_dir" ]; then
+            continue
+        fi
+        echo "Updating Julia project in: $project_dir"
+        (cd "$project_dir" && pkg update) || true
+        echo "---"
+    done
+    cd "$original_dir" 2>/dev/null || true
+    echo "Finished updating all Julia projects."
+}
+
+# Julia project precompile function
+# Finds all Julia projects (Project.toml) and precompiles them using pkg precompile
+# Usage: jprecall [depth]
+# depth: integer for max depth (default: 2), or "inf" for unlimited depth
+function jprecall() {
+    local depth="${1:-2}"
+    local folders
+    folders=$(find_relevant_folders "Project.toml" "Julia projects" "f" "$depth")
+    if [ -z "$folders" ]; then
+        echo "No Julia projects found." >&2
+        return
+    fi
+    local original_dir="$PWD"
+    echo "$folders" | while read -r project_dir; do
+        if [ -z "$project_dir" ]; then
+            continue
+        fi
+        echo "Precompiling Julia project in: $project_dir"
+        (cd "$project_dir" && pkg precompile) || true
+        echo "---"
+    done
+    cd "$original_dir" 2>/dev/null || true
+    echo "Finished precompiling all Julia projects."
 }

@@ -35,7 +35,8 @@
   },
   {
     "key": "ctrl+'",
-    "command": "workbench.action.terminal.focus"
+    "command": "workbench.action.terminal.focus",
+    "when": "!terminalFocus"
   },
   {
     "key": "ctrl+down",
