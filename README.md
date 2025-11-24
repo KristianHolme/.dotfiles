@@ -197,6 +197,29 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 - Interactive selection using `walker` with dmenu theme
 - Integrates with `powerprofilesctl` for profile switching
 
+### Idle Blur Overlay
+
+A transparent overlay that applies blur to all monitors (including waybar) when idle, providing a visual indicator that the screen will lock soon.
+
+**Features:**
+- Fully transparent overlay using wlr-layer-shell
+- Covers all monitors including waybar
+- Blur effect applied via Hyprland layer rules
+- Automatically shown after 2.5 minutes of inactivity
+- Hidden on user activity or screen lock
+
+**Setup:**
+1. Build the overlay: `bin/dotfiles-build-idle-blur-overlay.sh`
+2. Configure timeout in `dot-config/hypr/hypridle.conf`
+
+**Manual control:**
+- Show overlay: `dotfiles-show-idle-blur`
+- Hide overlay: `dotfiles-hide-idle-blur`
+
+**Dependencies:**
+- Build time: `gcc` or `clang`, `wayland-client` (libwayland-client), `wayland-protocols`, `wayland-scanner`
+- Runtime: Wayland session, Hyprland compositor
+
 ## Backup & Restore
 
 ### Firefly III Database Management
