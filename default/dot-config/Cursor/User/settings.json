@@ -46,5 +46,5 @@
   },
   "update.mode": "manual",
   "terminal.integrated.fontLigatures.enabled": true,
-  "editor.fontFamily": "'JetBrains Mono', 'monospace', monospace",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', 'monospace', monospace",
 }
