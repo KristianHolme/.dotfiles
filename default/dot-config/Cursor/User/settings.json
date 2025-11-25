@@ -1,9 +1,7 @@
 {
   "window.commandCenter": true,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "terminal.integrated.commandsToSkipShell": [
-    "language-julia.interrupt"
-  ],
+  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
   "julia.numTestProcesses": 6,
@@ -25,9 +23,7 @@
   "customLocalFormatters.formatters": [
     {
       "command": "julia --project=@runic --startup-file=no -e 'using Runic; exit(Runic.main(ARGS))'",
-      "languages": [
-        "julia"
-      ]
+      "languages": ["julia"]
     }
   ],
   "[julia]": {
@@ -47,4 +43,6 @@
   "update.mode": "manual",
   "terminal.integrated.fontLigatures.enabled": true,
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'monospace', monospace",
+  "window.confirmBeforeClose": "always"
 }
+
