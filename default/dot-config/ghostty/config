@@ -40,3 +40,9 @@ quit-after-last-window-closed = false
 
 # Slowdown mouse scrolling
 mouse-scroll-multiplier = 0.95
+
+# Quick terminal
+quick-terminal-position = center
+quick-terminal-size = 70%, 40%
+# quick-terminal-keyboard-interactivity = exclusive
+gtk-quick-terminal-namespace = quickterminal
