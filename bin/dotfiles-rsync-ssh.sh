@@ -164,7 +164,7 @@ else
     echo "🔍 Fetching available directories from $SOURCE_HOST:$SOURCE_DIR..."
 fi
 
-# Get list of directories and their sizes from remote
+# Get list of directories from remote (without sizes)
 REMOTE_DIR_LIST_SCRIPT=$(
     cat <<'EOF'
 set -e
@@ -185,13 +185,43 @@ fi
 shopt -s nullglob dotglob
 for dir in */; do
 	[ -d "$dir" ] || continue
-	size=$(du -sh -- "$dir" 2>/dev/null | cut -f1)
-	if [ -z "$size" ]; then
-		size="?"
-	fi
 	dir="${dir%/}"
-	printf '%s\t%s\n' "$dir" "$size"
+	printf '%s\n' "$dir"
 done
+EOF
+)
+
+# Script to get size of a specific directory
+REMOTE_DIR_SIZE_SCRIPT=$(
+    cat <<'EOF'
+set -e
+SOURCE_DIR="$1"
+DIR_NAME="$2"
+if [ -z "$SOURCE_DIR" ] || [ -z "$DIR_NAME" ]; then
+	echo "?"
+	exit 0
+fi
+case "$SOURCE_DIR" in
+	~*)
+		if [ -n "$HOME" ]; then
+			SOURCE_DIR="${HOME}${SOURCE_DIR:1}"
+		fi
+		;;
+esac
+if ! cd "$SOURCE_DIR" 2>/dev/null; then
+	echo "?"
+	exit 0
+fi
+if [ ! -d "$DIR_NAME" ]; then
+	echo "?"
+	exit 0
+fi
+size=$(du -sh -- "$DIR_NAME" 2>/dev/null | cut -f1)
+if [ -z "$size" ]; then
+	echo "?"
+else
+	echo "$size"
+fi
 EOF
 )
 
@@ -206,37 +236,15 @@ if [ -z "$DIR_ENTRIES" ]; then
     exit 1
 fi
 
-declare -A DISPLAY_TO_DIR
-declare -A DIR_SIZES
-
 mapfile -t DIR_ENTRY_ARRAY <<<"$DIR_ENTRIES"
 
-DISPLAY_LINES=()
-for entry in "${DIR_ENTRY_ARRAY[@]}"; do
-    if [ -z "$entry" ]; then
-        continue
-    fi
-    dir_name="${entry%%$'\t'*}"
-    dir_size="${entry#*$'\t'}"
-    if [ -z "$dir_name" ]; then
-        continue
-    fi
-    if [ "$dir_size" = "$entry" ] || [ -z "$dir_size" ]; then
-        dir_size="?"
-    fi
-    display_line="$dir_name ($dir_size)"
-    DISPLAY_LINES+=("$display_line")
-    DISPLAY_TO_DIR["$display_line"]="$dir_name"
-    DIR_SIZES["$dir_name"]="$dir_size"
-done
-
-if [ ${#DISPLAY_LINES[@]} -eq 0 ]; then
+if [ ${#DIR_ENTRY_ARRAY[@]} -eq 0 ]; then
     echo "❌ No directories found or unable to connect to $SOURCE_HOST:$SOURCE_DIR"
     exit 1
 fi
 
-# Use gum to let user select multiple directories with sizes displayed
-SELECTED=$(printf "%s\n" "${DISPLAY_LINES[@]}" | gum choose --no-limit --height=15 \
+# Use gum to let user select multiple directories (without sizes)
+SELECTED=$(printf "%s\n" "${DIR_ENTRY_ARRAY[@]}" | gum choose --no-limit --height=15 \
     --header="Select directories to sync (Space to select, Enter to confirm):")
 
 if [ -z "$SELECTED" ]; then
@@ -244,15 +252,41 @@ if [ -z "$SELECTED" ]; then
     exit 0
 fi
 
-echo
-echo "📦 Selected directories:"
-while IFS= read -r line; do
-    dir_name="${DISPLAY_TO_DIR["$line"]}"
+# Parse selected directories
+FILTERED_DIRECTORIES=()
+while IFS= read -r dir_name; do
     if [ -n "$dir_name" ]; then
-        dir_size="${DIR_SIZES["$dir_name"]}"
-        echo "$dir_name ($dir_size)"
+        FILTERED_DIRECTORIES+=("$dir_name")
     fi
 done <<<"$SELECTED"
+
+# Compute sizes for selected directories
+echo
+echo "📊 Computing sizes for selected directories..."
+declare -A DIR_SIZES
+
+for directory in "${FILTERED_DIRECTORIES[@]}"; do
+    echo -n "   Computing size for $directory... "
+    if [ "$USE_JUMP_HOST" = true ]; then
+        dir_size=$(ssh -J atalanta "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" "$directory" <<<"$REMOTE_DIR_SIZE_SCRIPT")
+    else
+        dir_size=$(ssh "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" "$directory" <<<"$REMOTE_DIR_SIZE_SCRIPT")
+    fi
+    # Remove any trailing newline
+    dir_size=$(echo "$dir_size" | tr -d '\n')
+    if [ -z "$dir_size" ]; then
+        dir_size="?"
+    fi
+    DIR_SIZES["$directory"]="$dir_size"
+    echo "$dir_size"
+done
+
+echo
+echo "📦 Selected directories:"
+for directory in "${FILTERED_DIRECTORIES[@]}"; do
+    dir_size="${DIR_SIZES["$directory"]}"
+    echo "   $directory ($dir_size)"
+done
 echo
 echo "📍 Source: $SOURCE_HOST:$SOURCE_DIR"
 echo "📍 Target: $TARGET_DIR_EXPANDED"
@@ -287,14 +321,6 @@ fi
 
 echo
 echo "🚀 Starting sync process..."
-
-FILTERED_DIRECTORIES=()
-while IFS= read -r line; do
-    dir_name="${DISPLAY_TO_DIR["$line"]}"
-    if [ -n "$dir_name" ]; then
-        FILTERED_DIRECTORIES+=("$dir_name")
-    fi
-done <<<"$SELECTED"
 
 DIRECTORY_COUNT=${#FILTERED_DIRECTORIES[@]}
 CURRENT_DIR=0
