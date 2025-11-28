@@ -36,7 +36,6 @@ unalias lsa
 alias l='eza -lh --group-directories-first --icons=auto'
 alias la='l -a'
 alias y='yazi'
-alias btop='tmux new-session -A -s btop'
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
 export PATH="$HOME/.julia/bin:$PATH"
