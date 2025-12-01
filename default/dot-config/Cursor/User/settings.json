@@ -33,7 +33,7 @@
     "bengal": "linux"
   },
   "python.terminal.activateEnvironment": false,
-  "workbench.colorTheme": "Gruvbox Dark Medium",
+  "workbench.colorTheme": "Everforest Dark",
   "remote.autoForwardPortsSource": "hybrid",
   "git.suggestSmartCommit": false,
   "editor.cursorSurroundingLines": 8,
