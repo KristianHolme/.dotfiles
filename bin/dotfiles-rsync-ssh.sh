@@ -164,8 +164,8 @@ else
 	echo "🔍 Fetching available directories from $SOURCE_HOST:$SOURCE_DIR..."
 fi
 
-# Get list of directories with sizes from remote (single SSH call)
-REMOTE_DIR_LIST_WITH_SIZES_SCRIPT=$(
+# Get list of directories from remote (fast - no size calculation)
+REMOTE_DIR_LIST_SCRIPT=$(
 	cat <<'EOF'
 set -e
 SOURCE_DIR="$1"
@@ -185,57 +185,38 @@ fi
 shopt -s nullglob dotglob
 for dir in */; do
 	[ -d "$dir" ] || continue
-	dir="${dir%/}"
-	size=$(du -sh -- "$dir" 2>/dev/null | cut -f1)
-	if [ -z "$size" ]; then
-		size="?"
-	fi
-	printf '%s|%s\n' "$dir" "$size"
+	printf '%s\n' "${dir%/}"
 done
 EOF
 )
 
-echo "📊 Fetching directories with sizes..."
+echo "📂 Fetching directory list..."
 if [ "$USE_JUMP_HOST" = true ]; then
-	DIR_ENTRIES_WITH_SIZES=$(ssh -J atalanta "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" <<<"$REMOTE_DIR_LIST_WITH_SIZES_SCRIPT")
+	DIR_LIST=$(ssh -J atalanta "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" <<<"$REMOTE_DIR_LIST_SCRIPT")
 else
-	DIR_ENTRIES_WITH_SIZES=$(ssh "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" <<<"$REMOTE_DIR_LIST_WITH_SIZES_SCRIPT")
+	DIR_LIST=$(ssh "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" <<<"$REMOTE_DIR_LIST_SCRIPT")
 fi
 
-if [ -z "$DIR_ENTRIES_WITH_SIZES" ]; then
+if [ -z "$DIR_LIST" ]; then
 	echo "❌ No directories found or unable to connect to $SOURCE_HOST:$SOURCE_DIR"
 	exit 1
 fi
 
-# Parse directory entries with sizes
-declare -A DIR_SIZES
+# Parse directory list into array
 DIR_ENTRY_ARRAY=()
-while IFS='|' read -r dir_name dir_size; do
+while IFS= read -r dir_name; do
 	if [ -n "$dir_name" ]; then
 		DIR_ENTRY_ARRAY+=("$dir_name")
-		# Remove any trailing newline from size
-		dir_size=$(echo "$dir_size" | tr -d '\n')
-		if [ -z "$dir_size" ]; then
-			dir_size="?"
-		fi
-		DIR_SIZES["$dir_name"]="$dir_size"
 	fi
-done <<<"$DIR_ENTRIES_WITH_SIZES"
+done <<<"$DIR_LIST"
 
 if [ ${#DIR_ENTRY_ARRAY[@]} -eq 0 ]; then
 	echo "❌ No directories found or unable to connect to $SOURCE_HOST:$SOURCE_DIR"
 	exit 1
 fi
 
-# Build display strings with sizes for gum selection
-DISPLAY_OPTIONS=()
-for dir_name in "${DIR_ENTRY_ARRAY[@]}"; do
-	dir_size="${DIR_SIZES["$dir_name"]}"
-	DISPLAY_OPTIONS+=("$dir_name ($dir_size)")
-done
-
-# Use gum to let user select multiple directories (with sizes displayed)
-SELECTED=$(printf "%s\n" "${DISPLAY_OPTIONS[@]}" | gum choose --no-limit --height=15 \
+# Use gum to let user select multiple directories
+SELECTED=$(printf "%s\n" "${DIR_ENTRY_ARRAY[@]}" | gum choose --no-limit --height=15 \
 	--header="Select directories to sync (Space to select, Enter to confirm):")
 
 if [ -z "$SELECTED" ]; then
@@ -243,15 +224,66 @@ if [ -z "$SELECTED" ]; then
 	exit 0
 fi
 
-# Parse selected directories (extract directory name from "dir_name (size)" format)
+# Parse selected directories into array
 FILTERED_DIRECTORIES=()
 while IFS= read -r selected_line; do
 	if [ -n "$selected_line" ]; then
-		# Extract directory name by removing " (size)" suffix
-		dir_name="${selected_line%% (*}"
-		FILTERED_DIRECTORIES+=("$dir_name")
+		FILTERED_DIRECTORIES+=("$selected_line")
 	fi
 done <<<"$SELECTED"
+
+# Now fetch sizes for only the selected directories (single SSH call)
+echo "📊 Fetching sizes for ${#FILTERED_DIRECTORIES[@]} selected directories..."
+
+# Build the remote script to get sizes for specific directories
+REMOTE_SIZE_SCRIPT=$(
+	cat <<'EOF'
+set -e
+SOURCE_DIR="$1"
+shift
+if [ -z "$SOURCE_DIR" ]; then
+	exit 0
+fi
+case "$SOURCE_DIR" in
+	~*)
+		if [ -n "$HOME" ]; then
+			SOURCE_DIR="${HOME}${SOURCE_DIR:1}"
+		fi
+		;;
+esac
+if ! cd "$SOURCE_DIR" 2>/dev/null; then
+	exit 0
+fi
+for dir in "$@"; do
+	if [ -d "$dir" ]; then
+		size=$(du -sh -- "$dir" 2>/dev/null | cut -f1)
+		if [ -z "$size" ]; then
+			size="?"
+		fi
+		printf '%s|%s\n' "$dir" "$size"
+	fi
+done
+EOF
+)
+
+# Pass selected directories as arguments to the remote script
+declare -A DIR_SIZES
+if [ "$USE_JUMP_HOST" = true ]; then
+	SIZE_OUTPUT=$(ssh -J atalanta "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" "${FILTERED_DIRECTORIES[@]}" <<<"$REMOTE_SIZE_SCRIPT")
+else
+	SIZE_OUTPUT=$(ssh "$SOURCE_HOST" bash -s -- "$SOURCE_DIR" "${FILTERED_DIRECTORIES[@]}" <<<"$REMOTE_SIZE_SCRIPT")
+fi
+
+# Parse size output
+while IFS='|' read -r dir_name dir_size; do
+	if [ -n "$dir_name" ]; then
+		dir_size=$(echo "$dir_size" | tr -d '\n')
+		if [ -z "$dir_size" ]; then
+			dir_size="?"
+		fi
+		DIR_SIZES["$dir_name"]="$dir_size"
+	fi
+done <<<"$SIZE_OUTPUT"
 
 echo
 echo "📦 Selected directories:"
