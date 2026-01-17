@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -euo pipefail
+
+chooser_prompt="Search in"
+term_prompt="Search term"
+
+search_in=$(
+    printf "%s\n" \
+        "GitHub" \
+        "Web" | \
+    walker --dmenu --placeholder "$chooser_prompt"
+)
+
+if [[ -z "$search_in" ]]; then
+    exit 0
+fi
+
+search_term=$(walker --dmenu --placeholder "$term_prompt")
+
+if [[ -z "$search_term" ]]; then
+    exit 0
+fi
+
+case "$search_in" in
+GitHub)
+    query="site:github.com $search_term"
+    ;;
+Web)
+    query="$search_term"
+    ;;
+*)
+    exit 0
+    ;;
+esac
+
+encoded_query=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$query")
+url="https://www.google.com/search?q=$encoded_query"
+
+hyprctl dispatch exec "chromium --new-window $url"
+sleep 0.3
+hyprctl dispatch togglefloating
+hyprctl dispatch centerwindow
