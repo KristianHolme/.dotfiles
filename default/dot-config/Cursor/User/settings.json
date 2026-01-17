@@ -1,9 +1,7 @@
 {
   "window.commandCenter": true,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "terminal.integrated.commandsToSkipShell": [
-    "language-julia.interrupt"
-  ],
+  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
   "julia.numTestProcesses": 6,
@@ -25,13 +23,19 @@
   "customLocalFormatters.formatters": [
     {
       "command": "julia --project=@runic --startup-file=no -e 'using Runic; exit(Runic.main(ARGS))'",
-      "languages": [
-        "julia"
-      ]
+      "languages": ["julia"]
     }
   ],
   "[julia]": {
-    "editor.defaultFormatter": "jkillian.custom-local-formatters"
+    "editor.defaultFormatter": "jkillian.custom-local-formatters",
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.rulers": [92],
+    "files.eol": "\n"
   },
   "remote.SSH.remotePlatform": {
     "bengal": "linux"
@@ -41,12 +45,10 @@
   "remote.autoForwardPortsSource": "hybrid",
   "git.suggestSmartCommit": false,
   "editor.cursorSurroundingLines": 8,
-  "extensions.experimental.affinity": {
-    "asvetliakov.vscode-neovim": 1
-  },
   "update.mode": "manual",
   "terminal.integrated.fontLigatures.enabled": true,
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'monospace', monospace",
   "window.confirmBeforeClose": "always",
-  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.ignoreTrimWhitespace": false
 }
+
