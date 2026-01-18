@@ -1,10 +1,12 @@
-command = "hyprctl dispatch exec '[float;center;size 1200 800] chromium --new-window'"
+command = "omarchy-launch-webapp"
+always_show_default = true
+engines_as_actions = false
 
 [[entries]]
 default = true
-name = "Google"
-url = "https://www.google.com/search?q=%TERM%"
+name = "GitHub"
+url = "https://www.google.com/search?q=site:github.com+%TERM%"
 
 [[entries]]
-name = "GitHub (Google)"
-url = "https://www.google.com/search?q=site:github.com+%TERM%"
+name = "Google"
+url = "https://www.google.com/search?q=%TERM%"

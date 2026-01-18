@@ -1,43 +1,18 @@
 #!/bin/bash
+# Web search: select engine first, then type query
 
 set -euo pipefail
 
-chooser_prompt="Search in"
-term_prompt="Search term"
+engine=$(printf "%s\n" "GitHub" "Google" | walker --dmenu --placeholder "Search in")
+[[ -z "$engine" ]] && exit 0
 
-search_in=$(
-    printf "%s\n" \
-        "GitHub" \
-        "Web" | \
-    walker --dmenu --placeholder "$chooser_prompt"
-)
+query=$(walker --dmenu --placeholder "Search $engine")
+[[ -z "$query" ]] && exit 0
 
-if [[ -z "$search_in" ]]; then
-    exit 0
-fi
-
-search_term=$(walker --dmenu --placeholder "$term_prompt")
-
-if [[ -z "$search_term" ]]; then
-    exit 0
-fi
-
-case "$search_in" in
-GitHub)
-    query="site:github.com $search_term"
-    ;;
-Web)
-    query="$search_term"
-    ;;
-*)
-    exit 0
-    ;;
+case "$engine" in
+GitHub) url="https://www.google.com/search?q=site:github.com+$(printf %s "$query" | jq -sRr @uri)" ;;
+Google) url="https://www.google.com/search?q=$(printf %s "$query" | jq -sRr @uri)" ;;
+*) exit 0 ;;
 esac
 
-encoded_query=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$query")
-url="https://www.google.com/search?q=$encoded_query"
-
-hyprctl dispatch exec "chromium --new-window $url"
-sleep 0.3
-hyprctl dispatch togglefloating
-hyprctl dispatch centerwindow
+exec omarchy-launch-webapp "$url"
