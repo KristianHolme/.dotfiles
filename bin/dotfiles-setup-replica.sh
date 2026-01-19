@@ -13,6 +13,8 @@ set -Eeuo pipefail
 #   OMARCHY_REPO_URL  - git URL for omarchy (default: empty; skip clone if unset)
 #   NVIM_OPT_DIR      - install base for Neovim tarball (default: ~/.local/opt/neovim)
 #   GITHUB_TOKEN      - optional, to increase API rate limits
+#   DEBUG             - set to 1 for verbose debug output
+#   CURL_TIMEOUT      - timeout for curl operations in seconds (default: 30 for API, 120 for downloads)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib-dotfiles.sh"
@@ -49,7 +51,11 @@ install_starship() {
         fi
     fi
     log_info "Installing/updating starship to $latest_tag"
-    curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$INSTALL_DIR"
+    local timeout="${CURL_TIMEOUT:-120}"
+    curl --max-time "$timeout" -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$INSTALL_DIR" || {
+        log_error "Failed to install starship"
+        return 1
+    }
 }
 
 install_tree_sitter() {
@@ -88,7 +94,11 @@ install_tree_sitter() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading tree-sitter from $asset_url"
-    curl -fsSL "$asset_url" -o "$tmp/tree-sitter.gz"
+    local timeout="${CURL_TIMEOUT:-120}"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/tree-sitter.gz" || {
+        log_error "Failed to download tree-sitter"
+        return 1
+    }
     gunzip "$tmp/tree-sitter.gz"
     install -m 0755 "$tmp/tree-sitter" "$INSTALL_DIR/tree-sitter"
     log_success "Installed tree-sitter -> $INSTALL_DIR/tree-sitter"
@@ -130,7 +140,11 @@ install_git_lfs() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading git-lfs from $asset_url"
-    curl -fsSL "$asset_url" -o "$tmp/git-lfs.tar.gz"
+    local timeout="${CURL_TIMEOUT:-120}"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/git-lfs.tar.gz" || {
+        log_error "Failed to download git-lfs"
+        return 1
+    }
     tar -xzf "$tmp/git-lfs.tar.gz" -C "$tmp"
 
     # Find the git-lfs binary in the extracted tarball
@@ -190,7 +204,11 @@ install_neovim() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading neovim AppImage from $asset_url"
-    curl -fsSL "$asset_url" -o "$tmp/nvim.AppImage"
+    local timeout="${CURL_TIMEOUT:-300}"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/nvim.AppImage" || {
+        log_error "Failed to download neovim"
+        return 1
+    }
     install -m 0755 "$tmp/nvim.AppImage" "$INSTALL_DIR/nvim.appimage"
     ln -sf "$INSTALL_DIR/nvim.appimage" "$INSTALL_DIR/nvim"
     log_success "Installed neovim (AppImage) -> $INSTALL_DIR/nvim (symlink)"
@@ -277,7 +295,11 @@ install_gum() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading gum from $asset_url"
-    curl -fsSL "$asset_url" -o "$tmp/gum.tar.gz"
+    local timeout="${CURL_TIMEOUT:-120}"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/gum.tar.gz" || {
+        log_error "Failed to download gum"
+        return 1
+    }
 
     mkdir -p "$tmp/extract"
     tar -xzf "$tmp/gum.tar.gz" -C "$tmp/extract"
@@ -332,7 +354,11 @@ install_stow() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading and building stow (latest)"
-    curl -fsSL https://ftp.gnu.org/gnu/stow/stow-latest.tar.gz -o "$tmp/stow.tar.gz"
+    local timeout="${CURL_TIMEOUT:-120}"
+    curl --max-time "$timeout" -fsSL https://ftp.gnu.org/gnu/stow/stow-latest.tar.gz -o "$tmp/stow.tar.gz" || {
+        log_error "Failed to download stow"
+        return 1
+    }
     tar -xzf "$tmp/stow.tar.gz" -C "$tmp"
     src=$(find "$tmp" -maxdepth 1 -type d -name 'stow-*' | head -n1 || true)
     if [[ -z "$src" ]]; then
@@ -367,68 +393,76 @@ main() {
         exit 1
     fi
 
+    if [[ "${DEBUG:-}" == "1" ]]; then
+        log_info "DEBUG mode enabled"
+        log_info "DEBUG: INSTALL_DIR=$INSTALL_DIR"
+        log_info "DEBUG: GITHUB_TOKEN=${GITHUB_TOKEN:+set}"
+        log_info "DEBUG: CURL_TIMEOUT=${CURL_TIMEOUT:-default}"
+    fi
+
     mkdir -p "$INSTALL_DIR"
 
     # Tool installers (use MUSL where available for broad glibc compatibility on RHEL)
+    # Each installation is wrapped to continue on failure
     install_from_tarball \
         "eza" "eza-community/eza" \
         'eza_[^/]*x86_64-unknown-linux-gnu\.tar\.gz$' \
-        eza "eza --version" "$INSTALL_DIR"
+        eza "eza --version" "$INSTALL_DIR" || log_warning "eza installation failed; continuing"
 
     install_from_tarball \
         "zoxide" "ajeetdsouza/zoxide" \
         'zoxide[^/]*x86_64-unknown-linux-musl\.tar\.gz$' \
-        zoxide "zoxide -V" "$INSTALL_DIR"
+        zoxide "zoxide -V" "$INSTALL_DIR" || log_warning "zoxide installation failed; continuing"
 
     install_from_tarball \
         "ripgrep" "BurntSushi/ripgrep" \
         'ripgrep-[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
-        rg "rg --version" "$INSTALL_DIR"
+        rg "rg --version" "$INSTALL_DIR" || log_warning "ripgrep installation failed; continuing"
 
     install_from_tarball \
         "lazygit" "jesseduffield/lazygit" \
         'lazygit_[^/]*_linux_x86_64\.tar\.gz$' \
-        lazygit "lazygit --version" "$INSTALL_DIR"
+        lazygit "lazygit --version" "$INSTALL_DIR" || log_warning "lazygit installation failed; continuing"
 
     install_from_tarball \
         "fzf" "junegunn/fzf" \
         'fzf-[^/]*-linux_amd64\.tar\.gz$' \
-        fzf "fzf --version" "$INSTALL_DIR"
+        fzf "fzf --version" "$INSTALL_DIR" || log_warning "fzf installation failed; continuing"
 
     install_from_tarball \
         "fd" "sharkdp/fd" \
         'fd-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
-        fd "fd --version" "$INSTALL_DIR"
+        fd "fd --version" "$INSTALL_DIR" || log_warning "fd installation failed; continuing"
 
-    install_tree_sitter
+    install_tree_sitter || log_warning "tree-sitter installation failed; continuing"
 
-    install_git_lfs
+    install_git_lfs || log_warning "git-lfs installation failed; continuing"
 
     install_from_tarball \
         "btop" "aristocratos/btop" \
         'btop-x86_64-linux-musl\.tbz$' \
-        btop "btop --version" "$INSTALL_DIR"
+        btop "btop --version" "$INSTALL_DIR" || log_warning "btop installation failed; continuing"
 
     install_from_tarball \
         "yazi" "sxyazi/yazi" \
         'yazi[^/]*-x86_64-unknown-linux-(gnu|musl)\.tar\.gz$' \
-        yazi "yazi --version" "$INSTALL_DIR"
+        yazi "yazi --version" "$INSTALL_DIR" || log_warning "yazi installation failed; continuing"
 
-    install_starship
+    install_starship || log_warning "starship installation failed; continuing"
 
     # Build/install GNU stow user-locally if missing
-    install_stow
+    install_stow || log_warning "stow installation failed; continuing"
 
-    install_neovim
+    install_neovim || log_warning "neovim installation failed; continuing"
 
     # Install LazyVim starter configuration
-    install_lazyvim
+    install_lazyvim || log_warning "LazyVim installation failed; continuing"
 
     # Install gum for interactive prompts
-    install_gum
+    install_gum || log_warning "gum installation failed; continuing"
 
     # Install tmux plugin manager
-    install_tpm
+    install_tpm || log_warning "tpm installation failed; continuing"
 
     # Install Julia (juliaup) and Run Julia setup on first install
     install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && $SCRIPT_DIR/julia-setup.jl" --yes

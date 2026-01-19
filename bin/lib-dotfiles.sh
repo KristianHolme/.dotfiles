@@ -122,19 +122,30 @@ github_api() {
     # $1: path like repos/owner/repo/releases/latest
     # Uses optional GITHUB_TOKEN if set to avoid strict rate limits
     local url="https://api.github.com/$1"
-    local response http_code
+    local response http_code curl_err
+    local timeout="${CURL_TIMEOUT:-30}"
 
     # Add small delay to be nice to GitHub API
     sleep 0.2
 
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Fetching $url (timeout: ${timeout}s)"
+
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-        response=$(curl -fsSL -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" "$url" 2>/dev/null)
+        response=$(curl --max-time "$timeout" -fsSL -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" "$url" 2>&1) || curl_err=$?
     else
-        response=$(curl -fsSL -w "%{http_code}" "$url" 2>/dev/null)
+        response=$(curl --max-time "$timeout" -fsSL -w "%{http_code}" "$url" 2>&1) || curl_err=$?
+    fi
+
+    if [[ -n "${curl_err:-}" ]]; then
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: curl failed with exit code $curl_err"
+        log_error "Failed to connect to GitHub API: $url"
+        return 1
     fi
 
     http_code="${response: -3}"
     response="${response%???}"
+
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: HTTP $http_code for $url"
 
     case "$http_code" in
     200) echo "$response" ;;
@@ -147,6 +158,7 @@ github_api() {
         ;;
     *)
         log_warning "GitHub API error: HTTP $http_code for $url"
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: Response: ${response:0:200}"
         return 1
         ;;
     esac
@@ -155,18 +167,37 @@ github_api() {
 get_latest_tag() {
     # $1: owner/repo
     # outputs tag (e.g. v0.23.0)
-    github_api "repos/$1/releases/latest" | sed -n 's/\s*"tag_name"\s*:\s*"\([^"]*\)".*/\1/p' | head -n1
+    local api_response tag
+    api_response=$(github_api "repos/$1/releases/latest" 2>&1) || {
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: github_api failed for $1"
+        return 1
+    }
+    tag=$(echo "$api_response" | sed -n 's/\s*"tag_name"\s*:\s*"\([^"]*\)".*/\1/p' | head -n1)
+    if [[ -z "$tag" ]]; then
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: Could not extract tag from response for $1"
+        return 1
+    fi
+    echo "$tag"
 }
 
 find_asset_url() {
     # $1: owner/repo
     # $2: regex to match asset name (extended regex)
     # outputs browser_download_url
-    local or="$1" re="$2"
-    github_api "repos/$or/releases/latest" |
+    local or="$1" re="$2" api_response url
+    api_response=$(github_api "repos/$or/releases/latest" 2>&1) || {
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: github_api failed for $or"
+        return 1
+    }
+    url=$(echo "$api_response" |
         awk -v RS=',' '1' |
         sed -n 's/\s*"browser_download_url"\s*:\s*"\([^"]*\)".*/\1/p' |
-        grep -E "$re" | head -n1
+        grep -E "$re" | head -n1)
+    if [[ -z "$url" ]]; then
+        [[ "${DEBUG:-}" == "1" ]] && log_warning "DEBUG: No asset found matching pattern: $re"
+        return 1
+    fi
+    echo "$url"
 }
 
 first_version_from_output() {
@@ -216,11 +247,19 @@ install_from_tarball() {
     local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp="" dir="" bin_path=""
 
     log_info "Checking $name releases..."
-    latest_tag=$(get_latest_tag "$or") || {
-        log_warning "Failed to get $name latest tag"
+    latest_tag=$(get_latest_tag "$or" 2>&1) || {
+        log_warning "Failed to get $name latest tag (repo: $or)"
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: get_latest_tag output: $latest_tag"
         latest_tag=""
     }
     latest_ver="${latest_tag#v}"
+    
+    if [[ -z "$latest_tag" ]]; then
+        log_warning "Skipping $name installation due to API error"
+        return 0
+    fi
+    
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: $name latest tag: $latest_tag, version: $latest_ver"
 
     if command -v "$bin_name" >/dev/null 2>&1; then
         current_ver=$({ eval "$version_cmd" 2>/dev/null || true; } | first_version_from_output || true)
@@ -239,11 +278,13 @@ install_from_tarball() {
         fi
     fi
 
-    asset_url=$(find_asset_url "$or" "$asset_pat")
-    if [[ -z "$asset_url" ]]; then
-        log_error "Could not find asset for $name matching /$asset_pat/"
+    asset_url=$(find_asset_url "$or" "$asset_pat" 2>&1) || {
+        log_error "Could not find asset for $name matching /$asset_pat/ (repo: $or)"
+        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: find_asset_url output: $asset_url"
         return 1
-    fi
+    }
+    
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Found asset URL: $asset_url"
 
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
@@ -263,7 +304,12 @@ install_from_tarball() {
         extract_opts="-xzf"
     fi
 
-    curl -fsSL "$asset_url" -o "$tmp/$archive_name"
+    local timeout="${CURL_TIMEOUT:-120}"
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Downloading with timeout ${timeout}s"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/$archive_name" || {
+        log_error "Failed to download $name from $asset_url"
+        return 1
+    }
 
     mkdir -p "$tmp/extract"
     tar $extract_opts "$tmp/$archive_name" -C "$tmp/extract"
