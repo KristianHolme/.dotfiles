@@ -401,17 +401,21 @@ install_gh() {
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
 
-    # Fetch latest release page and scrape asset path (avoids API rate limits)
-    http_code=$(curl --max-time "$timeout" -fsSL -o "$tmp/gh_release.html" -w "%{http_code}" "$releases_url" 2>/dev/null || true)
-    if [[ "$http_code" != "200" ]]; then
-        log_error "Failed to fetch gh release page (HTTP $http_code)"
-        if [[ "$http_code" == "403" || "$http_code" == "429" ]]; then
-            log_error "GitHub rate limit likely hit while fetching gh release page. Try again later."
-        fi
+    # Resolve latest tag via redirect (avoids API rate limits and HTML parsing)
+    local effective_url version
+    effective_url=$(curl --max-time "$timeout" -fsSL -o /dev/null -w "%{url_effective}" "$releases_url" 2>/dev/null || true)
+    if [[ -z "$effective_url" ]]; then
+        log_error "Failed to resolve gh latest release URL"
         return 1
     fi
 
-    asset_path=$(grep -Eo "/cli/cli/releases/download/v[0-9.]+/gh_[^\"/]*_${os_arch}\\.tar\\.gz" "$tmp/gh_release.html" | head -n1 || true)
+    version=$(echo "$effective_url" | sed -n 's#.*/tag/v\([0-9.]\+\).*#\1#p' | head -n1)
+    if [[ -z "$version" ]]; then
+        log_error "Failed to parse gh version from: $effective_url"
+        return 1
+    fi
+
+    asset_path="/cli/cli/releases/download/v${version}/gh_${version}_${os_arch}.tar.gz"
 
     if [[ -z "$asset_path" ]]; then
         log_error "Failed to find gh release asset for $os_arch"
