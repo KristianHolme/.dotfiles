@@ -440,7 +440,7 @@ main() {
 
     install_from_tarball \
         "btop" "aristocratos/btop" \
-        'btop-x86_64-linux-musl\.tbz$' \
+        'btop-x86_64-unknown-linux-musl\.tbz$' \
         btop "btop --version" "$INSTALL_DIR" || log_warning "btop installation failed; continuing"
 
     install_from_tarball \

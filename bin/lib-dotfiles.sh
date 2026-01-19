@@ -168,7 +168,7 @@ get_latest_tag() {
     # $1: owner/repo
     # outputs tag (e.g. v0.23.0)
     local api_response tag
-    api_response=$(github_api "repos/$1/releases/latest" 2>&1) || {
+    api_response=$(github_api "repos/$1/releases/latest") || {
         [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: github_api failed for $1"
         return 1
     }
@@ -185,7 +185,7 @@ find_asset_url() {
     # $2: regex to match asset name (extended regex)
     # outputs browser_download_url
     local or="$1" re="$2" api_response url
-    api_response=$(github_api "repos/$or/releases/latest" 2>&1) || {
+    api_response=$(github_api "repos/$or/releases/latest") || {
         [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: github_api failed for $or"
         return 1
     }
@@ -247,7 +247,7 @@ install_from_tarball() {
     local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp="" dir="" bin_path=""
 
     log_info "Checking $name releases..."
-    latest_tag=$(get_latest_tag "$or" 2>&1) || {
+    latest_tag=$(get_latest_tag "$or") || {
         log_warning "Failed to get $name latest tag (repo: $or)"
         [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: get_latest_tag output: $latest_tag"
         latest_tag=""
@@ -278,13 +278,16 @@ install_from_tarball() {
         fi
     fi
 
-    asset_url=$(find_asset_url "$or" "$asset_pat" 2>&1) || {
+    asset_url=$(find_asset_url "$or" "$asset_pat") || {
         log_error "Could not find asset for $name matching /$asset_pat/ (repo: $or)"
         [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: find_asset_url output: $asset_url"
         return 1
     }
     
-    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Found asset URL: $asset_url"
+    if [[ "${DEBUG:-}" == "1" ]]; then
+        log_info "DEBUG: Found asset URL: $asset_url"
+        log_info "DEBUG: Asset name: ${asset_url##*/}"
+    fi
 
     tmp=$(mktemp -d)
     trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
