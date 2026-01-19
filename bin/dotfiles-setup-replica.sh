@@ -459,7 +459,7 @@ ensure_gh_auth() {
 }
 
 main() {
-    ensure_cmd curl tar git install make perl
+    ensure_cmd curl tar unzip git install make perl
 
     # Install gh first to avoid GitHub API rate limits
     if ! install_gh; then
@@ -531,7 +531,7 @@ main() {
 
     install_from_tarball \
         "yazi" "sxyazi/yazi" \
-        'yazi[^/]*-x86_64-unknown-linux-(gnu|musl)\.tar\.gz$' \
+        'yazi[^/]*-x86_64-unknown-linux-(gnu|musl)\.zip$' \
         yazi "yazi --version" "$INSTALL_DIR" || log_warning "yazi installation failed; continuing"
 
     install_starship || log_warning "starship installation failed; continuing"

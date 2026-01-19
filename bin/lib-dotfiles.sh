@@ -310,7 +310,10 @@ install_from_tarball() {
 
     # Detect compression format from URL
     local archive_name extract_opts
-    if [[ "$asset_url" =~ \.tbz$ ]] || [[ "$asset_url" =~ \.tar\.bz2$ ]]; then
+    if [[ "$asset_url" =~ \.zip$ ]]; then
+        archive_name="archive.zip"
+        extract_opts=""
+    elif [[ "$asset_url" =~ \.tbz$ ]] || [[ "$asset_url" =~ \.tar\.bz2$ ]]; then
         archive_name="archive.tar.bz2"
         extract_opts="-xjf"
     elif [[ "$asset_url" =~ \.tar\.xz$ ]] || [[ "$asset_url" =~ \.txz$ ]]; then
@@ -330,7 +333,11 @@ install_from_tarball() {
     }
 
     mkdir -p "$tmp/extract"
-    tar $extract_opts "$tmp/$archive_name" -C "$tmp/extract"
+    if [[ "$archive_name" == "archive.zip" ]]; then
+        unzip -q "$tmp/$archive_name" -d "$tmp/extract"
+    else
+        tar $extract_opts "$tmp/$archive_name" -C "$tmp/extract"
+    fi
 
     # locate binary in extracted contents
     bin_path=$(find "$tmp/extract" -type f -name "$bin_name" -perm -u+x | head -n1 || true)
