@@ -49,6 +49,9 @@
   "terminal.integrated.fontLigatures.enabled": true,
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'monospace', monospace",
   "window.confirmBeforeClose": "always",
-  "diffEditor.ignoreTrimWhitespace": false
+  "diffEditor.ignoreTrimWhitespace": false,
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1
+  }
 }
 
