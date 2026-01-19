@@ -385,8 +385,73 @@ install_stow() {
     fi
 }
 
+install_gh() {
+    local gh_bin="$INSTALL_DIR/gh"
+    local os_arch="linux_amd64"
+    local releases_url="https://github.com/cli/cli/releases/latest"
+    local asset_path="" asset_url="" tmp="" timeout="${CURL_TIMEOUT:-120}"
+
+    if command -v gh >/dev/null 2>&1; then
+        log_info "gh already installed; skipping"
+        return 0
+    fi
+
+    log_info "Installing GitHub CLI (gh) to enable authenticated API access..."
+
+    # Fetch latest release page and scrape asset path (avoids API rate limits)
+    asset_path=$(curl --max-time "$timeout" -fsSL "$releases_url" |
+        grep -Eo "/cli/cli/releases/download/v[0-9.]+/gh_[^\"/]*_${os_arch}\\.tar\\.gz" |
+        head -n1) || true
+
+    if [[ -z "$asset_path" ]]; then
+        log_error "Failed to find gh release asset for $os_arch"
+        return 1
+    fi
+
+    asset_url="https://github.com${asset_path}"
+    tmp=$(mktemp -d)
+    trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
+    log_info "Downloading gh from $asset_url"
+    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/gh.tar.gz" || {
+        log_error "Failed to download gh"
+        return 1
+    }
+
+    tar -xzf "$tmp/gh.tar.gz" -C "$tmp"
+    local gh_extracted
+    gh_extracted=$(find "$tmp" -type f -path "*/bin/gh" | head -n1 || true)
+    if [[ -z "$gh_extracted" ]]; then
+        log_error "Could not locate gh binary in archive"
+        return 1
+    fi
+
+    install -m 0755 "$gh_extracted" "$gh_bin"
+    log_success "Installed gh -> $gh_bin"
+}
+
+ensure_gh_auth() {
+    if command -v gh >/dev/null 2>&1; then
+        if gh auth status -h github.com >/dev/null 2>&1; then
+            log_info "gh authenticated; using gh for GitHub API access"
+            return 0
+        fi
+        log_warning "gh is installed but not authenticated. Launching login..."
+        if gh auth login; then
+            log_success "gh authentication complete"
+            return 0
+        fi
+        log_error "gh authentication failed; cannot proceed with GitHub API access"
+        return 1
+    fi
+    return 1
+}
+
 main() {
     ensure_cmd curl tar git install make perl
+
+    # Install gh first to avoid GitHub API rate limits
+    install_gh || log_warning "gh installation failed; continuing without gh"
+    ensure_gh_auth || log_warning "gh not authenticated; API rate limits may apply"
 
     if ! arch_is_supported; then
         log_error "Unsupported architecture $(uname -m). This script targets x86_64 Linux."

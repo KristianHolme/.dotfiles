@@ -23,6 +23,10 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*" >&2; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $*" >&2; }
 log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
+gh_is_authed() {
+    command -v gh >/dev/null 2>&1 && gh auth status -h github.com >/dev/null 2>&1
+}
+
 # Standardized dependency check
 # Usage: ensure_cmd "git" "curl"
 ensure_cmd() {
@@ -120,13 +124,23 @@ clone_or_update_omarchy() {
 
 github_api() {
     # $1: path like repos/owner/repo/releases/latest
-    # Uses optional GITHUB_TOKEN if set to avoid strict rate limits
-    local url="https://api.github.com/$1"
+    # Uses gh if authenticated, otherwise falls back to curl (+ optional GITHUB_TOKEN)
+    local path="$1"
+    local url="https://api.github.com/$path"
     local response http_code curl_err
     local timeout="${CURL_TIMEOUT:-30}"
 
     # Add small delay to be nice to GitHub API
     sleep 0.2
+
+    if gh_is_authed; then
+        [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: gh api $path"
+        gh api -H "Accept: application/vnd.github+json" "$path" 2>/dev/null || {
+            log_error "gh api failed for $path"
+            return 1
+        }
+        return 0
+    fi
 
     [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Fetching $url (timeout: ${timeout}s)"
 
