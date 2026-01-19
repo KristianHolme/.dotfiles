@@ -529,9 +529,10 @@ main() {
         'btop-x86_64-unknown-linux-musl\.tbz$' \
         btop "btop --version" "$INSTALL_DIR" || log_warning "btop installation failed; continuing"
 
+    # Prefer musl to avoid glibc version constraints on older systems
     install_from_tarball \
         "yazi" "sxyazi/yazi" \
-        'yazi[^/]*-x86_64-unknown-linux-(gnu|musl)\.zip$' \
+        'yazi[^/]*-x86_64-unknown-linux-musl\.zip$' \
         yazi "yazi --version" "$INSTALL_DIR" || log_warning "yazi installation failed; continuing"
 
     install_starship || log_warning "starship installation failed; continuing"
