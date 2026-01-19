@@ -27,6 +27,37 @@ gh_is_authed() {
     command -v gh >/dev/null 2>&1 && gh auth status -h github.com >/dev/null 2>&1
 }
 
+check_github_rate_limit() {
+    local remaining reset now wait mins
+    if ! gh_is_authed; then
+        log_error "gh is not authenticated; cannot check GitHub rate limits"
+        return 1
+    fi
+
+    remaining=$(gh api /rate_limit --jq '.resources.core.remaining' 2>/dev/null || true)
+    reset=$(gh api /rate_limit --jq '.resources.core.reset' 2>/dev/null || true)
+
+    if [[ -z "${remaining:-}" || -z "${reset:-}" ]]; then
+        log_warning "Could not read GitHub rate limit info"
+        return 0
+    fi
+
+    if [[ "$remaining" -eq 0 ]]; then
+        now=$(date +%s)
+        wait=$((reset - now))
+        if [[ "$wait" -lt 0 ]]; then
+            wait=0
+        fi
+        mins=$((wait / 60))
+        hours=$((mins / 60))
+        mins=$((mins % 60))
+        log_error "GitHub API rate limit reached. Reset in ~${hours}h ${mins}m (epoch: $reset)."
+        return 1
+    fi
+
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: GitHub API rate limit remaining: $remaining"
+    return 0
+}
 # Standardized dependency check
 # Usage: ensure_cmd "git" "curl"
 ensure_cmd() {
@@ -124,58 +155,28 @@ clone_or_update_omarchy() {
 
 github_api() {
     # $1: path like repos/owner/repo/releases/latest
-    # Uses gh if authenticated, otherwise falls back to curl (+ optional GITHUB_TOKEN)
+    # Requires gh and authentication
     local path="$1"
-    local url="https://api.github.com/$path"
-    local response http_code curl_err
-    local timeout="${CURL_TIMEOUT:-30}"
+
+    if ! command -v gh >/dev/null 2>&1; then
+        log_error "gh not installed; cannot access GitHub API"
+        return 1
+    fi
+
+    if ! gh_is_authed; then
+        log_error "gh is not authenticated; cannot access GitHub API"
+        return 1
+    fi
 
     # Add small delay to be nice to GitHub API
     sleep 0.2
 
-    if gh_is_authed; then
-        [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: gh api $path"
-        gh api -H "Accept: application/vnd.github+json" "$path" 2>/dev/null || {
-            log_error "gh api failed for $path"
-            return 1
-        }
-        return 0
-    fi
-
-    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: Fetching $url (timeout: ${timeout}s)"
-
-    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-        response=$(curl --max-time "$timeout" -fsSL -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" "$url" 2>&1) || curl_err=$?
-    else
-        response=$(curl --max-time "$timeout" -fsSL -w "%{http_code}" "$url" 2>&1) || curl_err=$?
-    fi
-
-    if [[ -n "${curl_err:-}" ]]; then
-        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: curl failed with exit code $curl_err"
-        log_error "Failed to connect to GitHub API: $url"
+    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: gh api $path"
+    gh api -H "Accept: application/vnd.github+json" "$path" 2>/dev/null || {
+        log_error "gh api failed for $path"
+        check_github_rate_limit || true
         return 1
-    fi
-
-    http_code="${response: -3}"
-    response="${response%???}"
-
-    [[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: HTTP $http_code for $url"
-
-    case "$http_code" in
-    200) echo "$response" ;;
-    403)
-        log_warning "GitHub API rate limit exceeded (403). Solutions:"
-        log_warning "1. Wait an hour for reset, or"
-        log_warning "2. Set GITHUB_TOKEN environment variable for 5000/hour limit"
-        log_warning "3. Get token at: https://github.com/settings/tokens"
-        return 1
-        ;;
-    *)
-        log_warning "GitHub API error: HTTP $http_code for $url"
-        [[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: Response: ${response:0:200}"
-        return 1
-        ;;
-    esac
+    }
 }
 
 get_latest_tag() {

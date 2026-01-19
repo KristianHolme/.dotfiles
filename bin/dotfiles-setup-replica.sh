@@ -12,7 +12,7 @@ set -Eeuo pipefail
 #   OMARCHY_DIR       - omarchy clone dir (default: ~/.local/share/omarchy)
 #   OMARCHY_REPO_URL  - git URL for omarchy (default: empty; skip clone if unset)
 #   NVIM_OPT_DIR      - install base for Neovim tarball (default: ~/.local/opt/neovim)
-#   GITHUB_TOKEN      - optional, to increase API rate limits
+#   GITHUB_TOKEN      - deprecated (gh is now required for API access)
 #   DEBUG             - set to 1 for verbose debug output
 #   CURL_TIMEOUT      - timeout for curl operations in seconds (default: 30 for API, 120 for downloads)
 
@@ -389,7 +389,7 @@ install_gh() {
     local gh_bin="$INSTALL_DIR/gh"
     local os_arch="linux_amd64"
     local releases_url="https://github.com/cli/cli/releases/latest"
-    local asset_path="" asset_url="" tmp="" timeout="${CURL_TIMEOUT:-120}"
+    local asset_path="" asset_url="" tmp="" timeout="${CURL_TIMEOUT:-120}" http_code=""
 
     if command -v gh >/dev/null 2>&1; then
         log_info "gh already installed; skipping"
@@ -398,10 +398,20 @@ install_gh() {
 
     log_info "Installing GitHub CLI (gh) to enable authenticated API access..."
 
+    tmp=$(mktemp -d)
+    trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
+
     # Fetch latest release page and scrape asset path (avoids API rate limits)
-    asset_path=$(curl --max-time "$timeout" -fsSL "$releases_url" |
-        grep -Eo "/cli/cli/releases/download/v[0-9.]+/gh_[^\"/]*_${os_arch}\\.tar\\.gz" |
-        head -n1) || true
+    http_code=$(curl --max-time "$timeout" -fsSL -o "$tmp/gh_release.html" -w "%{http_code}" "$releases_url" 2>/dev/null || true)
+    if [[ "$http_code" != "200" ]]; then
+        log_error "Failed to fetch gh release page (HTTP $http_code)"
+        if [[ "$http_code" == "403" || "$http_code" == "429" ]]; then
+            log_error "GitHub rate limit likely hit while fetching gh release page. Try again later."
+        fi
+        return 1
+    fi
+
+    asset_path=$(grep -Eo "/cli/cli/releases/download/v[0-9.]+/gh_[^\"/]*_${os_arch}\\.tar\\.gz" "$tmp/gh_release.html" | head -n1 || true)
 
     if [[ -z "$asset_path" ]]; then
         log_error "Failed to find gh release asset for $os_arch"
@@ -409,13 +419,15 @@ install_gh() {
     fi
 
     asset_url="https://github.com${asset_path}"
-    tmp=$(mktemp -d)
-    trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
     log_info "Downloading gh from $asset_url"
-    curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/gh.tar.gz" || {
-        log_error "Failed to download gh"
+    http_code=$(curl --max-time "$timeout" -fsSL -o "$tmp/gh.tar.gz" -w "%{http_code}" "$asset_url" 2>/dev/null || true)
+    if [[ "$http_code" != "200" ]]; then
+        log_error "Failed to download gh (HTTP $http_code)"
+        if [[ "$http_code" == "403" || "$http_code" == "429" ]]; then
+            log_error "GitHub rate limit likely hit while downloading gh. Try again later."
+        fi
         return 1
-    }
+    fi
 
     tar -xzf "$tmp/gh.tar.gz" -C "$tmp"
     local gh_extracted
@@ -435,12 +447,8 @@ ensure_gh_auth() {
             log_info "gh authenticated; using gh for GitHub API access"
             return 0
         fi
-        log_warning "gh is installed but not authenticated. Launching login..."
-        if gh auth login; then
-            log_success "gh authentication complete"
-            return 0
-        fi
-        log_error "gh authentication failed; cannot proceed with GitHub API access"
+        log_error "gh is installed but not authenticated."
+        log_error "Authenticate with: gh auth login"
         return 1
     fi
     return 1
@@ -450,8 +458,18 @@ main() {
     ensure_cmd curl tar git install make perl
 
     # Install gh first to avoid GitHub API rate limits
-    install_gh || log_warning "gh installation failed; continuing without gh"
-    ensure_gh_auth || log_warning "gh not authenticated; API rate limits may apply"
+    if ! install_gh; then
+        log_error "gh installation failed; cannot continue"
+        exit 1
+    fi
+    if ! ensure_gh_auth; then
+        log_error "Authenticate with gh and re-run this script."
+        exit 1
+    fi
+    if ! check_github_rate_limit; then
+        log_error "GitHub API rate limit reached; try again later."
+        exit 1
+    fi
 
     if ! arch_is_supported; then
         log_error "Unsupported architecture $(uname -m). This script targets x86_64 Linux."
@@ -461,7 +479,6 @@ main() {
     if [[ "${DEBUG:-}" == "1" ]]; then
         log_info "DEBUG mode enabled"
         log_info "DEBUG: INSTALL_DIR=$INSTALL_DIR"
-        log_info "DEBUG: GITHUB_TOKEN=${GITHUB_TOKEN:+set}"
         log_info "DEBUG: CURL_TIMEOUT=${CURL_TIMEOUT:-default}"
     fi
 
