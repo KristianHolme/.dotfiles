@@ -1,6 +1,6 @@
 ---
 name: dotfiles-omarchy-setup
-description: Instructions for updating system configuration. Use when modifying dotfiles or Hyprland/Wayland configs inside ~/.dotfiles. This system uses omarchy at ~/.local/share/omarchy; read-only access there is allowed for understanding commands and idiomatic usage, but never edit files there.
+description: Instructions for updating system configuration. Use when modifying dotfiles, Hyprland/Wayland configs, system configs, Cursor skills, or other configurations that typically live in ~/.config inside ~/.dotfiles. This system uses omarchy at ~/.local/share/omarchy; read-only access there is allowed for understanding commands and idiomatic usage, but never edit files there.
 ---
 
 # Dotfiles Setup
@@ -10,7 +10,8 @@ description: Instructions for updating system configuration. Use when modifying 
 1. Identify the target area in `~/.dotfiles/`.
 2. Edit files in the stow structure under `~/.dotfiles/` only.
 3. Omarchy lives in `~/.local/share/omarchy/` (scripts/configs); read-only access is OK for understanding commands and idioms, but do not edit.
-4. Do not commit unless explicitly asked.
+4. When working with omarchy-related tasks, invoke the omarchy skill: `@omarchy`
+5. Do not commit unless explicitly asked.
 
 ## Workflow Checklist
 
@@ -25,6 +26,7 @@ description: Instructions for updating system configuration. Use when modifying 
   - Other app configs: `dot-config/`, `dot-local/`, `dot-ssh/`, `dot-tmux.conf`, etc.
 - [ ] Make minimal, targeted edits with clear intent.
 - [ ] Omarchy is located at `~/.local/share/omarchy/` (scripts/configs); read-only access is OK, but never edit.
+- [ ] When working with omarchy-related tasks, invoke the omarchy skill: `@omarchy`
 - [ ] Apply changes via existing dotfiles apply tooling or stow when necessary.
 - [ ] Avoid creating tests or example files unless explicitly asked.
 - [ ] Do not commit or amend unless explicitly requested.

@@ -138,6 +138,40 @@ apply_configs() {
 
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
+# Sync omarchy skill from Claude skills if it exists and differs
+sync_omarchy_skill() {
+    local claude_skill="$HOME/.claude/skills/omarchy/SKILL.md"
+    local packages_dir="$(realpath "$SCRIPT_DIR/..")"
+    local dotfiles_skill="$packages_dir/default/dot-cursor/skills/omarchy/SKILL.md"
+
+    # Only sync if Claude skill exists
+    if [[ ! -f "$claude_skill" ]]; then
+        return 0
+    fi
+
+    # Create directory if it doesn't exist
+    mkdir -p "$(dirname "$dotfiles_skill")"
+
+    # Check if dotfiles skill exists and compare
+    if [[ -f "$dotfiles_skill" ]]; then
+        # Use diff to check if files differ (quiet mode, exit 0 if same, 1 if different)
+        if diff -q "$claude_skill" "$dotfiles_skill" >/dev/null 2>&1; then
+            # Files are identical, no sync needed
+            return 0
+        else
+            # Files differ, copy the updated version
+            log_info "Omarchy skill has changed, updating dotfiles copy..."
+            cp "$claude_skill" "$dotfiles_skill"
+            log_success "Updated omarchy skill in dotfiles"
+        fi
+    else
+        # Dotfiles skill doesn't exist, copy it
+        log_info "Copying omarchy skill to dotfiles..."
+        cp "$claude_skill" "$dotfiles_skill"
+        log_success "Copied omarchy skill to dotfiles"
+    fi
+}
+
 # Check for blank monitors (0x0 resolution) and fix them
 check_and_fix_monitors() {
     if ! command -v hyprctl &>/dev/null || ! command -v jq &>/dev/null; then
@@ -262,6 +296,10 @@ main() {
     else
         log_info "Applying Omarchy tweaks..."
     fi
+
+    # Sync omarchy skill before applying configs
+    sync_omarchy_skill
+
     apply_configs "$profile_arg"
     reload_hyprland
     log_success "All tweaks applied successfully!"
