@@ -138,38 +138,50 @@ apply_configs() {
 
 # Removed bashrc manual sourcing; handled by Stow 'home' package
 
-# Sync omarchy skill from Claude skills if it exists and differs
-sync_omarchy_skill() {
-    local claude_skill="$HOME/.claude/skills/omarchy/SKILL.md"
-    local packages_dir="$(realpath "$SCRIPT_DIR/..")"
-    local dotfiles_skill="$packages_dir/default/dot-cursor/skills/omarchy/SKILL.md"
+# Sync all Claude skills into dotfiles if they exist and differ
+sync_claude_skills() {
+    local claude_skills_dir="$HOME/.claude/skills"
+    local packages_dir
+    local dotfiles_skills_dir
+    packages_dir="$(realpath "$SCRIPT_DIR/..")"
+    dotfiles_skills_dir="$packages_dir/default/dot-cursor/skills"
 
-    # Only sync if Claude skill exists
-    if [[ ! -f "$claude_skill" ]]; then
+    if [[ ! -d "$claude_skills_dir" ]]; then
         return 0
     fi
 
-    # Create directory if it doesn't exist
-    mkdir -p "$(dirname "$dotfiles_skill")"
+    mkdir -p "$dotfiles_skills_dir"
 
-    # Check if dotfiles skill exists and compare
-    if [[ -f "$dotfiles_skill" ]]; then
-        # Use diff to check if files differ (quiet mode, exit 0 if same, 1 if different)
-        if diff -q "$claude_skill" "$dotfiles_skill" >/dev/null 2>&1; then
-            # Files are identical, no sync needed
-            return 0
-        else
-            # Files differ, copy the updated version
-            log_info "Omarchy skill has changed, updating dotfiles copy..."
-            cp "$claude_skill" "$dotfiles_skill"
-            log_success "Updated omarchy skill in dotfiles"
+    shopt -s nullglob
+    for skill_dir in "$claude_skills_dir"/*; do
+        [[ -d "$skill_dir" ]] || continue
+
+        local skill_name
+        local target_dir
+        skill_name="$(basename "$skill_dir")"
+        target_dir="$dotfiles_skills_dir/$skill_name"
+
+        if [[ -d "$target_dir" ]] && diff -qr "$skill_dir" "$target_dir" >/dev/null 2>&1; then
+            continue
         fi
-    else
-        # Dotfiles skill doesn't exist, copy it
-        log_info "Copying omarchy skill to dotfiles..."
-        cp "$claude_skill" "$dotfiles_skill"
-        log_success "Copied omarchy skill to dotfiles"
-    fi
+
+        if [[ -d "$target_dir" ]]; then
+            log_info "Updating Claude skill '$skill_name' in dotfiles..."
+        else
+            log_info "Copying Claude skill '$skill_name' to dotfiles..."
+            mkdir -p "$target_dir"
+        fi
+
+        if command -v rsync >/dev/null 2>&1; then
+            rsync -a --delete "$skill_dir"/ "$target_dir"/
+        else
+            rm -rf "$target_dir"
+            cp -a "$skill_dir" "$target_dir"
+        fi
+
+        log_success "Synced Claude skill '$skill_name'"
+    done
+    shopt -u nullglob
 }
 
 # Check for blank monitors (0x0 resolution) and fix them
@@ -297,8 +309,8 @@ main() {
         log_info "Applying Omarchy tweaks..."
     fi
 
-    # Sync omarchy skill before applying configs
-    sync_omarchy_skill
+    # Sync Claude skills before applying configs
+    sync_claude_skills
 
     apply_configs "$profile_arg"
     reload_hyprland
