@@ -3,6 +3,7 @@
     "lazyvim.plugins.extras.editor.harpoon2",
     "lazyvim.plugins.extras.editor.neo-tree",
     "lazyvim.plugins.extras.lang.git",
+    "lazyvim.plugins.extras.lang.julia",
     "lazyvim.plugins.extras.lang.markdown",
     "lazyvim.plugins.extras.lang.toml",
     "lazyvim.plugins.extras.lang.yaml",

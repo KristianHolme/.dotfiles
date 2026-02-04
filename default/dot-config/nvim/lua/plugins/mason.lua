@@ -4,7 +4,6 @@ return {
     opts = {
       ensure_installed = {
         "texlab", -- LaTeX LSP
-        "julia-lsp",
         "prettier",
         "tex-fmt",
       },
