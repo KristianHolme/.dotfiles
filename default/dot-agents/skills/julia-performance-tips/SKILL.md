@@ -1,32 +1,35 @@
 ---
 name: julia-performance-tips
 description: Apply Julia performance optimization techniques when writing or optimizing Julia code. Use when optimizing functions, diagnosing performance issues, reviewing code for performance, or when the user asks about Julia performance, type stability, memory allocation, or code optimization.
-disable-model-invocation: true
 ---
 
 # Julia Performance Tips
 
-Essential performance optimization guidelines for Julia code. Reference: https://docs.julialang.org/en/v1/manual/performance-tips/
+Essential performance optimization guidelines for Julia code. Reference: <https://docs.julialang.org/en/v1/manual/performance-tips/>
 
 ## Core Principles
 
 ### Functions and Globals
+
 - **Put performance-critical code in functions** - code inside functions runs faster than top-level code
 - **Avoid untyped global variables** - use `const` for globals, or pass as function arguments
 - **Break functions into multiple definitions** - prefer `f(x::Vector) = ...` over `if isa(x, Vector) ... end`
 
 ### Type Stability
+
 - **Write type-stable functions** - return consistent types: use `zero(x)` not `0`, `oneunit(x)` not `1`
 - **Avoid changing variable types** - initialize with correct type: `x::Float64 = 1` not `x = 1` then `x /= ...`
 - **Use function barriers** - separate type-unstable setup from type-stable computation
 
 ### Type Annotations
+
 - **Avoid abstract type parameters** - prefer `Vector{Float64}` over `Vector{Real}`
 - **Use parametric types for struct fields** - `struct MyType{T} a::T end` not `struct MyType a::AbstractFloat end`
 - **Annotate values from untyped locations** - `x = a[1]::Int32` when working with `Vector{Any}`
 - **Force specialization when needed** - `f(t::Type{T}) where T` not `f(t::Type)` for `Type`, `Function`, `Vararg`
 
 ### Memory Management
+
 - **Pre-allocate outputs** - use in-place functions `f!(out, args...)` and pre-allocate `out`
 - **Use views for slices** - `@views` or `view()` instead of `array[1:5, :]` when possible
 - **Fuse vectorized operations** - `@. 3x^2 + 4x` fuses into single loop, `3x.^2 + 4x` creates temporaries
@@ -35,11 +38,13 @@ Essential performance optimization guidelines for Julia code. Reference: https:/
 - **Copy irregular views when beneficial** - copying non-contiguous views can speed up repeated operations
 
 ### Closures
+
 - **Type-annotate captured variables** - `r::Int = r0` in closure scope
 - **Use `let` blocks** - `f = let r = r; x -> x * r end` avoids boxing
 - **Use `@__FUNCTION__` for recursive closures** - `(@__FUNCTION__)(n-1)` instead of `fib(n-1)`
 
 ### Advanced Types
+
 - **Use `Val` for compile-time values** - `f(::Val{N}) where N` when dimension known at compile time
 - **Avoid excessive type parameters** - only use values-as-parameters when processing homogeneous collections
 
