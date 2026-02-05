@@ -192,6 +192,9 @@ main() {
 	# Network and connectivity setup
 	setup_tailscale
 
+	# Install tree-sitter from GitHub releases (Arch package is outdated)
+	install_tree_sitter "$HOME/.local/bin" || log_warning "tree-sitter installation failed; continuing"
+
 	# Install tools via curl installers
 	install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/bin/julia-setup.jl"
 	install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"

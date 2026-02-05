@@ -45,7 +45,7 @@ install_starship() {
 			log_info "starship already up to date ($current_ver)"
 			return 0
 		fi
-		if ver_ge "$current_ver" "$latest_ver"; then
+		if ver_ge "$current_ver" "$latest_ver" ]]; then
 			log_info "starship is newer or equal ($current_ver >= $latest_ver); skipping"
 			return 0
 		fi
@@ -56,52 +56,6 @@ install_starship() {
 		log_error "Failed to install starship"
 		return 1
 	}
-}
-
-install_tree_sitter() {
-	local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp=""
-	latest_tag=$(get_latest_tag "tree-sitter/tree-sitter" || true)
-	latest_ver="${latest_tag#v}"
-
-	if command -v tree-sitter >/dev/null 2>&1; then
-		current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
-		log_info "tree-sitter detected: current=$current_ver, latest=$latest_ver"
-	else
-		current_ver=""
-		log_info "tree-sitter not found in PATH"
-	fi
-
-	if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
-		if [[ "$current_ver" == "$latest_ver" ]]; then
-			log_info "tree-sitter already up to date ($current_ver)"
-			return 0
-		fi
-		if ver_ge "$current_ver" "$latest_ver"; then
-			log_info "tree-sitter is newer or equal ($current_ver >= $latest_ver); skipping"
-			return 0
-		fi
-	fi
-
-	mkdir -p "$INSTALL_DIR"
-
-	# tree-sitter releases as tree-sitter-linux-x64.gz
-	asset_url=$(find_asset_url "tree-sitter/tree-sitter" 'tree-sitter-linux-x64\.gz$' || true)
-	if [[ -z "$asset_url" ]]; then
-		log_error "Could not find tree-sitter linux binary"
-		return 1
-	fi
-
-	tmp=$(mktemp -d)
-	trap 't="${tmp:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
-	log_info "Downloading tree-sitter from $asset_url"
-	local timeout="${CURL_TIMEOUT:-120}"
-	curl --max-time "$timeout" -fsSL "$asset_url" -o "$tmp/tree-sitter.gz" || {
-		log_error "Failed to download tree-sitter"
-		return 1
-	}
-	gunzip "$tmp/tree-sitter.gz"
-	install -m 0755 "$tmp/tree-sitter" "$INSTALL_DIR/tree-sitter"
-	log_success "Installed tree-sitter -> $INSTALL_DIR/tree-sitter"
 }
 
 install_git_lfs() {
@@ -520,7 +474,7 @@ main() {
 		'fd-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
 		fd "fd --version" "$INSTALL_DIR" || log_warning "fd installation failed; continuing"
 
-	install_tree_sitter || log_warning "tree-sitter installation failed; continuing"
+	install_tree_sitter "$INSTALL_DIR" || log_warning "tree-sitter installation failed; continuing"
 
 	install_git_lfs || log_warning "git-lfs installation failed; continuing"
 
