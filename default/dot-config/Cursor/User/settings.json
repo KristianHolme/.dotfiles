@@ -1,7 +1,9 @@
 {
   "window.commandCenter": true,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+  "terminal.integrated.commandsToSkipShell": [
+    "language-julia.interrupt"
+  ],
   "julia.symbolCacheDownload": true,
   "julia.enableCrashReporter": true,
   "julia.numTestProcesses": 6,
@@ -23,7 +25,9 @@
   "customLocalFormatters.formatters": [
     {
       "command": "julia --project=@runic --startup-file=no -e 'using Runic; exit(Runic.main(ARGS))'",
-      "languages": ["julia"]
+      "languages": [
+        "julia"
+      ]
     }
   ],
   "[julia]": {
@@ -34,7 +38,9 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "editor.rulers": [92],
+    "editor.rulers": [
+      92
+    ],
     "files.eol": "\n"
   },
   "remote.SSH.remotePlatform": {
@@ -52,6 +58,9 @@
   "diffEditor.ignoreTrimWhitespace": false,
   "extensions.experimental.affinity": {
     "asvetliakov.vscode-neovim": 1
+  },
+  "jetls-client.executable": {
+    "path": "/home/kristian/.julia/bin/jetls",
+    "threads": "auto"
   }
 }
-
