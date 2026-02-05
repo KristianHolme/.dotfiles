@@ -31,3 +31,6 @@ try
 catch e
     @warn "Error installing JETLS" exception = (e, catch_backtrace())
 end
+
+# Force hard exit to avoid segfault during Julia cleanup (Julia 1.12 + JETLS issue)
+ccall(:jl_exit, Cvoid, (Int32,), 0)
