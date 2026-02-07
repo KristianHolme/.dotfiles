@@ -187,7 +187,7 @@ get_latest_tag() {
 		[[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: github_api failed for $1"
 		return 1
 	}
-	tag=$(echo "$api_response" | sed -n 's/\s*"tag_name"\s*:\s*"\([^"]*\)".*/\1/p' | head -n1)
+	tag=$(echo "$api_response" | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"v[^"]*"' | tr -d '"')
 	if [[ -z "$tag" ]]; then
 		[[ "${DEBUG:-}" == "1" ]] && log_error "DEBUG: Could not extract tag from response for $1"
 		return 1
