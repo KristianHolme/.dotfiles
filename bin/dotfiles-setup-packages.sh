@@ -157,27 +157,27 @@ main() {
         "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log_info "Zotero setup failed (non-critical)"
     fi
 
-    install_pkg cursor-bin
-    install_pkg rsync
-    install_pkg discord
-    install_pkg starship
-    install_pkg stow
-    install_pkg git-lfs
-    install_pkg bitwarden
-    install_pkg mermaid-cli
-    # install_pkg google-chrome
-    install_pkg tmux
-    install_pkg yazi
-    install_pkg shfmt
-    # Install LaTeX packages
-    install_pkg texlive-meta
-    # TODO: remove if not necessary
-    # install_pkg tex-fmt
-    install_pkg zathura
-    install_pkg zathura-pdf-mupdf
-    #node required for something vimtex related?
-    omarchy-install-dev-env node
-    install_pkg xdg-desktop-portal-hyprland
+	install_pkg cursor-bin
+	install_pkg rsync
+	install_pkg discord
+	install_pkg starship
+	install_pkg stow
+	install_pkg git-lfs
+	install_pkg bitwarden
+	# install_pkg google-chrome
+	install_pkg tmux
+	install_pkg yazi
+	install_pkg shfmt
+	# Install LaTeX packages
+	install_pkg texlive-meta
+	# TODO: remove if not necessary
+	# install_pkg tex-fmt
+	install_pkg zathura
+	install_pkg zathura-pdf-mupdf
+	#node required for something vimtex related?
+	omarchy-install-dev-env node
+	install_pkg xdg-desktop-portal-hyprland
+	install_pkg sticky
 
     # 4) Install LaTeX templates
     install_latex_template \
