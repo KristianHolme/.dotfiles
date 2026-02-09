@@ -40,13 +40,18 @@ description: Instructions for updating system configuration. Use when modifying 
 ## Examples
 
 **Hyprland config change**
+
 - Edit `~/.dotfiles/default/dot-config/hypr/bindings.conf`
 - If host-specific, edit the matching host directory instead.
 - Apply changes using the existing dotfiles apply workflow.
 
 **Cursor settings change**
+
 - Edit `~/.dotfiles/default/dot-config/Cursor/User/settings.json`
 - Apply changes using the existing dotfiles apply workflow.
 
+ALWAYS run `hyprctl configerrors` after changing hyprland configs, to check if there are any errors.
+
 **Omarchy integration (dotfiles-only)**
+
 - If dotfiles reference omarchy paths or scripts, update those references in `~/.dotfiles/` only.
