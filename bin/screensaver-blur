@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+MODE="${1:-}"
+BASE_SHADER="${HOME}/.config/hypr/screen-shaders/screensaver-blur.frag"
+STATE_DIR="${HOME}/.local/state/hypr/screensaver-blur"
+NOOP_SHADER="${STATE_DIR}/noop.frag"
+DMG_STATE_FILE="${STATE_DIR}/damage_tracking"
+ACTIVE_FILE="${STATE_DIR}/active"
+STOP_FILE="${STATE_DIR}/stop"
+PID_FILE="${STATE_DIR}/pid"
+LOCK_DIR="${STATE_DIR}/lock"
+COOLDOWN_FILE="${STATE_DIR}/cooldown"
+LOG_FILE="${STATE_DIR}/screensaver-blur.log"
+DISABLED_FILE="${STATE_DIR}/disabled"
+
+log_msg() {
+    local msg="$1"
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "${msg}" >>"${LOG_FILE}"
+}
+
+ensure_noop_shader() {
+    if [[ ! -f "${NOOP_SHADER}" ]]; then
+        mkdir -p "${STATE_DIR}"
+        cat >"${NOOP_SHADER}" <<'EOF'
+#version 300 es
+precision mediump float;
+in vec2 v_texcoord;
+layout(location = 0) out vec4 fragColor;
+uniform sampler2D tex;
+void main() {
+    fragColor = texture(tex, v_texcoord);
+}
+EOF
+    fi
+}
+
+clear_shader() {
+    if ! hyprctl keyword decoration:screen_shader "" >/dev/null 2>&1; then
+        ensure_noop_shader
+        hyprctl keyword decoration:screen_shader "${NOOP_SHADER}" >/dev/null
+    fi
+}
+
+get_damage_tracking() {
+    hyprctl getoption debug:damage_tracking 2>/dev/null | awk 'NR==1 { print $2 }'
+}
+
+set_damage_tracking() {
+    hyprctl keyword debug:damage_tracking "$1" >/dev/null
+}
+
+cleanup_state() {
+    rmdir "${LOCK_DIR}" >/dev/null 2>&1 || true
+    rm -f "${PID_FILE}"
+}
+
+restore_damage_tracking() {
+    if [[ -f "${DMG_STATE_FILE}" ]]; then
+        previous_dmg="$(cat "${DMG_STATE_FILE}")"
+        if [[ -n "${previous_dmg}" ]]; then
+            set_damage_tracking "${previous_dmg}"
+        fi
+        rm -f "${DMG_STATE_FILE}"
+    fi
+}
+
+case "${MODE}" in
+start)
+    command -v hyprctl >/dev/null 2>&1 || exit 0
+    pidof hyprlock >/dev/null 2>&1 && exit 0
+
+    if [[ -f "${DISABLED_FILE}" ]]; then
+        log_msg "start: disabled"
+        exit 0
+    fi
+
+    if [[ ! -f "${BASE_SHADER}" ]]; then
+        log_msg "start: base shader missing"
+        exit 1
+    fi
+
+    mkdir -p "${STATE_DIR}"
+    rm -f "${STOP_FILE}"
+    log_msg "start: invoked pid=$$"
+    if [[ -f "${COOLDOWN_FILE}" ]]; then
+        last_stop="$(cat "${COOLDOWN_FILE}" 2>/dev/null || true)"
+        now="$(date +%s)"
+        if [[ -n "${last_stop}" && $((now - last_stop)) -lt 2 ]]; then
+            log_msg "start: cooldown active last_stop=${last_stop}"
+            exit 0
+        fi
+    fi
+    if ! mkdir "${LOCK_DIR}" 2>/dev/null; then
+        log_msg "start: lock held by another process"
+        exit 0
+    fi
+    if [[ -f "${ACTIVE_FILE}" ]]; then
+        log_msg "start: active already set"
+        exit 0
+    fi
+    printf '%s\n' "$$" >"${PID_FILE}"
+    current_dmg="$(get_damage_tracking || true)"
+    dmg_disabled=false
+    trap 'cleanup_state' EXIT
+    trap 'cleanup_state; if [[ "${dmg_disabled}" == "true" ]]; then restore_damage_tracking; fi; exit 0' INT TERM
+    if [[ -n "${current_dmg}" ]]; then
+        echo "${current_dmg}" >"${DMG_STATE_FILE}"
+        set_damage_tracking 0
+        dmg_disabled=true
+        log_msg "start: damage_tracking disabled (was ${current_dmg})"
+    fi
+
+    duration=3
+    steps=75
+    max_radius=20
+    step_sleep="$(awk "BEGIN { printf \"%.3f\", ${duration} / ${steps} }")"
+
+    for ((i = 1; i <= steps; i++)); do
+        if [[ -f "${STOP_FILE}" ]]; then
+            log_msg "start: stop flag detected before apply"
+            exit 0
+        fi
+        radius=$(((max_radius * i + steps - 1) / steps))
+        shader_path="${STATE_DIR}/blur-${radius}.frag"
+        if [[ ! -f "${shader_path}" ]]; then
+            sed "s/@BLUR_RADIUS@/${radius}/g" "${BASE_SHADER}" >"${shader_path}"
+        fi
+
+        if ! hyprctl keyword decoration:screen_shader "${shader_path}" >/dev/null; then
+            if [[ "${dmg_disabled}" == "true" && -n "${current_dmg}" ]]; then
+                set_damage_tracking "${current_dmg}"
+                rm -f "${DMG_STATE_FILE}"
+            fi
+            log_msg "start: shader apply failed radius=${radius}"
+            exit 1
+        fi
+
+        if [[ ! -f "${ACTIVE_FILE}" ]]; then
+            printf '%s\n' "${shader_path}" >"${ACTIVE_FILE}"
+            log_msg "start: active set shader=${shader_path}"
+        fi
+
+        sleep "${step_sleep}"
+    done
+    log_msg "start: completed ramp"
+    ;;
+stop)
+    command -v hyprctl >/dev/null 2>&1 || exit 0
+    mkdir -p "${STATE_DIR}"
+    date +%s >"${COOLDOWN_FILE}"
+    printf '%s\n' "1" >"${STOP_FILE}"
+    if [[ -f "${PID_FILE}" ]]; then
+        start_pid="$(cat "${PID_FILE}")"
+        if [[ -n "${start_pid}" ]]; then
+            if kill "${start_pid}" >/dev/null 2>&1; then
+                log_msg "stop: sent term to pid=${start_pid}"
+            else
+                log_msg "stop: failed to kill pid=${start_pid}"
+            fi
+        fi
+    fi
+    clear_shader
+    rm -f "${ACTIVE_FILE}"
+    restore_damage_tracking
+    cleanup_state
+    log_msg "stop: invoked"
+    ;;
+on)
+    mkdir -p "${STATE_DIR}"
+    rm -f "${DISABLED_FILE}"
+    log_msg "on: enabled"
+    ;;
+off)
+    mkdir -p "${STATE_DIR}"
+    printf '%s\n' "1" >"${DISABLED_FILE}"
+    log_msg "off: disabled"
+    ;;
+*)
+    echo "Usage: $0 start|stop|on|off" >&2
+    exit 2
+    ;;
+esac
