@@ -113,7 +113,7 @@ start)
     fi
 
     duration=3
-    steps=75
+    steps=20
     max_radius=20
     step_sleep="$(awk "BEGIN { printf \"%.3f\", ${duration} / ${steps} }")"
 
