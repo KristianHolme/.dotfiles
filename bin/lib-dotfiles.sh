@@ -244,6 +244,16 @@ detect_glibc_version() {
 install_tree_sitter() {
 	local INSTALL_DIR="${1:-$HOME/.local/bin}"
 	local latest_tag="" latest_ver="" current_ver="" asset_url="" tmp=""
+	local glibc_ver=""
+
+	glibc_ver=$(detect_glibc_version || true)
+
+	# If glibc is too old, build from source with cargo instead
+	if [[ -n "$glibc_ver" ]] && ! ver_ge "$glibc_ver" "2.29"; then
+		install_tree_sitter_from_cargo "$INSTALL_DIR"
+		return $?
+	fi
+
 	latest_tag=$(get_latest_tag "tree-sitter/tree-sitter" || true)
 	latest_ver="${latest_tag#v}"
 
@@ -252,6 +262,9 @@ install_tree_sitter() {
 		raw_version=$(tree-sitter --version 2>/dev/null || true)
 		current_ver=$(echo "$raw_version" | first_version_from_output || true)
 		[[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: tree-sitter raw version output: '$raw_version', extracted: '$current_ver'"
+		if [[ -z "$current_ver" ]]; then
+			log_warning "tree-sitter detected but version could not be determined; reinstalling"
+		fi
 		log_info "tree-sitter detected: current=$current_ver, latest=$latest_ver"
 	else
 		current_ver=""
@@ -289,6 +302,95 @@ install_tree_sitter() {
 	gunzip "$tmp/tree-sitter.gz"
 	install -m 0755 "$tmp/tree-sitter" "$INSTALL_DIR/tree-sitter"
 	log_success "Installed tree-sitter -> $INSTALL_DIR/tree-sitter"
+}
+
+install_tree_sitter_from_cargo() {
+	local INSTALL_DIR="${1:-$HOME/.local/bin}"
+	local latest_ver="" current_ver=""
+
+	# Check if cargo is available, if not try to install Rust
+	if ! command -v cargo >/dev/null 2>&1; then
+		log_info "Rust/cargo not found, installing via rustup..."
+		if ! install_rust_via_rustup; then
+			log_warning "Failed to install Rust; skipping tree-sitter"
+			return 0
+		fi
+	fi
+
+	# After potential Rust installation, verify cargo is in PATH
+	if ! command -v cargo >/dev/null 2>&1; then
+		# Try to source cargo env if it exists
+		if [[ -f "$HOME/.cargo/env" ]]; then
+			source "$HOME/.cargo/env"
+		fi
+	fi
+
+	if ! command -v cargo >/dev/null 2>&1; then
+		log_warning "cargo still not available after Rust installation; skipping tree-sitter"
+		return 0
+	fi
+
+	latest_ver=$(cargo search tree-sitter-cli 2>/dev/null | head -n1 | grep -Eo '[0-9]+(\.[0-9]+)+' | head -n1 || true)
+
+	if command -v tree-sitter >/dev/null 2>&1; then
+		current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
+	fi
+
+	if [[ -n "$current_ver" && -n "$latest_ver" ]]; then
+		if [[ "$current_ver" == "$latest_ver" ]]; then
+			log_info "tree-sitter already up to date ($current_ver)"
+			return 0
+		fi
+		if ver_ge "$current_ver" "$latest_ver"; then
+			log_info "tree-sitter is newer or equal ($current_ver >= $latest_ver); skipping"
+			return 0
+		fi
+	fi
+
+	log_info "Building tree-sitter from source with cargo (requires glibc >= 2.29 for prebuilt binary)..."
+	mkdir -p "$INSTALL_DIR"
+
+	# Install tree-sitter-cli via cargo
+	if cargo install tree-sitter-cli --locked --root "$INSTALL_DIR/.." 2>&1 | tail -n5; then
+		log_success "Installed tree-sitter (built from source) -> $INSTALL_DIR/tree-sitter"
+	else
+		log_error "Failed to build tree-sitter from source"
+		return 1
+	fi
+}
+
+install_rust_via_rustup() {
+	log_info "Installing Rust via rustup..."
+
+	local tmpdir
+	tmpdir=$(mktemp -d)
+	trap 't="${tmpdir:-}"; [[ -n "$t" ]] && rm -rf "$t"' RETURN
+
+	# Download and run rustup installer
+	local rustup_init="$tmpdir/rustup-init.sh"
+	if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$rustup_init"; then
+		log_error "Failed to download rustup installer"
+		return 1
+	fi
+
+	# Run installer with default options (no prompts)
+	if ! bash "$rustup_init" -y --no-modify-path --default-toolchain stable; then
+		log_error "Failed to install Rust via rustup"
+		return 1
+	fi
+
+	# Source the cargo environment
+	if [[ -f "$HOME/.cargo/env" ]]; then
+		source "$HOME/.cargo/env"
+	fi
+
+	if command -v cargo >/dev/null 2>&1; then
+		log_success "Rust/cargo installed successfully"
+		return 0
+	else
+		log_warning "Rust installed but cargo not in PATH (may need shell restart)"
+		return 1
+	fi
 }
 
 install_from_tarball() {

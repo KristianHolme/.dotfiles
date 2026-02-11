@@ -121,7 +121,18 @@ install_git_lfs() {
 
 install_neovim() {
 	local latest_tag="" latest_ver="" current_ver="" glibc_ver="" asset_url="" tmp=""
-	latest_tag=$(get_latest_tag "neovim/neovim" || true)
+	local nvim_repo="neovim/neovim"
+
+	glibc_ver=$(detect_glibc_version || true)
+
+	# Determine which repo to use based on glibc version
+	if [[ -n "$glibc_ver" ]] && ver_ge "$glibc_ver" "2.29"; then
+		nvim_repo="neovim/neovim"
+	else
+		nvim_repo="neovim/neovim-releases"
+	fi
+
+	latest_tag=$(get_latest_tag "$nvim_repo" || true)
 	latest_ver="${latest_tag#v}"
 
 	if command -v nvim >/dev/null 2>&1; then
@@ -144,16 +155,9 @@ install_neovim() {
 		fi
 	fi
 
-	glibc_ver=$(detect_glibc_version || true)
-
 	mkdir -p "$INSTALL_DIR"
 
-	# Use AppImage in both cases. If glibc >= 2.29, use supported repo; else use unsupported releases repo.
-	if [[ -n "$glibc_ver" ]] && ver_ge "$glibc_ver" "2.29"; then
-		asset_url=$(find_asset_url "neovim/neovim" 'nvim-linux-x86_64\.appimage$' || true)
-	else
-		asset_url=$(find_asset_url "neovim/neovim-releases" 'nvim-linux-x86_64\.appimage$' || true)
-	fi
+	asset_url=$(find_asset_url "$nvim_repo" 'nvim-linux-x86_64\.appimage$' || true)
 	if [[ -z "$asset_url" ]]; then
 		log_error "Could not find neovim AppImage asset"
 		return 1
