@@ -217,8 +217,9 @@ find_asset_url() {
 
 first_version_from_output() {
 	# Reads stdin, extracts first x.y or x.y.z... sequence (robust)
+	# Handles various version formats: v1.2.3, 1.2.3, v1.2.3-beta, etc.
 	# Requires grep with -E and -o support
-	grep -Eo '([0-9]+)(\.[0-9]+)+' | head -n1
+	grep -Eo '[0-9]+(\.[0-9]+)+' | head -n1
 }
 
 ver_ge() {
@@ -247,7 +248,10 @@ install_tree_sitter() {
 	latest_ver="${latest_tag#v}"
 
 	if command -v tree-sitter >/dev/null 2>&1; then
-		current_ver=$(tree-sitter --version 2>/dev/null | first_version_from_output || true)
+		local raw_version
+		raw_version=$(tree-sitter --version 2>/dev/null || true)
+		current_ver=$(echo "$raw_version" | first_version_from_output || true)
+		[[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: tree-sitter raw version output: '$raw_version', extracted: '$current_ver'"
 		log_info "tree-sitter detected: current=$current_ver, latest=$latest_ver"
 	else
 		current_ver=""

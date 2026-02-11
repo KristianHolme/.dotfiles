@@ -125,7 +125,10 @@ install_neovim() {
 	latest_ver="${latest_tag#v}"
 
 	if command -v nvim >/dev/null 2>&1; then
-		current_ver=$(nvim --version 2>/dev/null | head -n1 | first_version_from_output || true)
+		local raw_version
+		raw_version=$(nvim --version 2>/dev/null | head -n1 || true)
+		current_ver=$(echo "$raw_version" | first_version_from_output || true)
+		[[ "${DEBUG:-}" == "1" ]] && log_info "DEBUG: neovim raw version output: '$raw_version', extracted: '$current_ver'"
 	else
 		current_ver=""
 	fi
