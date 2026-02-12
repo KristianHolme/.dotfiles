@@ -9,7 +9,7 @@ return {
         },
         -- Configure JETLS instead
         jetls = {
-          cmd = { "jetls", "--threads=auto", "--" },
+          cmd = { "jetls", "serve" },
           filetypes = { "julia" },
           root_markers = { "Project.toml", ".git" },
         },
