@@ -45,8 +45,26 @@ stow -n -d /workspace -t ~ -S -v --dotfiles --override='.*' bengal
 bash -c 'source bin/lib-dotfiles.sh && log_info "OK"'
 ```
 
+### Symlink and PATH setup
+
+Scripts hardcode `$HOME/.dotfiles` as the repo path. In the cloud VM the repo lives at `/workspace`, so a symlink is needed:
+
+```bash
+ln -sfn /workspace ~/.dotfiles
+```
+
+The VM's `~/.bashrc` should include these PATH entries (mirroring `dot-bashrc` lines 40-42):
+
+```bash
+export PATH="$HOME/.dotfiles/bin:$PATH"
+export PATH="$HOME/.julia/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Do **not** source the full `dot-bashrc` in the cloud VM — it depends on omarchy and starship which are not installed here.
+
 ### Notes
 
 - The scripts are designed for Arch Linux (with `yay`/`pacman`) and RHEL servers. Many scripts (`dotfiles-setup-packages.sh`, `dotfiles-ssh-tmux.sh`, etc.) require their target environment to run fully.
-- `gum` is needed for interactive conflict resolution in `dotfiles-apply-config.sh` but is not available in the cloud VM. Stow commands can be run directly instead.
+- `gum` is needed for interactive conflict resolution in `dotfiles-apply-config.sh`. Install from GitHub releases if not present.
 - See `README.md` for full documentation of all scripts and their usage.
