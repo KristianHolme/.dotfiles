@@ -116,23 +116,6 @@ collect_args_apply_config() {
 	fi
 }
 
-collect_args_latex_init() {
-	local name type
-	name=$(require_input --header "Project name (required):" --placeholder "my-project") || {
-		log_error "Project name is required"
-		return 1
-	}
-
-	type=$(gum choose --header "Template type:" "default" "uio-presentation") || type="default"
-	ARGS+=("--type" "$type")
-
-	if ! gum confirm "Initialize git repository?" --default=true; then
-		ARGS+=("--no-git")
-	fi
-
-	ARGS+=("$name")
-}
-
 collect_args_compress_video() {
 	local input quality
 	input=$(require_input --header "Input video path (required):" --placeholder "/path/to/video.mp4") || {
@@ -184,7 +167,6 @@ collect_args_setup_zotero() {
 collect_args() {
 	case "$SELECTED_SCRIPT" in
 		dotfiles-apply-config.sh)  collect_args_apply_config ;;
-		dotfiles-latex-init.sh)    collect_args_latex_init ;;
 		dotfiles-compress-video.sh) collect_args_compress_video ;;
 		dotfiles-youtube-audio.sh) collect_args_youtube_audio ;;
 		dotfiles-firefly-restore.sh) collect_args_firefly_restore ;;
