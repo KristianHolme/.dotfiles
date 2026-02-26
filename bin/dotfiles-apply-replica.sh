@@ -73,7 +73,7 @@ setup_nvim_config() {
 
 setup_tmux_config() {
     local dotfiles_dir="$HOME/.dotfiles"
-    local tmux_source="$dotfiles_dir/default/dot-tmux.conf"
+    local tmux_source="$dotfiles_dir/default/dot-config/tmux/tmux.conf"
     local tmux_target="$HOME/.tmux.conf"
 
     create_symlink_with_backup "$tmux_source" "$tmux_target" "Tmux config"
