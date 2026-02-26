@@ -90,12 +90,12 @@ refresh_latex_database() {
 
 setup_tmux_tpm() {
     # Setup tmux plugin manager (tpm)
-    if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    if [ ! -d "$HOME/.config/tmux/plugins/tpm" ]; then
         log_info "Installing tmux plugin manager..."
         mkdir -p "$HOME/.tmux/plugins"
-        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+        git clone https://github.com/tmux-plugins/tpm "$HOME/.config/tmux/plugins/tpm"
     else
-        log_info "tpm already installed at $HOME/.tmux/plugins/tpm; skipping clone"
+        log_info "tpm already installed at $HOME/.config/tmux/plugins/tpm; skipping clone"
     fi
 }
 
