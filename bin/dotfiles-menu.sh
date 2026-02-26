@@ -78,7 +78,21 @@ resolve_entry() {
 	return 1
 }
 
-select_profile() {
+# Require non-empty gum input, return 1 on cancel/empty
+require_input() {
+	local result
+	result=$(gum input "$@") || return 1
+	if [[ -z "$result" ]]; then
+		return 1
+	fi
+	echo "$result"
+}
+
+########################################
+# Per-script argument collection
+########################################
+
+collect_args_apply_config() {
 	local repo_root
 	repo_root="$(realpath "$SCRIPT_DIR/..")"
 	local profiles=("(default only)")
@@ -98,8 +112,85 @@ select_profile() {
 	choice=$(printf '%s\n' "${profiles[@]}" | gum choose --header "Select profile:") || return 0
 
 	if [[ "$choice" != "(default only)" ]]; then
-		echo "$choice"
+		ARGS+=("$choice")
 	fi
+}
+
+collect_args_latex_init() {
+	local name type
+	name=$(require_input --header "Project name (required):" --placeholder "my-project") || {
+		log_error "Project name is required"
+		return 1
+	}
+
+	type=$(gum choose --header "Template type:" "default" "uio-presentation") || type="default"
+	ARGS+=("--type" "$type")
+
+	if ! gum confirm "Initialize git repository?" --default=true; then
+		ARGS+=("--no-git")
+	fi
+
+	ARGS+=("$name")
+}
+
+collect_args_compress_video() {
+	local input quality
+	input=$(require_input --header "Input video path (required):" --placeholder "/path/to/video.mp4") || {
+		log_error "Input video path is required"
+		return 1
+	}
+
+	quality=$(gum choose --header "Quality preset:" "medium" "high" "low") || quality="medium"
+	ARGS+=("--quality" "$quality" "$input")
+}
+
+collect_args_youtube_audio() {
+	local url format
+	url=$(require_input --header "YouTube URL (required):" --placeholder "https://youtube.com/watch?v=...") || {
+		log_error "YouTube URL is required"
+		return 1
+	}
+
+	format=$(gum choose --header "Audio format:" "mp3" "opus" "m4a") || format="mp3"
+	ARGS+=("--format" "$format" "$url")
+}
+
+collect_args_firefly_restore() {
+	local dir
+	dir=$(require_input --header "Backup directory (required):" --placeholder "~/Firefly3/backup/20240120-143022") || {
+		log_error "Backup directory is required"
+		return 1
+	}
+	ARGS+=("$dir")
+}
+
+collect_args_firefly_backup() {
+	local dir
+	dir=$(gum input --header "Backup destination (leave empty for default):" --placeholder "~/Firefly3/backup/") || true
+	if [[ -n "${dir:-}" ]]; then
+		ARGS+=("$dir")
+	fi
+}
+
+collect_args_setup_zotero() {
+	local choice
+	choice=$(gum choose --header "Plugin to install:" "All plugins" "better-bibtex" "reading-list") || return 0
+	if [[ "$choice" != "All plugins" ]]; then
+		ARGS+=("$choice")
+	fi
+}
+
+# Dispatch argument collection based on script name
+collect_args() {
+	case "$SELECTED_SCRIPT" in
+		dotfiles-apply-config.sh)  collect_args_apply_config ;;
+		dotfiles-latex-init.sh)    collect_args_latex_init ;;
+		dotfiles-compress-video.sh) collect_args_compress_video ;;
+		dotfiles-youtube-audio.sh) collect_args_youtube_audio ;;
+		dotfiles-firefly-restore.sh) collect_args_firefly_restore ;;
+		dotfiles-firefly-backup.sh) collect_args_firefly_backup ;;
+		dotfiles-setup-zotero.sh)  collect_args_setup_zotero ;;
+	esac
 }
 
 main() {
@@ -133,18 +224,12 @@ main() {
 		fi
 	fi
 
-	# Profile selection for apply-config
-	local args=()
-	if [[ "$SELECTED_SCRIPT" == "dotfiles-apply-config.sh" ]]; then
-		local profile
-		profile=$(select_profile) || true
-		if [[ -n "${profile:-}" ]]; then
-			args+=("$profile")
-		fi
-	fi
+	# Collect arguments for scripts that need them
+	ARGS=()
+	collect_args || exit 1
 
-	log_info "Running: $SELECTED_SCRIPT ${args[*]:-}"
-	exec "$SCRIPT_DIR/$SELECTED_SCRIPT" "${args[@]+"${args[@]}"}"
+	log_info "Running: $SELECTED_SCRIPT ${ARGS[*]:-}"
+	exec "$SCRIPT_DIR/$SELECTED_SCRIPT" "${ARGS[@]+"${ARGS[@]}"}"
 }
 
 main "$@"
