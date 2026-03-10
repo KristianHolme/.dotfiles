@@ -63,5 +63,10 @@
   {
     "key": "ctrl+alt+down",
     "command": "workbench.action.decreaseViewHeight"
+  },
+  {
+    "key": "ctrl+alt+s",
+    "command": "workbench.action.toggleUnifiedSidebarFromKeyboard",
+    "when": "cursor.agentIdeUnification.enabled == true && !isAuxiliaryWindowFocusedContext"
   }
 ]
