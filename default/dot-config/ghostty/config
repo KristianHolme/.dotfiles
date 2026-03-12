@@ -44,7 +44,7 @@ mouse-scroll-multiplier = 1.5
 # Quick terminal
 quick-terminal-position = center
 quick-terminal-size = 70%, 40%
-# quick-terminal-keyboard-interactivity = exclusive
+quick-terminal-keyboard-interactivity = exclusive
 gtk-quick-terminal-namespace = quickterminal
 
 # Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
