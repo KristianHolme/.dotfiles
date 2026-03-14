@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Installs/updates user-local CLI tools without sudo (RHEL-compatible):
-# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, git-lfs, btop, neovim, stow, gum, yazi
+# - eza, zoxide, ripgrep (rg), lazygit, fzf, fd, starship, tree-sitter, git-lfs, btop, neovim, stow, gum, yazi, dust
 # - Clones/updates omarchy to ~/.local/share/omarchy
 #
 # Idempotent: safe to re-run; updates if new releases available.
@@ -480,6 +480,11 @@ main() {
         "fd" "sharkdp/fd" \
         'fd-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
         fd "fd --version" "$INSTALL_DIR" || log_warning "fd installation failed; continuing"
+
+    install_from_tarball \
+        "dust" "bootandy/dust" \
+        'dust-v[^/]*-x86_64-unknown-linux-musl\.tar\.gz$' \
+        dust "dust --version" "$INSTALL_DIR" || log_warning "dust installation failed; continuing"
 
     install_tree_sitter "$INSTALL_DIR" || log_warning "tree-sitter installation failed; continuing"
 
