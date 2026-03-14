@@ -202,6 +202,7 @@ main() {
     install_pkg pandoc-cli
     install_pkg slack-desktop-wayland
     install_pkg syncthing
+    install_pkg parallel
 
     # 4) Install LaTeX templates
     install_latex_template \
