@@ -62,5 +62,6 @@
   "jetls-client.executable": {
     "path": "/home/kristian/.julia/bin/jetls",
     "threads": "auto"
-  }
+  },
+  "terminal.integrated.scrollback": 10000
 }
