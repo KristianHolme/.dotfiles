@@ -19,6 +19,7 @@ set -Eeuo pipefail
 # Current plugins:
 # - better-bibtex: Enhanced citation management and BibTeX export
 # - reading-list: Track read status of items (⭐ New, 📙 To Read, 📖 In Progress, 📗 Read, 📕 Not Reading)
+# - arxiv-workflow: arXiv paper workflow (metadata, PDF, versioning); requires Zotero 8+ — https://github.com/AllanChain/zotero-arxiv-workflow
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib-dotfiles.sh"
@@ -33,6 +34,7 @@ DOWNLOADS_DIR="$HOME/Downloads"
 declare -A ZOTERO_PLUGINS=(
     ["better-bibtex"]="Better BibTeX:retorquere/zotero-better-bibtex:better-bibtex:better-bibtex@iris-advies.com"
     ["reading-list"]="Reading List:Dominic-DallOsto/zotero-reading-list:reading-list:reading-list@dominic-dallosto.com"
+    ["arxiv-workflow"]="arXiv Workflow:AllanChain/zotero-arxiv-workflow:zotero-arxiv-workflow:arxiv@allanchain.github.com"
 )
 
 # Parse plugin configuration
