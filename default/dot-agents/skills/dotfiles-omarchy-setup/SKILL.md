@@ -23,7 +23,7 @@ description: Instructions for updating system configuration. Use when modifying 
   - Hyprland: `dot-config/hypr/`
   - Cursor: `dot-config/Cursor/User/`
   - Shell utilities: `bin/`
-  - Other app configs: `dot-config/`, `dot-local/`, `dot-ssh/`, `dot-tmux.conf`, etc.
+  - Other app configs: `dot-config/` (e.g. `dot-config/tmux/`), `dot-local/`, `dot-ssh/`, etc.
 - [ ] Make minimal, targeted edits with clear intent.
 - [ ] Omarchy is located at `~/.local/share/omarchy/` (scripts/configs); read-only access is OK, but never edit.
 - [ ] When working with omarchy-related tasks, invoke the omarchy skill: `@omarchy`

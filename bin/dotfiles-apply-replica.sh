@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 
 # Applies omarchy-tweaks configs for university servers:
-# - Creates symlinks for: julia config, starship.toml, tmux.conf
-# - Uses stow for nvim config (to merge with LazyVim)
+# - Creates symlinks for: julia config, starship.toml
+# - Uses stow for ~/.config (nvim, starship, tmux at ~/.config/tmux/tmux.conf, etc.)
 # - Adds source line to server's ~/.bashrc for our dot-bashrc (idempotent)
 # - Ensures omarchy repo is cloned/updated first
 #
@@ -53,7 +53,7 @@ setup_nvim_config() {
         return 1
     }
 
-    # Use stow to merge nvim config (allows coexistence with LazyVim)
+    # Stow dot-config into ~/.config (nvim + tmux + starship; coexists with LazyVim)
     if stow -d default -t "$HOME/.config" --dotfiles -S dot-config --adopt -v 2>/dev/null; then
         log_info "Successfully stowed nvim config"
     else
@@ -71,12 +71,17 @@ setup_nvim_config() {
     cd "$original_pwd" || true
 }
 
-setup_tmux_config() {
-    local dotfiles_dir="$HOME/.dotfiles"
-    local tmux_source="$dotfiles_dir/default/dot-config/tmux/tmux.conf"
-    local tmux_target="$HOME/.tmux.conf"
-
-    create_symlink_with_backup "$tmux_source" "$tmux_target" "Tmux config"
+# tmux reads ~/.tmux.conf before XDG; remove only our old symlink so ~/.config/tmux/tmux.conf wins.
+remove_legacy_home_tmux_conf_symlink() {
+    local legacy="$HOME/.tmux.conf"
+    local xdg_conf="$HOME/.config/tmux/tmux.conf"
+    local repo_conf="$HOME/.dotfiles/default/dot-config/tmux/tmux.conf"
+    [[ -e "$xdg_conf" ]] || return 0
+    [[ -L "$legacy" ]] || return 0
+    if [[ "$(realpath "$legacy" 2>/dev/null)" == "$(realpath "$repo_conf" 2>/dev/null)" ]]; then
+        log_info "Removing legacy ~/.tmux.conf (tmux uses ~/.config/tmux/tmux.conf via stow)"
+        rm "$legacy"
+    fi
 }
 
 ensure_bashrc_source() {
@@ -109,10 +114,9 @@ main() {
 
     # Create symlinks for specific configs
     setup_julia_config
-    setup_nvim_config # This stows entire dot-config (includes starship.toml)
+    setup_nvim_config
 
-    # Handle tmux.conf
-    setup_tmux_config
+    remove_legacy_home_tmux_conf_symlink
 
     # Ensure our bashrc is sourced from server's ~/.bashrc
     ensure_bashrc_source
