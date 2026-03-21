@@ -149,6 +149,32 @@ setup_syncthing() {
     log_info "Web UI available at: http://localhost:8384"
 }
 
+setup_television() {
+    local tv_cable_dir="$HOME/.config/television/cable"
+
+    if ! command -v tv >/dev/null 2>&1; then
+        log_warning "tv not on PATH; skipping update-channels"
+        return 0
+    fi
+    if ! tv --version >/dev/null 2>&1; then
+        log_warning "tv command not working; skipping update-channels"
+        return 0
+    fi
+
+    if [[ ! -d "$tv_cable_dir" ]]; then
+        log_info "Creating Television cable directory..."
+        mkdir -p "$tv_cable_dir"
+        log_info "Updating Television channels..."
+    elif [[ -n "$(find "$tv_cable_dir" -mindepth 1 -print -quit 2>/dev/null)" ]]; then
+        log_info "Television cable dir already populated; skipping update-channels"
+        return 0
+    else
+        log_info "Television cable dir is empty; updating channels..."
+    fi
+
+    tv update-channels || log_warning "tv update-channels failed (non-critical)"
+}
+
 main() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         cat <<EOF
@@ -214,6 +240,7 @@ EOF
     install_pkg syncthing
     install_pkg parallel
     install_pkg television
+    setup_television
     install_pkg trash-cli
 
     # 4) Install LaTeX templates
