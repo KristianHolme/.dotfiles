@@ -1,8 +1,3 @@
-# This file lives at ~/.config/television/cable/files.toml after stow.
-# Television loads one cable TOML per filename: your file replaces the built-in
-# files cable entirely (no deep merge with upstream). Keep anything you still
-# want from the default channel in this single file.
-
 [metadata]
 name = "files"
 description = "A channel to select files and directories"
