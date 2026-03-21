@@ -13,6 +13,15 @@ COMPOSE_FILE="$FIRE3_HOME/docker-compose.yml"
 DB_ENV_FILE="$FIRE3_HOME/.db.env"
 CONTAINER_DB="${FIREFLY_DB_CONTAINER:-firefly_iii_db}"
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0 <BACKUP_DIR>
+
+Restore Firefly III from a backup directory produced by dotfiles-firefly-backup.sh.
+EOF
+    exit 0
+fi
+
 SRC_DIR="${1:-}"
 if [[ -z "$SRC_DIR" ]]; then
     err "Provide the backup directory path (e.g., ~/Firefly3/backup/<timestamp>)"

@@ -19,6 +19,16 @@ else
     log_error() { echo "[ERROR] $*"; }
 fi
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0
+
+Unmute / uncork PipeWire sink-inputs for browser-like streams (needs active
+browser audio). Requires pactl.
+EOF
+    exit 0
+fi
+
 # Check if pactl is available
 if ! command -v pactl >/dev/null 2>&1; then
     log_error "pactl not found. Please install pipewire-pulse or pulseaudio."

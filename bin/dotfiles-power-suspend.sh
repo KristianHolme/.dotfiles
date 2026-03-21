@@ -4,6 +4,16 @@ set -euo pipefail
 # Configure power button to suspend instead of shutdown
 # Creates systemd logind drop-in configuration
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0
+
+Writes systemd logind drop-in (HandlePowerKey=suspend) and offers gum menu:
+reboot, restart logind+Hyprland, or defer. Uses sudo.
+EOF
+    exit 0
+fi
+
 echo "[power-suspend] Setting up power button (suspend on press)"
 
 # Create systemd logind drop-in config

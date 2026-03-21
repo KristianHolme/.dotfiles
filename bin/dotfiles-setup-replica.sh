@@ -420,6 +420,16 @@ ensure_gh_auth() {
 }
 
 main() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        cat <<EOF
+Usage: $0
+
+Install user-local CLI tools and omarchy (no sudo). See header comments for
+INSTALL_DIR, OMARCHY_DIR, OMARCHY_REPO_URL, etc.
+EOF
+        exit 0
+    fi
+
     ensure_cmd curl tar unzip git install make perl
 
     # Install gh first to avoid GitHub API rate limits

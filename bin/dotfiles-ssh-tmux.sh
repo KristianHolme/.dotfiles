@@ -30,6 +30,15 @@ SERVERS=(
     "sibir"
 )
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0
+
+Pick an SSH host with gum filter, connect with tmux session management.
+EOF
+    exit 0
+fi
+
 # Check if gum is installed
 if ! command -v gum &>/dev/null; then
     echo "Error: gum is not installed. Please install it first:"

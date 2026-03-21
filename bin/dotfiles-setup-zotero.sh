@@ -175,6 +175,16 @@ setup_single_plugin() {
 }
 
 main() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        cat <<EOF
+Usage: $0 [PLUGIN_KEY]
+
+Install Zotero extensions from GitHub releases. Run with no arguments to set up
+all configured plugins, or pass a key: ${!ZOTERO_PLUGINS[*]}
+EOF
+        exit 0
+    fi
+
     if [[ $# -eq 0 ]]; then
         # No arguments - setup all plugins
         setup_all_plugins

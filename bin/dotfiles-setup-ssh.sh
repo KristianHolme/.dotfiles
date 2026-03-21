@@ -8,6 +8,16 @@ set -Eeuo pipefail
 log() { echo -e "[ssh-setup] $*"; }
 err() { echo -e "[ssh-setup][ERROR] $*" >&2; }
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0
+
+Add ed25519 key to ssh-agent and ssh-copy-id to a fixed list of servers.
+Requires ~/.ssh/id_ed25519 and .pub.
+EOF
+    exit 0
+fi
+
 KEY_FILE="$HOME/.ssh/id_ed25519"
 PUB_KEY_FILE="$HOME/.ssh/id_ed25519.pub"
 

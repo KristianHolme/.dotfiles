@@ -17,6 +17,16 @@ COMPOSE_FILE="$FIRE3_HOME/docker-compose.yml"
 DB_ENV_FILE="$FIRE3_HOME/.db.env"
 CONTAINER_DB="${FIREFLY_DB_CONTAINER:-firefly_iii_db}"
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0 [DEST_DIR]
+
+Back up Firefly III files and MariaDB dump. Optional destination; default is
+timestamped dir under ~/Firefly3/backup/.
+EOF
+    exit 0
+fi
+
 DEST_INPUT="${1:-}"
 if [[ -z "$DEST_INPUT" ]]; then
     DEST_ROOT="$FIRE3_HOME/backup"

@@ -32,6 +32,16 @@ SERVERS=(
 SESSION_NAME="server-monitor"
 TAB_TITLE=$SESSION_NAME
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<EOF
+Usage: $0
+
+Tmux session with one window per SSH host; pick hosts with gum (Space, Enter).
+Default selection: abacus*, bioint*, nam-shub*, ml*. Omits current hostname.
+EOF
+    exit 0
+fi
+
 if ! command -v gum &>/dev/null; then
     echo "Error: gum is not installed. Please install it first:"
     echo "  Arch: sudo pacman -S gum"

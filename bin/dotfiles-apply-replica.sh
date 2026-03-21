@@ -99,6 +99,16 @@ ensure_bashrc_source() {
 }
 
 main() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        cat <<EOF
+Usage: $0
+
+Apply dotfiles on a restricted server: stow nvim/tmux/starship, Julia config,
+bashrc hook, omarchy clone. Uses env OMARCHY_DIR, OMARCHY_REPO_URL.
+EOF
+        exit 0
+    fi
+
     ensure_cmd git stow curl
 
     # Ensure omarchy repo is available

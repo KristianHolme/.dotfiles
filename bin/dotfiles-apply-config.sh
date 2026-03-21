@@ -316,6 +316,16 @@ reload_hyprland() {
 }
 
 main() {
+	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+		cat <<EOF
+Usage: $0 [PROFILE]
+
+Apply dotfiles with GNU Stow: default package to ~, then optional profile overlay
+(e.g. bengal, kaspi, sibir) if that top-level package exists in the repo.
+EOF
+		exit 0
+	fi
+
 	local profile_arg="${1:-}"
 	if [[ -n "$profile_arg" ]]; then
 		log_info "Applying Omarchy tweaks (profile: $profile_arg)..."

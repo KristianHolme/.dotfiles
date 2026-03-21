@@ -150,6 +150,16 @@ setup_syncthing() {
 }
 
 main() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        cat <<EOF
+Usage: $0
+
+Prune selected Omarchy webapps/packages and install the package set used on this machine
+(yay, interactive where needed). No arguments.
+EOF
+        exit 0
+    fi
+
     ensure_cmd yay
 
     # 1) Remove webapps
@@ -203,6 +213,7 @@ main() {
     install_pkg slack-desktop-wayland
     install_pkg syncthing
     install_pkg parallel
+    install_pkg television
 
     # 4) Install LaTeX templates
     install_latex_template \
