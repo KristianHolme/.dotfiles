@@ -242,6 +242,7 @@ EOF
     install_pkg television
     setup_television
     install_pkg trash-cli
+    install_pkg uv
 
     # 4) Install LaTeX templates
     install_latex_template \
