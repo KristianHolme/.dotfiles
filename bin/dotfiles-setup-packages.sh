@@ -214,6 +214,7 @@ EOF
     install_pkg syncthing
     install_pkg parallel
     install_pkg television
+    install_pkg trash-cli
 
     # 4) Install LaTeX templates
     install_latex_template \
