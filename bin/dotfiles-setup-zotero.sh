@@ -139,7 +139,8 @@ setup_all_plugins() {
     # Process each configured plugin
     for plugin_key in "${!ZOTERO_PLUGINS[@]}"; do
         if download_plugin "$plugin_key"; then
-            ((success_count++))
+            # Pre-increment: ((success_count++)) is false when count was 0 and exits under set -e.
+            ((++success_count))
         else
             failed_plugins+=("$plugin_key")
         fi
