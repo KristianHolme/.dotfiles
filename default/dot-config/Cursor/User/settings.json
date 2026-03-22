@@ -47,7 +47,7 @@
     "bengal": "linux"
   },
   "python.terminal.activateEnvironment": false,
-  "workbench.colorTheme": "Monokai Pro (Filter Ristretto)",
+  "workbench.colorTheme": "Tokyo Night",
   "remote.autoForwardPortsSource": "hybrid",
   "git.suggestSmartCommit": false,
   "editor.cursorSurroundingLines": 8,
