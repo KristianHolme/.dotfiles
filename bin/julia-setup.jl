@@ -6,7 +6,7 @@ packages = [
     "Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson", "JET",
     "PkgTemplates", "ProgressMeter", "OhMyREPL", "Reexport",
     "Infiltrator", "ArtifactUtils", "ExplicitImports", "PreferenceTools",
-    "LocalRegistry", "LiveServer",
+    "LocalRegistry", "LiveServer", "AirspeedVelocity",
 ]
 for p in packages
     try
