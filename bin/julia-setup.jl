@@ -6,7 +6,7 @@ packages = [
     "Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson", "JET",
     "PkgTemplates", "ProgressMeter", "OhMyREPL", "Reexport",
     "Infiltrator", "ArtifactUtils", "ExplicitImports", "PreferenceTools",
-    "LocalRegistry",
+    "LocalRegistry", "LiveServer",
 ]
 for p in packages
     try
@@ -34,11 +34,10 @@ catch e
 end
 
 try
-    using LocalRegistry
-    name = "KristianHolmeRegistry"
-    create_registry(name, "git@github.com:KristianHolme/KristianHolmeRegistry"; push = true)
+    using Pkg
+    pkg"registry add git@github.com:KristianHolme/KristianHolmeRegistry"
 catch
-    @warn "Error Setting up personal julia registry!"
+    @warn "Error installing personal registry" exception = (e, catch_backtrace())
 end
 
 # Force hard exit to avoid segfault during Julia cleanup (Julia 1.12 + JETLS issue)
