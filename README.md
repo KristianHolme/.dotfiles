@@ -45,6 +45,12 @@ Links the Stow packages using GNU Stow with intelligent conflict detection:
 ~/.dotfiles/bin/dotfiles-apply-config.sh bengal
 ```
 
+Or using alias:
+
+```bash
+dac bengal
+```
+
 Features:
 
 - Interactive conflict resolution using `gum`
