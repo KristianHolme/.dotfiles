@@ -1,0 +1,3 @@
+# Signing is non-interactive (SSH key via agent); avoid subprocess suspend after commit.
+git:
+  overrideGpg: true
