@@ -15,6 +15,7 @@ dotfiles/
 │   ├── dotfiles-ssh-tmux.sh     # Interactive SSH connection with tmux
 │   ├── dotfiles-rsync-ssh.sh    # Remote directory sync tool
 │   ├── dotfiles-setup-ssh.sh    # SSH key setup and distribution
+│   ├── dotfiles-setup-git-signing.sh # Git SSH commit signing + optional GitHub
 │   ├── dotfiles-setup-zotero.sh # Zotero Better BibTeX extension installer
 │   ├── dotfiles-power-suspend.sh # Configure power button for suspend
 │   ├── dotfiles-firefly-backup.sh # Firefly III backup utility
@@ -197,6 +198,14 @@ Automated SSH key distribution:
 - **Servers:** abacus-as/min, nam-shub-01/02, bioint01-04, uio
 
 **SSH Agent Setup:** Enable automatic SSH agent startup with `systemctl --user enable --now ssh-agent.socket` to enable automatic key loading and agent forwarding.
+
+### Git commit signing (SSH)
+
+```bash
+~/dotfiles/bin/dotfiles-setup-git-signing.sh
+```
+
+Sets up global SSH commit signing (`gpg.format ssh`, signing key path, `allowed_signers`) and can register the public key on GitHub as a signing key via `gh`. Use after your SSH key exists; verify commits with `git log --show-signature`.
 
 ## Application Setup
 
