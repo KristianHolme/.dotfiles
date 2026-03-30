@@ -37,7 +37,7 @@ Options:
   --key PATH       SSH key base path (default: ~/.ssh/id_ed25519; public: PATH.pub)
   --email ADDR     Principal email for allowed_signers (default: git config user.email)
 
-GitHub key title: <hostname> signing <YYYY-MM-DD>
+GitHub key title: <hostname> signing (stable; one signing key per host)
 
 Idempotent: steps that are already satisfied log [INFO] and are skipped.
 EOF
@@ -130,7 +130,7 @@ gh_add_signing_key() {
         log_info "GitHub: SSH signing key for this public key is already registered; skipping gh ssh-key add"
         return 0
     fi
-    title="$(hostname) signing $(date +%Y-%m-%d)"
+    title="$(hostname) signing"
     log_info "Adding SSH signing key to GitHub (title: $title)..."
     set +e
     out="$(gh ssh-key add "$PUB_KEY_FILE" --title "$title" --type signing 2>&1)"
