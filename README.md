@@ -29,33 +29,34 @@ Comprehensive dotfiles management with support for both local development and un
 ### Configuration Management
 
 #### Local Development Setup
+
 ```bash
 ~/.dotfiles/bin/dotfiles-apply-config.sh
 ```
 
 Links the Stow packages using GNU Stow with intelligent conflict detection:
+
 - `default/` → `~/` (includes dotfiles for `.config/`, home files, etc.)
 - Profile-specific overlays when specified
 
 **With profile support:**
+
 ```bash
 ~/.dotfiles/bin/dotfiles-apply-config.sh bengal
 ```
 
-**Preview mode (dry run):**
-```bash
-stow -n -d ~/.dotfiles -t ~ -v default
-```
-
 Features:
+
 - Interactive conflict resolution using `gum`
 - Automatic Hyprland configuration reload
 - Profile switching with overlay support
 
 #### University Server Setup
+
 For RHEL systems without sudo access:
 
 **1. Install tools and dependencies:**
+
 ```bash
 # Set GitHub token for API rate limits (optional but recommended)
 export GITHUB_TOKEN="your_token_here"
@@ -63,41 +64,49 @@ export GITHUB_TOKEN="your_token_here"
 ```
 
 Installs to `~/.local/bin`:
+
 - CLI tools: `eza`, `zoxide`, `starship`, `fzf`, `ripgrep`, `lazygit`, `fd`, `tree-sitter`, `git-lfs`, `btop`
 - Development: `neovim` (with LazyVim), `stow`, `gum`
 - Repositories: clones [Omarchy](https://github.com/basecamp/omarchy) to `~/.local/share/omarchy`
 
 **2. Apply configurations:**
+
 ```bash
 ~/.dotfiles/bin/dotfiles-apply-replica.sh
 ```
 
 Applies configurations using a hybrid approach:
+
 - Manual symlinks: Julia config, tmux config, individual files
 - Stow integration: Neovim config (merges with LazyVim using `--adopt`)
 - Bashrc sourcing: Ensures custom shell configuration loads
 
 Features:
+
 - Idempotent installations with version checking
 - Conditional Neovim installation based on glibc version
 - GitHub rate limit handling with helpful error messages
 - Safe conflict resolution and backup creation
 
 #### Local Package Management
+
 ```bash
 ~/.dotfiles/bin/dotfiles-setup-packages.sh
 ```
 
 Comprehensive package management for Omarchy systems:
+
 - **Removes:** Selected Omarchy webapps (HEY, Basecamp, WhatsApp, etc.)
 - **Installs:** Essential tools (zotero-bin, cursor-bin, discord, tmux, etc.)
 - **Sets up:** Julia environment, tmux plugin manager, Zotero extensions
 - **Configures:** LaTeX distribution (texlive-meta)
 
 #### Edit your configuration
+
 Edit files under profile directories and re-run the apply script. Hyprland changes are reloaded automatically.
 
 #### Restore Omarchy defaults
+
 ```bash
 ~/.local/share/omarchy/bin/omarchy-refresh-config hypr/bindings.conf
 ```
@@ -105,16 +114,19 @@ Edit files under profile directories and re-run the apply script. Hyprland chang
 ### Development Environment
 
 #### Julia Environment Setup
+
 ```bash
 ~/.dotfiles/bin/julia-setup.jl
 ```
 
 Installs essential Julia packages to your global environment:
+
 - **Development:** Revise, Debugger, Cthulhu, PkgTemplates
 - **Performance:** BenchmarkTools, BasicAutoloads
 - **Utilities:** DrWatson, ProgressMeter, OhMyREPL, Reexport
 
 #### Julia Package Manager as App (Experimental)
+
 Install the Julia package manager as a standalone app for faster package operations:
 
 1. Start Julia REPL
@@ -126,16 +138,19 @@ This experimental feature allows Pkg to be used as a standalone application.
 ## Remote Access & Sync
 
 ### SSH Connection with tmux
+
 ```bash
 ~/.dotfiles/bin/dotfiles-ssh-tmux.sh
 ```
 
 Interactive SSH connection manager with automatic tmux session handling:
+
 - **Server selection:** Choose from predefined servers using fuzzy finder
 - **Session management:** Automatically attaches to existing tmux sessions or creates new ones
 - **Servers supported:** atalanta, abacus-as, abacus-min, nam-shub-01/02, bioint01-04
 
 ### Directory Synchronization
+
 ```bash
 # Basic usage - sync studies from atalanta
 ~/.dotfiles/bin/dotfiles-rsync-ssh.sh
@@ -156,17 +171,20 @@ Interactive SSH connection manager with automatic tmux session handling:
 ```
 
 Features:
+
 - **Interactive selection:** Choose multiple directories to sync
 - **Jump host support:** Automatic routing through atalanta for bioint servers
 - **Progress tracking:** Real-time sync progress with numbered operations
 - **Safe syncing:** Uses `rsync` with delete protection and incremental transfers
 
 ### SSH Key Management
+
 ```bash
 ~/.dotfiles/bin/dotfiles-setup-ssh.sh
 ```
 
 Automated SSH key distribution:
+
 - **Key validation:** Checks for existing ed25519 key
 - **Agent management:** Adds key to ssh-agent if not present
 - **Multi-server setup:** Copies public key to all configured servers
@@ -177,11 +195,13 @@ Automated SSH key distribution:
 ## Application Setup
 
 ### Zotero Better BibTeX Extension
+
 ```bash
 ~/.dotfiles/bin/dotfiles-setup-zotero.sh
 ```
 
 Automated Zotero extension installer:
+
 - **Latest version:** Downloads current Better BibTeX release from GitHub
 - **Safe download:** Validates file integrity before installation
 - **User guidance:** Provides step-by-step manual installation instructions
@@ -191,6 +211,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ## System Configuration
 
 ### Power Management
+
 ```bash
 # Configure power button for suspend
 ~/.dotfiles/bin/dotfiles-power-suspend.sh
@@ -199,10 +220,12 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ```
 
 **Power button configuration:**
+
 - Creates systemd logind drop-in configuration
 - Options: reboot system, restart services, or apply on next reboot
 
 **Power profile menu:**
+
 - Uses `omarchy-menu power` (integrated with omarchy system)
 - Interactive selection using `walker` with consistent styling
 - Integrates with `powerprofilesctl` for profile switching
@@ -210,6 +233,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ## Backup & Restore
 
 ### Firefly III Database Management
+
 ```bash
 # Create backup
 ~/.dotfiles/bin/dotfiles-firefly-backup.sh
@@ -222,11 +246,13 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ```
 
 **Backup features:**
+
 - **Complete backup:** Files (tarball) + MariaDB database dump
 - **Timestamped:** Automatic backup directory naming
 - **Configurable:** Custom backup destinations supported
 
 **Restore features:**
+
 - **Full restoration:** Database + configuration files
 - **Docker integration:** Automatic container management
 - **Validation:** Checks backup integrity before restoration
@@ -234,6 +260,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ## Requirements
 
 ### Local Development
+
 - GNU Stow (for linking configs)
 - `gum` (for interactive conflict resolution - install with `pacman -S gum`)
   - `gum` is installed by default in [Omarchy](https://omarchy.org)
@@ -246,6 +273,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 - `powerprofilesctl` (for power management)
 
 ### University Servers
+
 - `curl` (for downloading prebuilt binaries)
 - `tar`, `gunzip` (for extracting archives)
 - `git` (for cloning repositories)
@@ -256,6 +284,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ## Features
 
 ### Custom Hyprland Configuration
+
 - **Window management:** Enhanced resizing with `SUPER + minus/plus` (horizontal) and `SUPER + SHIFT + minus/plus` (vertical)
 - **Floating windows:** `SUPER + SHIFT + arrows` for precise positioning
 - **Quick launchers:** Fast app access (browser, terminal, Obsidian, Spotify, etc.) via UWSM
@@ -263,11 +292,13 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 - **Environment extension:** Includes Omarchy tools in `PATH` via `envs.conf`
 
 ### Profile System
+
 - **Multiple profiles:** Support for different configurations (bengal, kaspi, sibir, etc.)
 - **Overlay architecture:** Profile-specific files override defaults while preserving base configuration
 - **Easy switching:** Change profiles with a single command argument
 
 ### Interactive Tools
+
 - **Conflict resolution:** Smart handling of existing dotfiles with user choice prompts
 - **Server selection:** Fuzzy-finding interface for SSH connections
 - **Multi-selection:** Choose multiple directories for synchronization
@@ -276,6 +307,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 ## How It Works
 
 ### Local Development
+
 The configuration system uses a layered approach:
 
 1. **Base layer:** `default/` package provides core configurations
@@ -287,6 +319,7 @@ The configuration system uses a layered approach:
 5. **Automatic reload:** Hyprland configuration refreshes after changes
 
 ### University Server Setup
+
 The replica setup uses a two-stage approach:
 
 1. **Tool Installation (`setup-replica.sh`):**
@@ -303,15 +336,18 @@ The replica setup uses a two-stage approach:
 ### Troubleshooting University Servers
 
 **GitHub Rate Limits (403 errors):**
+
 - Set `GITHUB_TOKEN` environment variable
-- Get token from https://github.com/settings/tokens
+- Get token from <https://github.com/settings/tokens>
 - No special permissions needed
 
 **Bash Profile Issues:**
+
 - Add `[[ -f ~/.bashrc ]] && source ~/.bashrc` to `~/.bash_profile`
 - Ensures custom configs load in SSH sessions
 
 **Tree-sitter Errors in Neovim:**
+
 - Check `:checkhealth nvim-treesitter` in Neovim
 - Verify `tree-sitter` CLI is in PATH: `which tree-sitter`
 - Install parsers manually: `:TSInstall latex`
