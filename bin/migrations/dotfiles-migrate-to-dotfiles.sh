@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # Migrate the dotfiles repo from ~/.dotfiles to ~/dotfiles using GNU Stow:
-# unstow from the old tree, copy the repo, leave ~/.dotfiles in place.
+# unstow from the old tree, copy the repo, leave ~/.dotfiles in place, then run
+# dotfiles-apply-config.sh from the new path (profile passed through when set).
 #
 # Optional PROFILE matches bin/dotfiles-apply-config.sh (top-level package name).
 # Use --dry-run for stow --no --verbose, or -- before extra stow flags.
@@ -17,19 +18,22 @@ usage() {
 Usage: $0 [--dry-run] [-h|--help] [PROFILE] [-- STOW_ARGS...]
 
 Unstow packages from \$HOME/.dotfiles, copy that directory to \$HOME/dotfiles
-(cp -a), and keep \$HOME/.dotfiles. Then run apply-config from the new path.
+(cp -a), keep \$HOME/.dotfiles, then run ~/dotfiles/bin/dotfiles-apply-config.sh
+with optional PROFILE (same as running apply-config by hand).
 
-  PROFILE     If set, only unstow that profile package. If omitted, unstow all
-              profile dirs under the repo root (excluding default, bin, templates).
+  PROFILE     If set, only unstow that profile package and pass it to apply-config.
+              If omitted, unstow all profile dirs under the repo root (excluding
+              default, bin, templates), then run apply-config with no profile arg.
 
   --dry-run   Pass --no and --verbose to every stow unstow (no filesystem
-              changes; copy step skipped).
+              changes; copy and apply-config are skipped).
 
 Arguments after -- are appended to every unstow invocation. Examples:
   $0 --dry-run
   $0 bengal --dry-run
   $0 -- --simulate -v
   $0 kaspi -- -v
+
 
 EOF
 }
@@ -150,9 +154,8 @@ log_info "Unstowing default package..."
 stow -d "$OLD" -t "$HOME" -D default --dotfiles "${stow_all[@]}" || true
 
 if [[ "$is_simulate" -eq 1 ]]; then
-	log_success "Simulate-only run finished (stow dry-run; copy was not performed)."
-	log_info "Re-run without --dry-run and without -n/--simulate in stow args to perform unstow and copy, e.g.: $0${profile:+ $profile}"
-	log_info "Then: $NEW/bin/dotfiles-apply-config.sh${profile:+ $profile}"
+	log_success "Simulate-only run finished (stow dry-run; copy and apply-config were not run)."
+	log_info "Re-run without --dry-run to perform unstow, copy, and apply-config, e.g.: $0${profile:+ $profile}"
 	exit 0
 fi
 
@@ -160,10 +163,8 @@ log_info "Copying $OLD -> $NEW (cp -a)..."
 cp -a "$OLD" "$NEW"
 
 log_success "Copy complete."
-log_info "Next: run apply-config from the new repo so symlinks point at $NEW:"
-if [[ -n "$profile" ]]; then
-	log_info "  $NEW/bin/dotfiles-apply-config.sh $profile"
-else
-	log_info "  $NEW/bin/dotfiles-apply-config.sh [PROFILE]"
-fi
+log_info "Running apply-config from $NEW..."
+"$NEW/bin/dotfiles-apply-config.sh" ${profile:+"$profile"}
+
+log_success "Migration finished."
 log_info "When satisfied, you may remove the old copy: rm -rf $OLD"
