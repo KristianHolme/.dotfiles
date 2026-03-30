@@ -31,3 +31,4 @@ local_file = joinpath(
 if isfile(local_file)
     include(local_file)
 end
+ENV["JULIA_PKG_USE_CLI_GIT"] = true
