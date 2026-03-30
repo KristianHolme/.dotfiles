@@ -8,12 +8,18 @@ packages = [
     "Infiltrator", "ArtifactUtils", "ExplicitImports", "PreferenceTools",
     "LocalRegistry", "LiveServer", "AirspeedVelocity",
 ]
-for p in packages
-    try
-        Pkg.add(p)
-        @info "Installed $p"
-    catch e
-        @warn "Error installing $p" exception = (e, catch_backtrace())
+try
+    Pkg.add(packages)
+    @info "Installed all packages (batch)"
+catch e
+    @warn "Batch install failed; installing packages one by one" exception = (e, catch_backtrace())
+    for p in packages
+        try
+            Pkg.add(p)
+            @info "Installed $p"
+        catch e2
+            @warn "Error installing $p" exception = (e2, catch_backtrace())
+        end
     end
 end
 
@@ -35,8 +41,8 @@ end
 
 try
     using Pkg
-    pkg"registry add git@github.com:KristianHolme/KristianHolmeRegistry"
-catch
+    Pkg.Registry.add(url = "git@github.com:KristianHolme/KristianHolmeRegistry")
+catch e
     @warn "Error installing personal registry" exception = (e, catch_backtrace())
 end
 
