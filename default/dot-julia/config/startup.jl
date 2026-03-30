@@ -25,7 +25,7 @@ end
 
 
 local_file = joinpath(
-    homedir(), ".dotfiles", "default", "dot-julia",
+    homedir(), "dotfiles", "default", "dot-julia",
     "config", "local_startup.jl"
 )
 if isfile(local_file)

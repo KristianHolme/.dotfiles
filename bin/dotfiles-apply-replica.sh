@@ -24,7 +24,7 @@ case ":$PATH:" in
 esac
 
 setup_julia_config() {
-    local dotfiles_dir="$HOME/.dotfiles/"
+    local dotfiles_dir="$HOME/dotfiles/"
     local julia_config_source="$dotfiles_dir/default/dot-julia/config"
     local julia_config_target="$HOME/.julia/config"
 
@@ -32,7 +32,7 @@ setup_julia_config() {
 }
 
 setup_nvim_config() {
-    local dotfiles_dir="$HOME/.dotfiles"
+    local dotfiles_dir="$HOME/dotfiles"
 
     # Check if already stowed properly
     local test_file="$HOME/.config/nvim/lua/config/options.lua"
@@ -75,7 +75,7 @@ setup_nvim_config() {
 remove_legacy_home_tmux_conf_symlink() {
     local legacy="$HOME/.tmux.conf"
     local xdg_conf="$HOME/.config/tmux/tmux.conf"
-    local repo_conf="$HOME/.dotfiles/default/dot-config/tmux/tmux.conf"
+    local repo_conf="$HOME/dotfiles/default/dot-config/tmux/tmux.conf"
     [[ -e "$xdg_conf" ]] || return 0
     [[ -L "$legacy" ]] || return 0
     if [[ "$(realpath "$legacy" 2>/dev/null)" == "$(realpath "$repo_conf" 2>/dev/null)" ]]; then
@@ -86,7 +86,7 @@ remove_legacy_home_tmux_conf_symlink() {
 
 ensure_bashrc_source() {
     local bashrc_path="$HOME/.bashrc"
-    local source_line="source '$HOME/.dotfiles/default/dot-bashrc'"
+    local source_line="source '$HOME/dotfiles/default/dot-bashrc'"
 
     # Check if already sourced
     if grep -qF "$source_line" "$bashrc_path" 2>/dev/null; then

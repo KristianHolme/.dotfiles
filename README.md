@@ -5,7 +5,7 @@ Comprehensive dotfiles management with support for both local development and un
 ## Structure
 
 ```
-.dotfiles/
+dotfiles/
 ├── bin/                          # Utility scripts
 │   ├── dotfiles-apply-config.sh  # Link configurations via GNU Stow (local)
 │   ├── dotfiles-apply-replica.sh # Apply configs for university servers
@@ -31,7 +31,7 @@ Comprehensive dotfiles management with support for both local development and un
 #### Local Development Setup
 
 ```bash
-~/.dotfiles/bin/dotfiles-apply-config.sh
+~/dotfiles/bin/dotfiles-apply-config.sh
 ```
 
 Links the Stow packages using GNU Stow with intelligent conflict detection:
@@ -42,7 +42,7 @@ Links the Stow packages using GNU Stow with intelligent conflict detection:
 **With profile support:**
 
 ```bash
-~/.dotfiles/bin/dotfiles-apply-config.sh bengal
+~/dotfiles/bin/dotfiles-apply-config.sh bengal
 ```
 
 Or using alias:
@@ -66,7 +66,7 @@ For RHEL systems without sudo access:
 ```bash
 # Set GitHub token for API rate limits (optional but recommended)
 export GITHUB_TOKEN="your_token_here"
-~/.dotfiles/bin/dotfiles-setup-replica.sh
+~/dotfiles/bin/dotfiles-setup-replica.sh
 ```
 
 Installs to `~/.local/bin`:
@@ -78,7 +78,7 @@ Installs to `~/.local/bin`:
 **2. Apply configurations:**
 
 ```bash
-~/.dotfiles/bin/dotfiles-apply-replica.sh
+~/dotfiles/bin/dotfiles-apply-replica.sh
 ```
 
 Applies configurations using a hybrid approach:
@@ -97,7 +97,7 @@ Features:
 #### Local Package Management
 
 ```bash
-~/.dotfiles/bin/dotfiles-setup-packages.sh
+~/dotfiles/bin/dotfiles-setup-packages.sh
 ```
 
 Comprehensive package management for Omarchy systems:
@@ -122,7 +122,7 @@ Edit files under profile directories and re-run the apply script. Hyprland chang
 #### Julia Environment Setup
 
 ```bash
-~/.dotfiles/bin/julia-setup.jl
+~/dotfiles/bin/julia-setup.jl
 ```
 
 Installs essential Julia packages to your global environment:
@@ -146,7 +146,7 @@ This experimental feature allows Pkg to be used as a standalone application.
 ### SSH Connection with tmux
 
 ```bash
-~/.dotfiles/bin/dotfiles-ssh-tmux.sh
+~/dotfiles/bin/dotfiles-ssh-tmux.sh
 ```
 
 Interactive SSH connection manager with automatic tmux session handling:
@@ -159,18 +159,18 @@ Interactive SSH connection manager with automatic tmux session handling:
 
 ```bash
 # Basic usage - sync studies from atalanta
-~/.dotfiles/bin/dotfiles-rsync-ssh.sh
+~/dotfiles/bin/dotfiles-rsync-ssh.sh
 
 # Sync from different host
-~/.dotfiles/bin/dotfiles-rsync-ssh.sh --from bioint01
+~/dotfiles/bin/dotfiles-rsync-ssh.sh --from bioint01
 
 # Custom directories
-~/.dotfiles/bin/dotfiles-rsync-ssh.sh \
+~/dotfiles/bin/dotfiles-rsync-ssh.sh \
   --source-dir ~/projects \
   --target-dir ~/local-backup
 
 # Full example
-~/.dotfiles/bin/dotfiles-rsync-ssh.sh \
+~/dotfiles/bin/dotfiles-rsync-ssh.sh \
   --from atalanta \
   --source-dir ~/Code/DRL_RDE/data/studies \
   --target-dir ~/synced-studies
@@ -186,7 +186,7 @@ Features:
 ### SSH Key Management
 
 ```bash
-~/.dotfiles/bin/dotfiles-setup-ssh.sh
+~/dotfiles/bin/dotfiles-setup-ssh.sh
 ```
 
 Automated SSH key distribution:
@@ -203,7 +203,7 @@ Automated SSH key distribution:
 ### Zotero Better BibTeX Extension
 
 ```bash
-~/.dotfiles/bin/dotfiles-setup-zotero.sh
+~/dotfiles/bin/dotfiles-setup-zotero.sh
 ```
 
 Automated Zotero extension installer:
@@ -220,7 +220,7 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 
 ```bash
 # Configure power button for suspend
-~/.dotfiles/bin/dotfiles-power-suspend.sh
+~/dotfiles/bin/dotfiles-power-suspend.sh
 
 # Power profile menu (now uses omarchy-menu power)
 ```
@@ -242,13 +242,13 @@ Note: Manual installation through Zotero GUI is required for proper extension re
 
 ```bash
 # Create backup
-~/.dotfiles/bin/dotfiles-firefly-backup.sh
+~/dotfiles/bin/dotfiles-firefly-backup.sh
 
 # Create backup to specific directory
-~/.dotfiles/bin/dotfiles-firefly-backup.sh ~/my-backup-location
+~/dotfiles/bin/dotfiles-firefly-backup.sh ~/my-backup-location
 
 # Restore from backup
-~/.dotfiles/bin/dotfiles-firefly-restore.sh ~/Firefly3/backup/20240120-143022
+~/dotfiles/bin/dotfiles-firefly-restore.sh ~/Firefly3/backup/20240120-143022
 ```
 
 **Backup features:**

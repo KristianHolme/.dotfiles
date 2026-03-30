@@ -208,7 +208,7 @@ EOF
     # Setup Zotero extensions if Zotero was installed successfully
     if pkg_installed zotero-bin; then
         log_info "Setting up Zotero extensions..."
-        "$HOME/.dotfiles/bin/dotfiles-setup-zotero.sh" || log_info "Zotero setup failed (non-critical)"
+        "$HOME/dotfiles/bin/dotfiles-setup-zotero.sh" || log_info "Zotero setup failed (non-critical)"
     fi
 
     install_pkg cursor-bin
@@ -263,7 +263,7 @@ EOF
     install_tree_sitter "$HOME/.local/bin" || log_warning "tree-sitter installation failed; continuing"
 
     # Install tools via curl installers
-    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/.dotfiles/bin/julia-setup.jl"
+    install_via_curl "Julia (juliaup)" "juliaup" "https://install.julialang.org" "source ~/.bashrc && ~/dotfiles/bin/julia-setup.jl"
     install_via_curl "cursor-cli" "cursor-agent" "https://cursor.com/install"
 
     # 5) Refresh desktop database (user apps)

@@ -6,7 +6,7 @@
 source ~/.local/share/omarchy/default/bash/rc
 
 # Source custom functions
-source ~/.dotfiles/default/dot-bashrc-functions
+source ~/dotfiles/default/dot-bashrc-functions
 
 # >>> juliaup initialize >>>
 
@@ -37,20 +37,20 @@ alias l='eza -lh --group-directories-first --icons=auto'
 alias la='l -a'
 alias y='yazi'
 
-export PATH="$HOME/.dotfiles/bin:$PATH"
+export PATH="$HOME/dotfiles/bin:$PATH"
 export PATH="$HOME/.julia/bin:$PATH"
 # export PATH="$HOME/.local/bin:$PATH" #i think omarchy adds this
 
 if [[ "$USER" == "kristian" ]]; then
     # Add dotfiles scripts to PATH
     alias ca='agent'
-    alias dac='$HOME/.dotfiles/bin/dotfiles-apply-config.sh'
-    alias dsp='$HOME/.dotfiles/bin/dotfiles-setup-packages.sh'
-    alias dfb='$HOME/.dotfiles/bin/dotfiles-firefly-backup.sh'
-    alias dfr='$HOME/.dotfiles/bin/dotfiles-firefly-restore.sh'
-    alias dss='$HOME/.dotfiles/bin/dotfiles-setup-ssh.sh'
-    alias drs='$HOME/.dotfiles/bin/dotfiles-rsync-ssh.sh'
-    alias dst='$HOME/.dotfiles/bin/dotfiles-ssh-tmux.sh'
+    alias dac='$HOME/dotfiles/bin/dotfiles-apply-config.sh'
+    alias dsp='$HOME/dotfiles/bin/dotfiles-setup-packages.sh'
+    alias dfb='$HOME/dotfiles/bin/dotfiles-firefly-backup.sh'
+    alias dfr='$HOME/dotfiles/bin/dotfiles-firefly-restore.sh'
+    alias dss='$HOME/dotfiles/bin/dotfiles-setup-ssh.sh'
+    alias drs='$HOME/dotfiles/bin/dotfiles-rsync-ssh.sh'
+    alias dst='$HOME/dotfiles/bin/dotfiles-ssh-tmux.sh'
     alias tb='tensorboard --logdir'
 else
     alias dsr='dotfiles-setup-replica.sh'

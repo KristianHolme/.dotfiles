@@ -1,22 +1,22 @@
 ---
 name: dotfiles-omarchy-setup
-description: Instructions for updating system configuration. Use when modifying dotfiles, Hyprland/Wayland configs, system configs, Cursor skills, or other configurations that typically live in ~/.config inside ~/.dotfiles. This system uses omarchy at ~/.local/share/omarchy; read-only access there is allowed for understanding commands and idiomatic usage, but never edit files there.
+description: Instructions for updating system configuration. Use when modifying dotfiles, Hyprland/Wayland configs, system configs, Cursor skills, or other configurations that typically live in ~/.config inside ~/dotfiles. This system uses omarchy at ~/.local/share/omarchy; read-only access there is allowed for understanding commands and idiomatic usage, but never edit files there.
 ---
 
 # Dotfiles Setup
 
 ## Quick Start
 
-1. Identify the target area in `~/.dotfiles/`.
-2. Edit files in the stow structure under `~/.dotfiles/` only.
+1. Identify the target area in `~/dotfiles/`.
+2. Edit files in the stow structure under `~/dotfiles/` only.
 3. Omarchy lives in `~/.local/share/omarchy/` (scripts/configs); read-only access is OK for understanding commands and idioms, but do not edit.
 4. When working with omarchy-related tasks, invoke the omarchy skill: `@omarchy`
 5. Do not commit unless explicitly asked.
 
 ## Workflow Checklist
 
-- [ ] Determine scope within `~/.dotfiles/` only.
-- [ ] Select the correct profile in `~/.dotfiles/`:
+- [ ] Determine scope within `~/dotfiles/` only.
+- [ ] Select the correct profile in `~/dotfiles/`:
   - `default/` for shared defaults
   - Host-specific: `bengal/`, `kaspi/`, `sibir/`, `sibir2/` as needed
 - [ ] Locate the config:
@@ -41,17 +41,17 @@ description: Instructions for updating system configuration. Use when modifying 
 
 **Hyprland config change**
 
-- Edit `~/.dotfiles/default/dot-config/hypr/bindings.conf`
+- Edit `~/dotfiles/default/dot-config/hypr/bindings.conf`
 - If host-specific, edit the matching host directory instead.
 - Apply changes using the existing dotfiles apply workflow.
 
 **Cursor settings change**
 
-- Edit `~/.dotfiles/default/dot-config/Cursor/User/settings.json`
+- Edit `~/dotfiles/default/dot-config/Cursor/User/settings.json`
 - Apply changes using the existing dotfiles apply workflow.
 
 ALWAYS run `hyprctl configerrors` after changing hyprland configs, to check if there are any errors.
 
 **Omarchy integration (dotfiles-only)**
 
-- If dotfiles reference omarchy paths or scripts, update those references in `~/.dotfiles/` only.
+- If dotfiles reference omarchy paths or scripts, update those references in `~/dotfiles/` only.

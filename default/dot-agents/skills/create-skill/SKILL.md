@@ -12,7 +12,7 @@ This skill guides you through creating effective Agent Skills for OpenCode. Skil
 Before creating a skill, gather essential information from the user about:
 
 1. **Purpose and scope**: What specific task or workflow should this skill help with?
-2. **Storage location**: Skills are stored in `~/.dotfiles/default/dot-agents/skills/<skill-name>/`
+2. **Storage location**: Skills are stored in `~/dotfiles/default/dot-agents/skills/<skill-name>/`
 3. **Trigger scenarios**: When should the agent automatically apply this skill?
 4. **Key domain knowledge**: What specialized information does the agent need that it wouldn't already know?
 5. **Output format preferences**: Are there specific templates, formats, or styles required?
@@ -45,7 +45,7 @@ skill-name/
 All skills are stored in:
 
 ```
-~/.dotfiles/default/dot-agents/skills/skill-name/
+~/dotfiles/default/dot-agents/skills/skill-name/
     ├── SKILL.md              # Required - main instructions
     ├── reference.md          # Optional - detailed documentation
     ├── examples.md           # Optional - usage examples
@@ -381,7 +381,7 @@ When helping a user create a skill, follow this process:
 
 Gather information about:
 1. The skill's purpose and primary use case
-2. Confirm storage location (always ~/.dotfiles/default/dot-agents/skills/<skill-name>/)
+2. Confirm storage location (always ~/dotfiles/default/dot-agents/skills/<skill-name>/)
 3. Trigger scenarios
 4. Any specific requirements or constraints
 5. Existing examples or patterns to follow
