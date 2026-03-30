@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate()
 packages = [
     "Revise", "BenchmarkTools", "Cthulhu", "Debugger", "DrWatson", "JET",
-    "PkgTemplates", "ProgressMeter", "OhMyREPL", "Reexport",
+    "PkgTemplates", "ProgressMeter", "OhMyREPL",
     "Infiltrator", "ArtifactUtils", "ExplicitImports", "PreferenceTools",
     "LocalRegistry", "LiveServer", "AirspeedVelocity",
 ]
