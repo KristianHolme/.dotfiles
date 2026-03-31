@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exec julia -e '
+exec julia --startup-file=no -e '
 using LocalRegistry
 register()
 '
