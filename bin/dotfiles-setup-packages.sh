@@ -239,10 +239,10 @@ EOF
     install_pkg slack-desktop-wayland
     install_pkg syncthing
     install_pkg parallel
-    install_pkg television
     setup_television
     install_pkg trash-cli
     install_pkg uv
+    install_pkg television
 
     # 4) Install LaTeX templates
     install_latex_template \
