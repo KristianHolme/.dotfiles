@@ -27,6 +27,8 @@ alias j='julia'
 alias jp='julia --project'
 alias jtest='julia --project -e "using Pkg;Pkg.test()"'
 alias jtemp='julia --project=@temp'
+alias jn='julia +nightly'
+alias jnp='julia +nightly --project'
 alias lg='lazygit'
 unalias r
 alias r='source ~/.bashrc'
